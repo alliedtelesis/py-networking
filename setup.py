@@ -1,14 +1,17 @@
+
 import sys
 import os
 from setuptools import setup, find_packages
+import versioneer
 
-# Import the file that contains the version number.
-src_dir = os.path.join(os.path.dirname(__file__), 'src')
-sys.path.insert(0, src_dir)
-from version import __version__
+versioneer.versionfile_source = 'src/_version.py'
+versioneer.versionfile_build = '_version.py'
+versioneer.tag_prefix = 'v' # tags are like v1.2.0
+versioneer.parentdir_prefix = 'py-networking-' 
 
 setup(name             = 'py-networking',
-      version          = __version__,
+      version          = versioneer.get_version(),
+      cmdclass         = versioneer.get_cmdclass(),
       description      = 'Library for network programmability and automation',
       long_description = 'Library for network programmability and automation',
       author           = 'Francesco Salamida',

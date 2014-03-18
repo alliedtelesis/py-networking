@@ -18,8 +18,7 @@ warnings.filterwarnings(
       DeprecationWarning
 )
 
-class Device(object):
-    pass
+from py-networking.Device import Device
 
 
 from ._version import get_versions

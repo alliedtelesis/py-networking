@@ -47,11 +47,12 @@ class CleanCommand(Command):
 
 setup(name             = 'py-networking',
       version          = versioneer.get_version(),
-      cmdclass         = dict(versioneer.get_cmdclass().items() +
-                         {
-                            'test': TestCommand,
-                            'clean': CleanCommand
-                          }.items()),
+      cmdclass         = versioneer.get_cmdclass(),
+#      cmdclass         = dict(versioneer.get_cmdclass().items() +
+#                         {
+#                            'test': TestCommand,
+#                            'clean': CleanCommand
+#                          }.items()),
       description      = 'Library for network programmability and automation',
       long_description = 'Library for network programmability and automation',
       author           = 'Francesco Salamida',

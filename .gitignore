@@ -1,6 +1,9 @@
 # Python code
 *.py[cod]
 
+# Python packages
+MANIFEST
+
 # C Extensions
 .so
 

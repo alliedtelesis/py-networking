@@ -18,9 +18,6 @@ warnings.filterwarnings(
       DeprecationWarning
 )
 
-from py-networking.Device import Device
-
-
 from ._version import get_versions
 __version__ = get_versions()['version']
 del get_versions

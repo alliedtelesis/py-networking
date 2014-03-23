@@ -21,7 +21,7 @@ class CleanCommand(Command):
         self.cwd = os.getcwd()
     def run(self):
         assert os.getcwd() == self.cwd, 'Must be in package root: %s' % self.cwd
-        os.system ('rm -rf ./.tox ./build ./dist ./*.pyc ./*.tgz ./*.egg-info ./py-networking-*')
+        os.system ('rm -rf ./MANIFEST ./.tox ./build ./dist ./*.pyc ./*.tgz ./*.egg-info ./py-networking-*')
 
 setup(name             = 'py-networking',
       version          = versioneer.get_version(),
@@ -34,9 +34,24 @@ setup(name             = 'py-networking',
       author           = 'Francesco Salamida',
       author_email     = 'salamida.francesco@gmail.com',
       license          = 'Apache License 2.0',
-      package_dir      = {'pynetworking': 'src'},
-      packages         = ['pynetworking'],
-      install_requires = ['paramiko'],
+      package_dir      = {
+                            'pynetworking': 'src',
+                            'pynetworking.servers': 'src/servers',
+                            'pynetworking.emulators': 'src/emulators',
+                            'pynetworking.features': 'src/features',
+                            'pynetworking.facts': 'src/facts',
+                         },
+      packages         = [
+                            'pynetworking',
+                            'pynetworking.servers',
+                            'pynetworking.emulators',
+                            'pynetworking.features',
+                            'pynetworking.facts',
+                         ],
+      package_data     = {
+                            'pynetworking': ['*.yaml']
+                         },
+      install_requires = ['paramiko','PyYAML','Jinja2'],
       url              = 'https://github.com/alliedtelesis/py-networking/',
       classifiers      = [
          'Development Status :: 1 - Planning',

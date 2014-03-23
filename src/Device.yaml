@@ -1,0 +1,9 @@
+features:
+{% if type == 'cisco' %}
+  vlan: cisco_vlan
+{% elif type == 'awp' %}
+  vlan: awp_vlan
+{% endif %}
+
+facts:
+  - cisco_ios_basic

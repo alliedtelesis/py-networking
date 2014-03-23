@@ -123,15 +123,21 @@ def test_device_open_close(ssh_server):
 
 @pytest.mark.current
 def test_device_ping(ssh_server):
+    #sleep(1000)
     d=Device(host='localhost',port=ssh_server)
     d.open()
     assert d.ping()
     d.close()
 
-def test_device_facts():
-    d=Device(host='10.17.39.254')
+@pytest.mark.current
+def test_device_facts(ssh_server):
+    d=Device(host='localhost',port=ssh_server)
+    #d=Device(host='10.17.39.254')
     d.open()
-    pprint(d.facts)
+    assert d.facts['build_date'] == 'Wed Sep 25 12:57:26 NZST 2013'
+    assert d.facts['build_name'] == 'x600-5.4.2-3.14.rel'
+    assert d.facts['build_type'] == 'RELEASE'
+    assert d.facts['version'] == '5.4.2'
     d.close()
 
 def test_cisco_vlan(ssh_server):

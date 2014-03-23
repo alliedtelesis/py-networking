@@ -74,7 +74,6 @@ class Device(object):
                 self._facts =  dict(self._facts.items() + f(self).items())
             except AttributeError:
                 print "Error executing core fact {0}".format(cf)
-        pprint(self._facts)
 
     def _load_features(self):
         self._features = {}

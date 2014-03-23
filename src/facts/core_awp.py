@@ -15,17 +15,17 @@ def core_awp(dev):
         return ret
 
     # Build name : x600-5.4.2-3.14.rel
-    m = re.search("Build\s+name\s+:\s+([\w\-\.]+)",out)
+    m = re.search("Build\s+name\s+:\s+([^\r\n\s]+)",out)
     if m:
         ret['build_name'] = m.group(1)
 
     # Build date : Wed Sep 25 12:57:26 NZST 2013
-    m = re.search('Build\s+date\s+:\s+([\w\-\.]+)',out)
+    m = re.search('Build\s+date\s+:\s+([^\n\r]+)',out)
     if m:
         ret['build_date'] = m.group(1)
 
     # Build type : RELEASE
-    m = re.search('Build\s+type\s+:\s+([\w\-\.]+)',out)
+    m = re.search('Build\s+type\s+:\s+([^\r\n\s]+)',out)
     if m:
         ret['build_type'] = m.group(1)
 

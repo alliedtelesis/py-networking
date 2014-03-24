@@ -86,7 +86,7 @@ class Device(object):
                 m = __import__('pynetworking.features.{0}'.format(fclass))
                 for comp in ('features',fclass,fclass):
                     m = getattr(m, comp)
-                o = m()
+                o = m(self)
                 setattr(self, fname, o)
                 self._features['fname'] = o
             except:

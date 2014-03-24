@@ -108,28 +108,17 @@ downloaded from: http://www.alliedtelesis.co.nz/support/gpl/awp.html
     request.addfinalizer(fin)
     return daemon.port
 
-def test_device_create():
-    Device(host='localhost', username='manager', password='friend')
-    Device(host='localhost', protocol='ssh')
-    Device(host='localhost', protocol='telnet')
-    Device(host='localhost', protocol='serial')
-    with pytest.raises(ValueError):
-        Device(host='localhost', protocol='http')
-
 def test_device_open_close(ssh_server):
     d=Device(host='localhost',port=ssh_server)
     d.open()
     d.close()
 
-@pytest.mark.current
 def test_device_ping(ssh_server):
-    #sleep(1000)
     d=Device(host='localhost',port=ssh_server)
     d.open()
     assert d.ping()
     d.close()
 
-@pytest.mark.current
 def test_device_facts(ssh_server):
     d=Device(host='localhost',port=ssh_server)
     #d=Device(host='10.17.39.254')
@@ -138,21 +127,6 @@ def test_device_facts(ssh_server):
     assert d.facts['build_name'] == 'x600-5.4.2-3.14.rel'
     assert d.facts['build_type'] == 'RELEASE'
     assert d.facts['version'] == '5.4.2'
-    d.close()
-
-def test_cisco_vlan(ssh_server):
-    d=Device(host='localhost', type='cisco',port=ssh_server)
-    d.open()
-    d.vlan.create(10)
-    d.close()
-    d=Device(host='localhost', type='awp',port=ssh_server)
-    d.open()
-    d.vlan.create(10)
-    d.close()
-    d=Device(host='localhost',port=ssh_server)
-    d.open()
-    with pytest.raises(AttributeError):
-        d.vlan.create(10)
     d.close()
 
 

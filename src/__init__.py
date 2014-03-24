@@ -19,6 +19,7 @@ warnings.filterwarnings(
 )
 
 from pynetworking.Device import Device
+from pynetworking.Feature import Feature
 
 import inspect
 __all__ = [name for name, obj in locals().items() if not (name.startswith('_') or inspect.ismodule(obj))]

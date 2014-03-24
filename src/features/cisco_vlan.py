@@ -1,10 +1,11 @@
-
+# -*- coding: utf-8 -*-
+from pynetworking import Feature
 
 class cisco_vlan(object):
     """
     Vlan feature implementation for cisco IOS
     """
-    def __init__(self, device)
+    def __init__(self, device):
         self.device = device
 
     def create(self, id, name=''):

@@ -1,7 +1,7 @@
 features:
-{% if type == 'cisco' %}
+{% if os == 'cisco' %}
   vlan: cisco_vlan
-{% elif type == 'awp' %}
+{% elif os == 'awp' %}
   vlan: awp_vlan
 {% endif %}
 

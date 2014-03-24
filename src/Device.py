@@ -6,9 +6,10 @@ import re
 from os import listdir
 from os.path import dirname, isfile, join
 from jinja2 import Template
+from pynetworking import Feature
 
 class Device(object):
-    def __init__(self, host, username='manager', password='friend', protocol='ssh', port='auto', type='auto'):
+    def __init__(self, host, username='manager', password='friend', protocol='ssh', port='auto', os='auto'):
         if protocol not in ('telnet','ssh','serial'):
             raise ValueError("Unsupported protocol "+protocol)
         self._host = host
@@ -24,10 +25,10 @@ class Device(object):
                 self._port = port
         else:
             self._conn = None
-        self._type = type
+        self._os = os
         self._facts = {}
-        if type != 'auto':
-            self._facts['type'] = type
+        if os != 'auto':
+            self._facts['os'] = os
 
     @property
     def facts(self):
@@ -91,4 +92,5 @@ class Device(object):
                 self._features['fname'] = o
             except:
                 print "Error loading class {1} for feature {0}".format(fname,fclass)
+                raise
 

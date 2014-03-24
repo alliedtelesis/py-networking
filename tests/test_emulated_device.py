@@ -1,28 +1,10 @@
 import pytest
 from pynetworking import Device
-from pynetworking.servers import Telnetd,SSHd
-from pynetworking.emulators import VirtualDevice
 from time import sleep
 from paramiko.rsakey import RSAKey
-import socket
 from pprint import pprint
 
-@pytest.fixture(scope="module")
-def telnet_server(request):
-    device = VirtualDevice('myhost')
-    daemon = Telnetd('localhost', port, device)
-    device.add_command('ls', 'ok', prompt = True)
-    device.add_command('exit', daemon.exit_command)
-    daemon.start()
-    def fin():
-        daemon.exit()
-        daemon.join()
-    request.addfinalizer(fin)
-    return port
-
-@pytest.fixture(scope="module")
-def ssh_server(request):
-    show_version_output = """
+show_version_output = """
 AlliedWare Plus (TM) 5.4.2 09/25/13 12:57:26
 
 Build name : x600-5.4.2-3.14.rel
@@ -64,7 +46,7 @@ Build type : RELEASE
 Portions of this product are covered by the GNU GPL, source code may be
 downloaded from: http://www.alliedtelesis.co.nz/support/gpl/awp.html
     """
-    show_system_output = """
+show_system_output = """
     Switch System Status                                   Fri Mar 21 15:45:13 2014
 
     Board       ID  Bay   Board Name                         Rev   Serial number
@@ -94,34 +76,25 @@ downloaded from: http://www.alliedtelesis.co.nz/support/gpl/awp.html
      System Location
 
     """
-    device = VirtualDevice('awp',strict=False,login_type=VirtualDevice.LOGIN_TYPE_NONE)
-    daemon = SSHd('127.0.0.1', 0, device)
-    device.add_command('enable', '', prompt = True)
-    device.add_command('configure terminal', '', prompt = True)
-    device.add_command('show system', show_system_output, prompt = True)
-    device.add_command('show version', show_version_output, prompt = True)
-    device.add_command('exit', daemon.exit_command)
-    daemon.start()
-    def fin():
-        daemon.exit()
-        daemon.join()
-    request.addfinalizer(fin)
-    return daemon.port
+def test_setup_emulated_device(ssh_server):
+    ssh_server.device.add_command('show system', show_system_output, prompt = True)
+    ssh_server.device.add_command('show version', show_version_output, prompt = True)
+    ssh_server.start()
+    sleep(2)
 
 def test_device_open_close(ssh_server):
-    d=Device(host='localhost',port=ssh_server)
+    d=Device(host='localhost',port=ssh_server.port)
     d.open()
     d.close()
 
 def test_device_ping(ssh_server):
-    d=Device(host='localhost',port=ssh_server)
+    d=Device(host='localhost',port=ssh_server.port)
     d.open()
     assert d.ping()
     d.close()
 
 def test_device_facts(ssh_server):
-    d=Device(host='localhost',port=ssh_server)
-    #d=Device(host='10.17.39.254')
+    d=Device(host='localhost',port=ssh_server.port)
     d.open()
     assert d.facts['build_date'] == 'Wed Sep 25 12:57:26 NZST 2013'
     assert d.facts['build_name'] == 'x600-5.4.2-3.14.rel'

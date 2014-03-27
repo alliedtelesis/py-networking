@@ -114,6 +114,7 @@ class SSHd(Server):
             self.channel.send('Server is shutting down.\n')
 
     def _handle_connection(self, conn):
+        print "New conn\n"
         t = paramiko.Transport(conn)
         try:
             t.load_server_moduli()
@@ -125,7 +126,7 @@ class SSHd(Server):
         t.start_server(server = server)
 
         while self.running:
-            self.channel = t.accept(60)
+            self.channel = t.accept(1)
             if self.channel is None:
                 self._dbg(1, 'Client disappeared before requesting channel.')
                 t.close()
@@ -147,10 +148,15 @@ class SSHd(Server):
                         if not self.running:
                             break
                         try:
+                            data = None
                             data = self.channel.recv(1024)
-                            self.channel.send(data)
+                            if data:
+                                self.channel.send(data)
                         except socket.timeout:
                             continue
+                        except socket.error:
+                            self.channel.close()
+                            break
                         command += data.replace('\r\n', '\n').replace('\r', '\n')
                         if '\n' in command:
                             command = command.split('\n')[0]

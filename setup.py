@@ -40,6 +40,7 @@ setup(name             = 'py-networking',
                             'pynetworking.emulators': 'src/emulators',
                             'pynetworking.features': 'src/features',
                             'pynetworking.facts': 'src/facts',
+                            'pynetworking.config': 'src/config',
                          },
       packages         = [
                             'pynetworking',
@@ -47,11 +48,19 @@ setup(name             = 'py-networking',
                             'pynetworking.emulators',
                             'pynetworking.features',
                             'pynetworking.facts',
+                            'pynetworking.config',
                          ],
       package_data     = {
                             'pynetworking': ['*.yaml']
                          },
-      install_requires = ['paramiko','PyYAML','Jinja2'],
+      install_requires = [  
+                            'paramiko',
+                            'PyYAML',
+                            'Jinja2',
+                            'ply',
+                            'twisted',
+                            'pyasn1',
+                         ],
       url              = 'https://github.com/alliedtelesis/py-networking/',
       classifiers      = [
          'Development Status :: 1 - Planning',

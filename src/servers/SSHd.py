@@ -114,7 +114,6 @@ class SSHd(Server):
             self.channel.send('Server is shutting down.\n')
 
     def _handle_connection(self, conn):
-        print "New conn\n"
         t = paramiko.Transport(conn)
         try:
             t.load_server_moduli()

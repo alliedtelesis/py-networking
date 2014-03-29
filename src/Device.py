@@ -16,6 +16,7 @@ class Device(object):
         self._username = username
         self._password = password
         self._protocol = protocol
+        self._config = ''
         if protocol == 'ssh':
             self._conn = SSHClient()
             self._conn.set_missing_host_key_policy(AutoAddPolicy())
@@ -34,6 +35,10 @@ class Device(object):
     def facts(self):
         return self._facts
 
+    @property
+    def config(self):
+        return self._config
+
     def ping(self):
         if self._protocol == 'ssh':
             if self._conn.get_transport() != None and self._conn.get_transport().is_active():
@@ -49,18 +54,21 @@ class Device(object):
             return
         self._load_core_facts()
         self._load_features()
+        self.load_config()
 
     def close(self):
         if self._protocol == 'ssh':
             self._conn.close()
 
+    def get_channel(self):
+        if self._protocol == 'ssh':
+            return self._conn.invoke_shell()
+        return None
+
     def cmd(self, cmd):
         if self._protocol == 'ssh':
             stdin, stdout, stderr = self._conn.exec_command(cmd)
             return stdout.read()
-        return ""
-
-    def config(self):
         return ""
 
     def _load_core_facts(self):
@@ -93,4 +101,22 @@ class Device(object):
             except:
                 print "Error loading class {1} for feature {0}".format(fname,fclass)
                 raise
+
+    def load_config(self):
+        if 'config' in self._models:
+            try:
+                m = __import__('pynetworking.config.{0}'.format(self._models['config']))
+                for comp in ('config',self._models['config'],self._models['config']):
+                    m = getattr(m, comp)
+                o = m(self)
+                setattr(self, 'cfg', o)
+            except:
+                print "Error loading class {0} for configuration management".format(self._models['config'])
+                raise
+
+        self._config = self.cfg.get_config()
+        for fname,fobj in self._features.items():
+            fobj.load_config(self._config)
+        
+
 

@@ -4,7 +4,6 @@ import re
 
 def core_awp(dev):
     ret = {}
-    dev.cmd('enable')
     out = dev.cmd('show version')
 
     # AlliedWare Plus (TM) 5.4.2 09/25/13 12:57:26

@@ -76,11 +76,65 @@ show_system_output = """
      System Location
 
     """
+
+show_running_config_output = """
+!
+service password-encryption
+!
+no banner motd
+!
+username manager privilege 15 password 8 $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0
+!
+ssh server allow-users manager
+service ssh
+!
+service telnet
+!
+service http
+!
+no clock timezone
+!
+snmp-server
+!
+aaa authentication enable default local
+aaa authentication login default local 
+!
+!
+stack virtual-chassis-id 1726
+!
+ip domain-lookup
+!
+no service dhcp-server
+!
+no ip multicast-routing
+!
+spanning-tree mode rstp
+!
+switch 1 provision x600-48
+!
+interface port1.0.1-1.0.50
+ switchport
+ switchport mode access
+!
+interface vlan1
+ ip address 10.17.39.254/24
+!
+!
+line con 0
+line vty 0 4
+!
+end
+"""
+
 def test_setup_emulated_device(ssh_server):
-    ssh_server.device.add_command('show system', show_system_output, prompt = True)
-    ssh_server.device.add_command('show version', show_version_output, prompt = True)
+    #ssh_server.device.add_command('show system', show_system_output, prompt = True)
+    #ssh_server.device.add_command('show version', show_version_output, prompt = True)
+    #ssh_server.device.add_command('show running-config', show_running_config_output, prompt = True)
     ssh_server.start()
-    sleep(2)
+    ssh_server.cmds['show system'] = {'action':'PRINT','args':[show_system_output]}
+    ssh_server.cmds['show version'] = {'action':'PRINT','args':[show_version_output]}
+    ssh_server.cmds['show running-config'] = {'action':'PRINT','args':[show_running_config_output]}
+    sleep(1000)
 
 def test_device_open_close(ssh_server):
     d=Device(host='localhost',port=ssh_server.port)
@@ -102,4 +156,8 @@ def test_device_facts(ssh_server):
     assert d.facts['version'] == '5.4.2'
     d.close()
 
-
+def test_device_config(ssh_server):
+    d=Device(host='localhost',port=ssh_server.port)
+    d.open()
+    assert d.config == show_running_config_output
+    d.close()

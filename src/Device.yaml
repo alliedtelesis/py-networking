@@ -1,3 +1,7 @@
+{% if os == 'awp' %}
+config: awp_config
+{% endif %}
+
 features:
 {% if os == 'cisco' %}
   vlan: cisco_vlan

@@ -4,6 +4,8 @@ from time import sleep
 from paramiko.rsakey import RSAKey
 from pprint import pprint
 
+dut = '127.0.0.1'
+
 show_version_output = """
 AlliedWare Plus (TM) 5.4.2 09/25/13 12:57:26
 
@@ -26,6 +28,7 @@ vlan database
 !
 end
 """
+
 @pytest.mark.current
 def test_setup_emulated_device(ssh_server):
     ssh_server.cmds['show version'] = {'action':'PRINT','args':[show_version_output]}
@@ -33,21 +36,21 @@ def test_setup_emulated_device(ssh_server):
 
 @pytest.mark.current
 def test_device_vlan_create(ssh_server):
-    d=Device(host='localhost',port=ssh_server.port)
+    d=Device(host=dut,port=ssh_server.port)
     d.open()
     d.vlan.create(20, name='admin', mtu=1300)
     d.close()
 
 @pytest.mark.current
 def test_device_vlan_exist(ssh_server):
-    d=Device(host='localhost',port=ssh_server.port)
+    d=Device(host=dut,port=ssh_server.port)
     d.open()
     assert d.vlan[7]['state'] == 'enable'
     d.close()
 
 @pytest.mark.current
 def test_device_vlan_update(ssh_server):
-    d=Device(host='localhost',port=ssh_server.port)
+    d=Device(host=dut,port=ssh_server.port)
     d.open()
     #d.vlan.update(20, name='admin', mtu=1300)
     d.vlan.create(20, name='admin', mtu=1300)
@@ -55,7 +58,7 @@ def test_device_vlan_update(ssh_server):
 
 @pytest.mark.current
 def test_device_vlan_delete(ssh_server):
-    d=Device(host='localhost',port=ssh_server.port)
+    d=Device(host=dut,port=ssh_server.port)
     d.open()
     d.vlan.delete(10)
     d.close()

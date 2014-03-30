@@ -1,17 +1,27 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
 import sys
 import os
 import glob
-import unittest
 from setuptools import setup, find_packages, Command
+from setuptools.command.test import test as TestCommand
 import versioneer
 
 versioneer.versionfile_source = 'src/_version.py'
 versioneer.versionfile_build = 'pynetworking/_version.py'
 versioneer.tag_prefix = 'v' # tags are like v1.2.0
 versioneer.parentdir_prefix = 'py-networking-' 
+
+class ToxCommand(TestCommand):
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.test_args = []
+        self.test_suite = True
+    def run_tests(self):
+        #import here, cause outside the eggs aren't loaded
+        import tox
+        errno = tox.cmdline(self.test_args)
+        sys.exit(errno)
 
 class CleanCommand(Command):
     user_options = []
@@ -27,6 +37,7 @@ setup(name             = 'py-networking',
       version          = versioneer.get_version(),
       cmdclass         = dict(versioneer.get_cmdclass().items() +
                          {
+                            'test': ToxCommand,
                             'clean': CleanCommand
                           }.items()),
       description      = 'Library for network programmability and automation',
@@ -60,6 +71,9 @@ setup(name             = 'py-networking',
                             'ply',
                             'twisted',
                             'pyasn1',
+                         ],
+      tests_require    = [
+                            'tox'
                          ],
       url              = 'https://github.com/alliedtelesis/py-networking/',
       classifiers      = [

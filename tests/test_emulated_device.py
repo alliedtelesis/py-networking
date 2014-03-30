@@ -4,6 +4,8 @@ from time import sleep
 from paramiko.rsakey import RSAKey
 from pprint import pprint
 
+dut = '127.0.0.1'
+
 show_version_output = """
 AlliedWare Plus (TM) 5.4.2 09/25/13 12:57:26
 
@@ -127,28 +129,23 @@ end
 """
 
 def test_setup_emulated_device(ssh_server):
-    #ssh_server.device.add_command('show system', show_system_output, prompt = True)
-    #ssh_server.device.add_command('show version', show_version_output, prompt = True)
-    #ssh_server.device.add_command('show running-config', show_running_config_output, prompt = True)
-    ssh_server.start()
     ssh_server.cmds['show system'] = {'action':'PRINT','args':[show_system_output]}
     ssh_server.cmds['show version'] = {'action':'PRINT','args':[show_version_output]}
     ssh_server.cmds['show running-config'] = {'action':'PRINT','args':[show_running_config_output]}
-    sleep(1000)
 
 def test_device_open_close(ssh_server):
-    d=Device(host='localhost',port=ssh_server.port)
+    d=Device(host=dut,port=ssh_server.port)
     d.open()
     d.close()
 
 def test_device_ping(ssh_server):
-    d=Device(host='localhost',port=ssh_server.port)
+    d=Device(host=dut,port=ssh_server.port)
     d.open()
     assert d.ping()
     d.close()
 
 def test_device_facts(ssh_server):
-    d=Device(host='localhost',port=ssh_server.port)
+    d=Device(host=dut,port=ssh_server.port)
     d.open()
     assert d.facts['build_date'] == 'Wed Sep 25 12:57:26 NZST 2013'
     assert d.facts['build_name'] == 'x600-5.4.2-3.14.rel'
@@ -157,7 +154,7 @@ def test_device_facts(ssh_server):
     d.close()
 
 def test_device_config(ssh_server):
-    d=Device(host='localhost',port=ssh_server.port)
+    d=Device(host=dut,port=ssh_server.port)
     d.open()
     assert d.config == show_running_config_output
     d.close()

@@ -157,7 +157,7 @@ class SSHd(Process):
         reactor.stop()
 
     def _run(self):
-        f = logfile.LogFile("SSHd.log", "/tmp", rotateLength=100)
+        f = logfile.LogFile("SSHd.log", "/tmp", rotateLength=100000)
         log.startLogging(f)
         log.msg("Listening on port {0}".format(self.port))
         reactor.run()        

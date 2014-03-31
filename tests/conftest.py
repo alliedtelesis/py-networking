@@ -42,6 +42,7 @@ class SSHProtocol(recvline.HistoricRecvLine):
     def lineReceived(self, line):
         line = line.strip()
         if line:
+            log.msg('Executing shell command "{0}"'.format(line))
             cmdAndArgs = line.split()
             cmd = cmdAndArgs[0]
             args = cmdAndArgs[1:]
@@ -65,8 +66,11 @@ class SSHProtocol(recvline.HistoricRecvLine):
                                 state = action['state']
                         if action['action'] == 'SET_STATE':
                             self.parent.state = int(action['args'][0])
+                            log.msg("Switching to state {0}".format(self.parent.state))
 
                 if ret:
+                    log.msg("Command response")
+                    log.msg(ret)
                     for l in ret.split('\n'):
                         self.terminal.write(l)
                         self.terminal.nextLine()
@@ -76,6 +80,7 @@ class SSHProtocol(recvline.HistoricRecvLine):
     def do_help(self):
         for cmd in self.parent.cmds.keys():
             self.terminal.write(cmd)
+            self.terminal.nextLine()
         self.showPrompt()
 
     def do_enable(self):
@@ -86,6 +91,11 @@ class SSHProtocol(recvline.HistoricRecvLine):
     def do_logout(self):
         self.terminal.nextLine()
         self.terminal.loseConnection()
+
+    def do_state(self):
+        self.terminal.write("State is {0}".format(self.parent.state))
+        self.terminal.nextLine()
+
 
 class SSHAvatar(avatar.ConchUser):
     implements(ISession)
@@ -116,8 +126,11 @@ class SSHAvatar(avatar.ConchUser):
                         state = action['state']
                 if action['action'] == 'SET_STATE':
                     self.parent.state = action['args'][0]
+                    log.msg("Switching to state {0}".format(self.parent.state))
 
         if ret:
+            log.msg("Command response")
+            log.msg(ret)
             protocol.session.write(ret)
         reactor.spawnProcess(protocol,'echo')
 
@@ -147,6 +160,8 @@ class SSHd(Process):
         self._motd = manager.Value(c_char_p, "AlliedWare Plus (TM) 5.4.2 09/25/13 12:57:26")
         self._state = manager.Value(c_int, 0)
         self.cmds = manager.dict()
+        self.protocol = 'ssh'
+        self.host = '127.0.0.1'
 
         users = {'manager': 'friend'}
         self._sshFactory.portal.registerChecker(checkers.InMemoryUsernamePasswordDatabaseDontUse(**users))
@@ -158,7 +173,7 @@ class SSHd(Process):
             publicBlob = publicBlobFile.read()
             self._sshFactory.publicKeys = {'ssh-rsa': keys.Key.fromString(data=publicBlob)}
 
-        self._listeningport = reactor.listenTCP(self._port, self._sshFactory,interface='127.0.0.1')
+        self._listeningport = reactor.listenTCP(self._port, self._sshFactory,interface=self.host)
     
     @property
     def motd(self):
@@ -186,13 +201,13 @@ class SSHd(Process):
         reactor.stop()
 
     def _run(self):
-        f = logfile.LogFile("SSHd.log", "/tmp", rotateLength=100000)
+        f = logfile.LogFile("dut.log", "/tmp", rotateLength=100000,maxRotatedFiles=10)
         log.startLogging(f)
         log.msg("Listening on port {0}".format(self.port))
         reactor.run()        
 
 @pytest.fixture(scope="module")
-def ssh_server(request):
+def dut(request):
     daemon = SSHd()
     def fin():
         daemon.terminate()

@@ -7,7 +7,6 @@ features:
   vlan: cisco_vlan
 {% elif os == 'awp' %}
   vlan: awp_vlan
+  interface: awp_interface
 {% endif %}
 
-facts:
-  - cisco_ios_basic

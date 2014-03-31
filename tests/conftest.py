@@ -2,7 +2,7 @@ import pytest
 import sys
 import re
 from multiprocessing import Process, Value, Array, Manager
-from ctypes import c_char_p
+from ctypes import c_char_p, c_int
 from time import sleep
 from twisted.conch import avatar, recvline
 from twisted.conch.interfaces import IConchUser, ISession
@@ -21,15 +21,14 @@ class SSHProtocol(recvline.HistoricRecvLine):
         self.user = user
         self._hostname = "awplus"
         self._prompt = ">"
-        self._parent = parent
+        self.parent = parent
         self._cmd = cmd
-
 
     def connectionMade(self):
         recvline.HistoricRecvLine.connectionMade(self)
         self.terminal.nextLine()
         self.terminal.nextLine()
-        self.terminal.write(self._parent.motd)
+        self.terminal.write(self.parent.motd)
         self.terminal.nextLine()
         self.terminal.nextLine()
         self.showPrompt()
@@ -54,18 +53,28 @@ class SSHProtocol(recvline.HistoricRecvLine):
                     self.terminal.write("Error: %s" % e)
                     self.terminal.nextLine()
             else:
-                for cmd,action in self._parent.cmds.items():
-                    if re.search(cmd,line):
+                ret = None
+                state = 0
+                for cmd,action in self.parent.cmds.items():
+                    if re.search(action['cmd'],line):
                         if action['action'] == 'PRINT':
-                            for l in action['args'][0].split('\n'):
-                                self.terminal.write(l)
-                                self.terminal.nextLine()
-                        break
+                            if action['state'] == 0 and state == 0:
+                                ret = action['args'][0]
+                            elif action['state'] > 0 and action['state'] == self.parent.state:
+                                ret = action['args'][0]
+                                state = action['state']
+                        if action['action'] == 'SET_STATE':
+                            self.parent.state = int(action['args'][0])
+
+                if ret:
+                    for l in ret.split('\n'):
+                        self.terminal.write(l)
+                        self.terminal.nextLine()
                 self.terminal.nextLine()
                 self.showPrompt()
 
     def do_help(self):
-        for cmd in self._parent.cmds.keys():
+        for cmd in self.parent.cmds.keys():
             self.terminal.write(cmd)
         self.showPrompt()
 
@@ -95,10 +104,21 @@ class SSHAvatar(avatar.ConchUser):
         return None
 
     def execCommand(self, protocol, line):
+        ret = None
+        state = 0
         for cmd,action in self.parent.cmds.items():
-            if re.search(cmd,line):
+            if re.search(action['cmd'],line):
                 if action['action'] == 'PRINT':
-                    protocol.session.write(action['args'][0])
+                    if action['state'] == 0 and state == 0:
+                        ret = action['args'][0]
+                    elif action['state'] > 0 and action['state'] == self.parent.state:
+                        ret = action['args'][0]
+                        state = action['state']
+                if action['action'] == 'SET_STATE':
+                    self.parent.state = action['args'][0]
+
+        if ret:
+            protocol.session.write(ret)
         reactor.spawnProcess(protocol,'echo')
 
     def closed(self):
@@ -124,7 +144,8 @@ class SSHd(Process):
         self._sshFactory = factory.SSHFactory()
         self._sshFactory.portal = portal.Portal(SSHRealm(self))
         manager = Manager()
-        self._motd = manager.Value(c_char_p,"AlliedWare Plus (TM) 5.4.2 09/25/13 12:57:26")
+        self._motd = manager.Value(c_char_p, "AlliedWare Plus (TM) 5.4.2 09/25/13 12:57:26")
+        self._state = manager.Value(c_int, 0)
         self.cmds = manager.dict()
 
         users = {'manager': 'friend'}
@@ -146,6 +167,14 @@ class SSHd(Process):
     @motd.setter
     def motd(self, value):
         self._motd.value = value
+
+    @property
+    def state(self):
+        return self._state.value
+
+    @state.setter
+    def state(self, value):
+        self._state.value = int(value)
 
     @property
     def port(self):

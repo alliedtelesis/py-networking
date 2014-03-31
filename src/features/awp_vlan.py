@@ -29,7 +29,6 @@ class awp_vlan(Feature):
             else:
                 raise ValueError("{0} is and invalid vlan state".format(kwargs['state'])) 
 
-        print cmd
         self._device.cfg.send_config(cmd)
         self._device.load_config()
 
@@ -47,7 +46,6 @@ class awp_vlan(Feature):
         non_existing_ids = [i for i in vlan_ids if i not in existing_vlan_ids]
 
         if len(non_existing_ids) == 0:
-            print "create"
             self.create(vlan_id, **kwargs)
         else:
             raise KeyError('{0} vlans do not exist'.format(non_existing_ids))
@@ -127,7 +125,7 @@ class _VlanDbLexer(object):
 
     def t_vlanid_vlanrange_mtu(self, t):
         r'mtu\s+[0-9]+'
-        t.value = (t.lexer.id, re.split('\s+',t.value)[1])
+        t.value = (t.lexer.id, int(re.split('\s+',t.value)[1]))
         return t
 
     def t_vlanid_vlanrange_state(self, t):

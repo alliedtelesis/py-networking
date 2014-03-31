@@ -97,7 +97,7 @@ class Device(object):
                     m = getattr(m, comp)
                 o = m(self)
                 setattr(self, fname, o)
-                self._features['fname'] = o
+                self._features[fname] = o
             except:
                 print "Error loading class {1} for feature {0}".format(fname,fclass)
                 raise

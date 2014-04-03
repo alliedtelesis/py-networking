@@ -13,3 +13,11 @@ def test_device_vlan():
     d.vlan.create(20)
     print d.vlan
     d.close()
+
+def test_get_show_interface():
+    d=Device(host=test_device)
+    d.open()
+    with open('show_interface1.dat', 'w') as f:
+        f.write(d.cmd("show interface"))
+    d.close()
+

@@ -29,7 +29,6 @@ class awp_interface(Feature):
         return self._interface.items()
 
     def __str__(self):
-        ret = {}
         self._update_interface()
         return str(self._interface)
 

@@ -1,6 +1,7 @@
 import pytest
 import os
 from pynetworking import Device
+from pprint import pprint
 
 test_device = '10.17.39.254'
 devicenotonline = pytest.mark.skipif(os.system("ping -q -c 1 -t 1 " + test_device) != 0,
@@ -18,7 +19,8 @@ def test_device_vlan():
 def test_get_show_interface():
     d=Device(host=test_device)
     d.open()
-    with open('show_interface1.dat', 'w') as f:
-        f.write(d.cmd("show interface"))
+    for ifn,ifi in sorted(d.interface.items(), key=lambda ifn: ifn[0]):
+        print "\n>>{0}".format(ifn)
+        pprint(ifi)
     d.close()
 

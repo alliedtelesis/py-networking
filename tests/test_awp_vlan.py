@@ -14,6 +14,7 @@ def test_device_vlan():
     print d.vlan
     d.close()
 
+@devicenotonline
 def test_get_show_interface():
     d=Device(host=test_device)
     d.open()

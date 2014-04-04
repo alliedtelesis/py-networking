@@ -197,6 +197,13 @@ class SSHd(Process):
             return self._listeningport.getHost().port
         return None
 
+    def reset(self):
+        manager = Manager()
+        self._motd.value = "AlliedWare Plus (TM) 5.4.2 09/25/13 12:57:26"
+        self._state.value = 0
+        for cmdid in self.cmds.keys():
+            del self.cmds[cmdid]
+
     def exit(self):
         reactor.stop()
 

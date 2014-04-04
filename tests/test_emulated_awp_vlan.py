@@ -28,8 +28,6 @@ vlan database
 !
 end
     """]}
-
-
     dut.cmds['setup2'] = {'cmd':'show vlan all',       'state':0, 'action':'PRINT','args':["""
 VLAN ID  Name            Type    State   Member ports                   
                                          (u)-Untagged, (t)-Tagged
@@ -59,7 +57,7 @@ VLAN ID  Name            Type    State   Member ports
                                          port1.0.50(u) 
 7       VLAN0007         STATIC  ACTIVE  port1.0.28(t) port1.0.29(u)
 20      "this is a long vlan name"
-                         STATIC  ACTIVE  port1.0.42(t) port1.0.43(t) 
+                         STATIC  ACTIVE  port1.0.42(u) port1.0.43(t) 
 10      VLAN0030         STATIC  ACTIVE  port1.0.28(t) port1.0.29(u)
                                          port1.0.19(t)
 """]}
@@ -151,7 +149,7 @@ VLAN ID  Name            Type    State   Member ports
     d.close()
 
 
-def test_addinterface(dut):
+def test_add_interface(dut):
     setup_dut(dut)
     dut.cmds['addinterface0'] = {'cmd': 'interface port1.0.30',      'state':0, 'action':'SET_STATE','args':[1]}
     dut.cmds['addinterface1'] = {'cmd': 'switchport access vlan 10', 'state':1, 'action':'SET_STATE','args':[2]}
@@ -188,8 +186,143 @@ VLAN ID  Name            Type    State   Member ports
 10      VLAN0030         STATIC  ACTIVE  port1.0.28(t) port1.0.29(u)
                                          port1.0.19(t) port1.0.30(u)
 """]}
+    dut.cmds['addinterface3'] = {'cmd': 'interface port1.0.30',                 'state':2, 'action':'SET_STATE','args':[3]}
+    dut.cmds['addinterface4'] = {'cmd': 'switchport mode trunk',                'state':3, 'action':'SET_STATE','args':[4]}
+    dut.cmds['addinterface5'] = {'cmd': 'switchport trunk allowed vlan add 10', 'state':4, 'action':'SET_STATE','args':[5]}
+    dut.cmds['addinterface6'] = {'cmd': 'show vlan all',                        'state':5, 'action':'PRINT','args':["""
+VLAN ID  Name            Type    State   Member ports                   
+                                         (u)-Untagged, (t)-Tagged
+======= ================ ======= ======= ====================================
+1       default          STATIC  ACTIVE  port1.0.1(u) port1.0.2(u) port1.0.3(u) 
+                                         port1.0.4(u) port1.0.5(u) port1.0.6(u) 
+                                         port1.0.7(u) port1.0.8(u) port1.0.9(u) 
+                                         port1.0.10(u) port1.0.11(u) 
+                                         port1.0.12(t) port1.0.13(u) 
+                                         port1.0.14(u) port1.0.15(u) 
+                                         port1.0.16(u) port1.0.17(u) 
+                                         port1.0.18(u) port1.0.19(u) 
+                                         port1.0.20(t) port1.0.21(u) 
+                                         port1.0.22(u) port1.0.23(u) 
+                                         port1.0.24(u) port1.0.25(u) 
+                                         port1.0.26(u) port1.0.27(u) 
+                                         port1.0.28(u) port1.0.29(u) 
+                                         port1.0.31(u) 
+                                         port1.0.32(u) port1.0.33(u) 
+                                         port1.0.34(u) port1.0.35(u) 
+                                         port1.0.36(u) port1.0.37(u) 
+                                         port1.0.38(u) port1.0.39(u) 
+                                         port1.0.40(u) port1.0.41(u) 
+                                         port1.0.44(u) port1.0.45(u) 
+                                         port1.0.46(u) port1.0.47(u) 
+                                         port1.0.48(u) port1.0.49(u) 
+                                         port1.0.50(u) 
+7       VLAN0007         STATIC  ACTIVE  port1.0.28(t) port1.0.29(u)
+20      "this is a long vlan name"
+                         STATIC  ACTIVE  port1.0.42(t) port1.0.43(t) 
+10      VLAN0030         STATIC  ACTIVE  port1.0.28(t) port1.0.29(u)
+                                         port1.0.19(t) port1.0.30(t)
+"""]}
+    dut.cmds['addinterface7'] = {'cmd':'show running-config', 'state':5, 'action': 'PRINT','args':["""
+!
+interface port1.0.1-1.0.50
+ switchport
+ switchport mode access
+!
+interface port1.0.30
+ switchport
+ switchport mode trunk
+!
+vlan database
+ vlan 10 name "marketing vlan"
+ vlan 10 state enable
+ vlan 7 name admin state enable
+ vlan 8-100 mtu 1200
+ vlan 6,7 mtu 1000
+!
+end
+    """]}
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol)
     d.open()
     d.vlan.add_interface(10,'port1.0.30')
     assert 'port1.0.30' in d.vlan[10]['untagged']
+    d.vlan.add_interface(10,'port1.0.30',tagged=True)
+    assert 'port1.0.30' in d.vlan[10]['tagged']
+    d.close()
+
+def test_delete_interface(dut):
+    setup_dut(dut)
+    dut.cmds['deleteinterface1'] = {'cmd': 'show vlan all',                        'state':0, 'action':'PRINT','args':["""
+VLAN ID  Name            Type    State   Member ports                   
+                                         (u)-Untagged, (t)-Tagged
+======= ================ ======= ======= ====================================
+1       default          STATIC  ACTIVE  port1.0.1(u) port1.0.2(u) port1.0.3(u) 
+                                         port1.0.4(u) port1.0.5(u) port1.0.6(u) 
+                                         port1.0.7(u) port1.0.8(u) port1.0.9(u) 
+                                         port1.0.10(u) port1.0.11(u) 
+                                         port1.0.12(t) port1.0.13(u) 
+                                         port1.0.14(u) port1.0.15(u) 
+                                         port1.0.16(u) port1.0.17(u) 
+                                         port1.0.18(u) port1.0.19(u) 
+                                         port1.0.20(t) port1.0.21(u) 
+                                         port1.0.22(u) port1.0.23(u) 
+                                         port1.0.24(u) port1.0.25(u) 
+                                         port1.0.26(u) port1.0.27(u) 
+                                         port1.0.28(u) port1.0.29(u) 
+                                         port1.0.31(u) 
+                                         port1.0.32(u) port1.0.33(u) 
+                                         port1.0.34(u) port1.0.35(u) 
+                                         port1.0.36(u) port1.0.37(u) 
+                                         port1.0.38(u) port1.0.39(u) 
+                                         port1.0.40(u) port1.0.41(u) 
+                                         port1.0.44(u) port1.0.45(u) 
+                                         port1.0.46(u) port1.0.47(u) 
+                                         port1.0.48(u) port1.0.49(u) 
+                                         port1.0.50(u) 
+7       VLAN0007         STATIC  ACTIVE  port1.0.28(t) port1.0.29(u)
+20      "this is a long vlan name"
+                         STATIC  ACTIVE  port1.0.42(u) port1.0.43(t) 
+10      VLAN0030         STATIC  ACTIVE  port1.0.28(t) port1.0.29(u)
+                                         port1.0.19(t) port1.0.30(t)
+    """]}
+    dut.cmds['deleteinterface2'] = {'cmd': 'interface port1.0.42',                 'state':0, 'action':'SET_STATE','args':[1]}
+    dut.cmds['deleteinterface3'] = {'cmd': 'no switchport access vlan',            'state':1, 'action':'SET_STATE','args':[2]}
+    dut.cmds['deleteinterface4'] = {'cmd': 'show vlan all',                        'state':2, 'action':'PRINT','args':["""
+VLAN ID  Name            Type    State   Member ports                   
+                                         (u)-Untagged, (t)-Tagged
+======= ================ ======= ======= ====================================
+1       default          STATIC  ACTIVE  port1.0.1(u) port1.0.2(u) port1.0.3(u) 
+                                         port1.0.4(u) port1.0.5(u) port1.0.6(u) 
+                                         port1.0.7(u) port1.0.8(u) port1.0.9(u) 
+                                         port1.0.10(u) port1.0.11(u) 
+                                         port1.0.12(t) port1.0.13(u) 
+                                         port1.0.14(u) port1.0.15(u) 
+                                         port1.0.16(u) port1.0.17(u) 
+                                         port1.0.18(u) port1.0.19(u) 
+                                         port1.0.20(t) port1.0.21(u) 
+                                         port1.0.22(u) port1.0.23(u) 
+                                         port1.0.24(u) port1.0.25(u) 
+                                         port1.0.26(u) port1.0.27(u) 
+                                         port1.0.28(u) port1.0.29(u) 
+                                         port1.0.31(u) 
+                                         port1.0.32(u) port1.0.33(u) 
+                                         port1.0.34(u) port1.0.35(u) 
+                                         port1.0.36(u) port1.0.37(u) 
+                                         port1.0.38(u) port1.0.39(u) 
+                                         port1.0.40(u) port1.0.41(u) 
+                                         port1.0.44(u) port1.0.45(u) 
+                                         port1.0.46(u) port1.0.47(u) 
+                                         port1.0.48(u) port1.0.49(u) 
+                                         port1.0.50(u) port1.0.42(u)
+7       VLAN0007         STATIC  ACTIVE  port1.0.28(t) port1.0.29(u)
+20      "this is a long vlan name"
+                         STATIC  ACTIVE  port1.0.43(t) 
+10      VLAN0030         STATIC  ACTIVE  port1.0.28(t) port1.0.29(u)
+                                         port1.0.19(t) port1.0.30(t)
+    """]}
+
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol)
+    d.open()
+    assert 'port1.0.42'in d.vlan[20]['untagged']
+    d.vlan.delete_interface(20,'port1.0.42')
+    assert 'port1.0.42'in d.vlan[1]['untagged']
     d.close()

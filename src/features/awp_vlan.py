@@ -90,10 +90,9 @@ class awp_vlan(Feature):
         if vid not in self._vlan:
             raise ValueError('{0} is not a valid vlan id'.format(vid))
 
-        for v in self._vlan:
-            if 'tagged' in v and ifn in v['tagged']:
+        if 'tagged' in self._vlan[vid] and ifn in self._vlan[vid]['tagged']:
                 tagged = True
-            elif 'untagged' in v and ifn in v['untagged']:
+        if 'untagged' in self._vlan[vid] and ifn in self._vlan[vid]['untagged']:
                 tagged = False
         else:
             raise ValueError('interface {0} does not belong to vlan {1}'.format(ifn,vid))

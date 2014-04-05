@@ -26,7 +26,10 @@ class awp_vlan(Feature):
         cmd = "vlan database\nvlan {0}".format(vlan_id)
         if len(self._get_vlan_ids(vlan_id)) == 1:
             if 'name' in kwargs:
-                cmd += " name {0}".format(kwargs['name'])
+                if ' ' in kwargs['name']:
+                    cmd += ' name "{0}"'.format(kwargs['name'])
+                else:
+                    cmd += " name {0}".format(kwargs['name'])
         if 'mtu' in kwargs:
             cmd += " mtu {0}".format(int(kwargs['mtu']))
         if 'state' in kwargs:

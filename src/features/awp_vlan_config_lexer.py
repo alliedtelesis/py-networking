@@ -49,7 +49,11 @@ class VlanConfigLexer(object):
 
     def t_vlanid_name(self, t):
         r'name\s+(\"[^\"]*\"|\w+)'
-        t.value = (t.lexer.id, re.split('\s+',t.value,maxsplit=1)[1])
+        v = re.split('\s+',t.value,maxsplit=1)
+        if v[1].startswith('"') and v[1].endswith('"'):
+            t.value = (t.lexer.id, v[1][1:-1])
+        else:
+            t.value = (t.lexer.id, v[1])
         return t
 
     def t_vlanid_vlanrange_mtu(self, t):

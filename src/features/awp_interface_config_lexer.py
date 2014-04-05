@@ -41,17 +41,19 @@ class InterfaceConfigLexer(object):
         t.lexer.id = t.value
 
     def t_ifport_ifportrange_ifvlan_description(self, t):
-        r'description\s+\w+\s*\n'
-        v = re.split('\s+', t.value, maxsplit=2)
-        t.value = (t.lexer.id, v[1])
+        r'description\s+(\"[^\"]*\"|\w+)'
+        v = re.split('\s+',t.value,maxsplit=1)
+        if v[1].startswith('"') and v[1].endswith('"'):
+            t.value = (t.lexer.id, v[1][1:-1])
+        else:
+            t.value = (t.lexer.id, v[1])
         return t
 
     def t_ifport_ifportrange_ifvlan_end(self, t):
         r'!.*'
-        t.lexer.lineno += len(t.value)
         t.lexer.pop_state()
 
-    def t_INITIAL_newline(self, t):
+    def t_ANY_newline(self, t):
         r'\n+'
         t.lexer.lineno += len(t.value)
 

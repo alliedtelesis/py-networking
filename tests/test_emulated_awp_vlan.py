@@ -61,6 +61,7 @@ VLAN ID  Name            Type    State   Member ports
 10      VLAN0030         STATIC  ACTIVE  port1.0.28(t) port1.0.29(u)
                                          port1.0.19(t)
 """]}
+
 def test_create(dut):
     setup_dut(dut)
     dut.cmds['create0'] = {'cmd': 'vlan 20 name admin mtu 1300', 'state':0, 'action':'SET_STATE','args':[1]}
@@ -84,21 +85,33 @@ def test_exist(dut):
     d.open()
     assert d.vlan[7]['state'] == 'enable'
     assert d.vlan[7]['name'] == 'admin'
+    assert d.vlan[10]['name'] == 'marketing vlan'
     d.close()
 
 def test_update(dut):
     setup_dut(dut)
-    dut.cmds['update0'] = {'cmd': 'vlan 20 mtu 1400',    'state':0, 'action':'SET_STATE','args':[3]}
-    dut.cmds['update1'] = {'cmd': 'show running-config', 'state':3, 'action':'PRINT','args':["""
+    dut.cmds['update0'] = {'cmd': 'vlan 20 name vlan_name mtu 1400', 'state':0, 'action':'SET_STATE','args':[1]}
+    dut.cmds['update1'] = {'cmd': 'show running-config',             'state':1, 'action':'PRINT','args':["""
 !
 vlan database
- vlan 20 name admin state enable mtu 1400
+ vlan 20 name vlan_name state enable mtu 1400
+! 
+    """]}
+    dut.cmds['update2'] = {'cmd': 'vlan 20 name "vlan name" mtu 1400', 'state':1, 'action':'SET_STATE','args':[2]}
+    dut.cmds['update3'] = {'cmd': 'show running-config',               'state':2, 'action':'PRINT','args':["""
+!
+vlan database
+ vlan 20 name "vlan name" state enable mtu 1400
 ! 
     """]}
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol)
     d.open()
-    d.vlan.update(20, mtu=1400)
+    d.vlan.update(20, mtu=1400, name='vlan_name')
     assert d.vlan[20]['mtu'] == 1400
+    assert d.vlan[20]['name'] == 'vlan_name'
+    d.vlan.update(20, mtu=1400, name='vlan name')
+    assert d.vlan[20]['mtu'] == 1400
+    assert d.vlan[20]['name'] == 'vlan name'
     d.close()
 
 def test_delete(dut):

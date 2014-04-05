@@ -16,8 +16,11 @@ class VlanStatusLexer(object):
     def t_INITIAL_VLAN(self, t):
         r'\d+\s+(\w+|\"[^\"]+\")+\s*\n*\s*(STATIC|DYNAMIC)\s+(ACTIVE)'
         if t.lexer.lineno >3:
-            v = re.match(r'(\d+)\s+(\w+|\"[^\"]+\")+\s*\n*\s*(STATIC|DYNAMIC)\s+(ACTIVE)',t.value)
-            t.value = (v.group(1),v.group(2),v.group(3),v.group(4))
+            v = re.match(r'(\d+)\s+((\w+)|\"([^\"]+)\")+\s*\n*\s*(STATIC|DYNAMIC)\s+(ACTIVE)',t.value)
+            if v.group(3):
+                t.value = (v.group(1),v.group(3),v.group(6),v.group(6))
+            else:
+                t.value = (v.group(1),v.group(4),v.group(5),v.group(6))
             t.lexer.id = v.group(1)
             return t
 

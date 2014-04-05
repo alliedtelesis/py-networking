@@ -12,7 +12,7 @@ class InterfaceStatusLexer(object):
 
     tokens = (
         'link',
-        'admin_state',
+        'enable',
         'hardware',
         'current_duplex',
         'current_speed',
@@ -42,12 +42,18 @@ class InterfaceStatusLexer(object):
 
     def t_if_lo_vlan_link(self,t):
         r'\s+Link\sis\s(UP|DOWN)'
-        t.value = (t.lexer.id,re.split('\s+',t.value)[3])
+        if re.split('\s+',t.value)[3] == 'UP':
+            t.value = (t.lexer.id,True)
+        else:
+            t.value = (t.lexer.id,False)
         return t
 
-    def t_if_lo_vlan_admin_state(self,t):
+    def t_if_lo_vlan_enable(self,t):
         r'administrative\s+state\s+is\s+(UP|DOWN)'
-        t.value = (t.lexer.id,re.split('\s+',t.value)[3])
+        if re.split('\s+',t.value)[3] == 'UP':
+            t.value = (t.lexer.id,True)
+        else:
+            t.value = (t.lexer.id,False)
         return t
 
     def t_if_lo_vlan_current_duplex(self,t):

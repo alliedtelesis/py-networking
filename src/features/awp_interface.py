@@ -22,7 +22,30 @@ class awp_interface(Feature):
         self._update_interface()
 
     def update(self, ifn, **kwargs):
-        pass
+        self._update_interface()
+        if ifn not in self._interface.keys():
+            raise ValueError('interface {0} does not exist'.format(ifn))
+        
+        cmd = "interface {0}".format(ifn)
+        run_cmd = False
+        if 'enable' in kwargs:
+            if self._interface[ifn]['enable'] != kwargs['enable']:
+                run_cmd = True
+                if kwargs['enable']:
+                    cmd += '\nno shutdown'
+                else:
+                    cmd += '\nshutdown'
+        elif 'description' in kwargs:
+            description = kwargs['description']
+            if ' ' in description:
+                description = '"{0}"'.format(description)
+            if 'description' in self._interface[ifn] and self._interface[ifn]['description'] != description:
+                run_cmd = True
+                cmd +='\ndescription {0}'.format(description) 
+    
+        if run_cmd:
+            self._device.cfg.send_config(cmd)
+            self._device.load_config()
 
     def items(self):
         self._update_interface()
@@ -36,7 +59,7 @@ class awp_interface(Feature):
 
     def __getitem__(self, ifn):
         self._update_interface()
-        if ifn in self._interface:
+        if ifn in self._interface.keys():
             return self._interface[ifn]
         raise KeyError('{0} key does not exist'.format(key))
 

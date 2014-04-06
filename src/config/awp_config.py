@@ -13,7 +13,7 @@ class awp_config(object):
     def get_config(self):
         config = self._device.cmd('show running-config').replace('\r','').split('\n')
         self._config = {}
-        self._config='\n'.join(config[:-1])
+        self._config='\n'.join(config)
         return self._config
 
     def send_config(self, config):

@@ -68,6 +68,7 @@ setup(name             = 'py-networking',
                             'twisted',
                             'pyasn1',
                          ],
+      namespace_packages=['pynetworking'],
       tests_require    = [
                             'tox'
                          ],

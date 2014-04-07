@@ -43,12 +43,17 @@ class Device(object):
         if self._protocol == 'ssh':
             if self._conn.get_transport() != None and self._conn.get_transport().is_active():
                 return True
+            else:
+                self.open()
+            	if self._conn.get_transport() != None and self._conn.get_transport().is_active():
+                	return True
         return False
 
     def open(self):
         if self._protocol == 'ssh':
             if self._conn.get_transport() == None or not self._conn.get_transport().is_active():
                 self._conn.connect(self._host, self._port,self._username, self._password)
+                self._conn.get_transport().set_keepalive(1)
         else:
             raise IOError("Open failed on {0} with protocol {1}".format(self._host,self._protocol))
             return

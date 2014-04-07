@@ -123,6 +123,10 @@ def test_enable(dut):
               } 
         show_interface += show_interface_template.render(env).encode('ascii','ignore')
     dut.cmds['enable3'] = {'cmd': 'show interface',       'state':2, 'action':'PRINT','args':[show_interface]}
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol)
+    d.open()
+    assert d.interface['port0.0.10']['enable'] == False
+    d.interface.update('port0.0.10',enable=True)
     dut.cmds['enable4'] = {'cmd': 'interface port0.0.10', 'state':2, 'action':'SET_STATE','args':[3]}
     dut.cmds['enable5'] = {'cmd': 'shutdown',             'state':3, 'action':'SET_STATE','args':[4]}
     show_interface = ''
@@ -135,10 +139,6 @@ def test_enable(dut):
               } 
         show_interface += show_interface_template.render(env).encode('ascii','ignore')
     dut.cmds['enable6'] = {'cmd': 'show interface',       'state':4, 'action':'PRINT','args':[show_interface]}
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol)
-    d.open()
-    assert d.interface['port0.0.10']['enable'] == False
-    d.interface.update('port0.0.10',enable=True)
     assert d.interface['port0.0.10']['enable'] == True
     d.interface.update('port0.0.10',enable=True)
     assert d.interface['port0.0.10']['enable'] == True

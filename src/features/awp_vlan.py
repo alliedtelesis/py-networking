@@ -120,6 +120,8 @@ class awp_vlan(Feature):
         self._update_vlan()
         return str(self._vlan)
 
+    __repr__ = __str__
+
     def __getitem__(self, vid):
         self._update_vlan()
         #print "getitem"

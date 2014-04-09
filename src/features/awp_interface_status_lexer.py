@@ -2,6 +2,7 @@
 import re
 import ply.lex as lex
 from pprint import pprint
+from collections import OrderedDict
 
 class InterfaceStatusLexer(object):
     states = (
@@ -104,7 +105,7 @@ class InterfaceStatusLexer(object):
 
     def run(self, data):
         self.lexer.input(data)
-        result = {}
+        result = OrderedDict()
         for tok in self.lexer:
             if tok.value[0] in result.keys():
                 result[tok.value[0]][tok.type.replace('_',' ')]=tok.value[1]

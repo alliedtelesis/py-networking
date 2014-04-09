@@ -2,6 +2,7 @@
 import re
 import ply.lex as lex
 from pprint import pprint
+from collections import OrderedDict
 
 class VlanStatusLexer(object):
     tokens = (
@@ -41,7 +42,7 @@ class VlanStatusLexer(object):
 
     def run(self, data):
         self.lexer.input(data)
-        result = {}
+        result = OrderedDict()
         for tok in self.lexer:
             if tok.type == 'VLAN':
                 result[tok.value[0]] = {

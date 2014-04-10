@@ -5,6 +5,10 @@ import ply.lex as lex
 from pprint import pprint
 from pynetworking.features.awp_interface_config_lexer import InterfaceConfigLexer
 from pynetworking.features.awp_interface_status_lexer import InterfaceStatusLexer
+import logging
+import json
+
+log = logging.getLogger(__name__)
 
 class awp_interface(Feature):
     """
@@ -17,9 +21,11 @@ class awp_interface(Feature):
         self._device = device
 
     def load_config(self, config):
+        log.debug("Loading config for awp_interface {0}".format(config))
         l = InterfaceConfigLexer()
         self._interface_config = l.run(config)
-        self._update_interface()
+        log.debug("Loaded config for awp_interface {0}".format(str(self._interface_config)))
+        #self._update_interface()
 
     def update(self, ifn, **kwargs):
         self._update_interface()
@@ -39,9 +45,11 @@ class awp_interface(Feature):
             description = kwargs['description']
             if ' ' in description:
                 description = '"{0}"'.format(description)
-            if 'description' in self._interface[ifn] and self._interface[ifn]['description'] != description:
-                run_cmd = True
-                cmd +='\ndescription {0}'.format(description) 
+            if 'description' in self._interface[ifn] and self._interface[ifn]['description'] == description:
+                return
+
+            run_cmd = True
+            cmd +='\ndescription {0}'.format(description) 
     
         if run_cmd:
             self._device.cfg.send_config(cmd)
@@ -53,7 +61,7 @@ class awp_interface(Feature):
 
     def __str__(self):
         self._update_interface()
-        return str(self._interface)
+        return json.dumps(self._interface)
 
     __repr__ = __str__
 
@@ -73,12 +81,17 @@ class awp_interface(Feature):
             return [ifn]
 
     def _update_interface(self):
+        self.load_config(self._device.config)
+        log.debug("Updating interface for awp_interface with config{0}".format(str(self._interface_config)))
         l = InterfaceStatusLexer()
         self._interface = l.run(self._device.cmd("show interface"))
+        log.debug("Loading status for awp_interface {0}".format(str(self._interface)))
         for ifn,ifi in self._interface.items():
             for ifr,ifc in self._interface_config.items():
                 if ifn in self._get_interface_ns(ifr):
+                    log.debug("Updating {0} with {1}".format(ifn,ifc))
                     self._interface[ifn] = dict(self._interface[ifn].items() + ifc.items())
+        log.debug("Loaded awp_interface {0}".format(str(self._interface)))
 
 
 

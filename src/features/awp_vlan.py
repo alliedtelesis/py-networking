@@ -5,6 +5,7 @@ from pynetworking.features.awp_vlan_status_lexer import VlanStatusLexer
 from pynetworking.features.awp_vlan_config_interface_lexer import VlanInterfaceConfigLexer
 import re
 from pprint import pprint
+import json
 
 class awp_vlan(Feature):
     """
@@ -20,9 +21,9 @@ class awp_vlan(Feature):
         self._vlan_config = l.run(config)
         l = VlanInterfaceConfigLexer()
         self._interface_config = l.run(config)
-        self._update_vlan()
 
     def create(self, vlan_id, **kwargs):
+        self._update_vlan()
         cmd = "vlan database\nvlan {0}".format(vlan_id)
         if len(self._get_vlan_ids(vlan_id)) == 1:
             if 'name' in kwargs:
@@ -39,14 +40,16 @@ class awp_vlan(Feature):
                 raise ValueError("{0} is and invalid vlan state".format(kwargs['state'])) 
 
         self._device.cfg.send_config(cmd)
-        self._device.load_config()
+        #self._device.load_config()
 
     def delete(self, vlan_id):
+        self._update_vlan()
         self._get_vlan_ids(vlan_id)
         self._device.cfg.send_config("vlan database\nno vlan {0}".format(vlan_id))
-        self._device.load_config()
+        #self._device.load_config()
 
     def update(self, vlan_id, **kwargs):
+        self._update_vlan()
         vlan_ids = self._get_vlan_ids(vlan_id)
         existing_vlan_ids = []
         for i in self._vlan_config.keys():
@@ -84,7 +87,7 @@ class awp_vlan(Feature):
         else:
             raise ValueError('interface {0} cannot be added to vlan {1}'.format(ifn,vid))
 
-        self._device.load_config()
+        #self._device.load_config()
 
 
     def delete_interface(self, vid, ifn):
@@ -114,11 +117,15 @@ class awp_vlan(Feature):
         else:
             raise ValueError('interface {0} cannot be delete from vlan {1}'.format(ifn,vid))
 
-        self._device.load_config()
+        #self._device.load_config()
+
+    def items(self):
+        self._update_vlan()
+        return self._vlan.items()
 
     def __str__(self):
         self._update_vlan()
-        return str(self._vlan)
+        return json.dumps(self._vlan)
 
     __repr__ = __str__
 
@@ -142,6 +149,7 @@ class awp_vlan(Feature):
         raise ValueError('{0} is not a valid vlan id, range or list'.format(vlan_id))
 
     def _update_vlan(self):
+        self.load_config(self._device.config)
         l = VlanStatusLexer()
         vlan_cfg = self._device.cmd("show vlan all")
         vlan = l.run(vlan_cfg)

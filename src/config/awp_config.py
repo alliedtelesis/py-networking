@@ -2,6 +2,9 @@
 import re
 from time import sleep
 import socket
+import logging
+
+log = logging.getLogger(__name__)
 
 class awp_config(object):
     """
@@ -12,11 +15,10 @@ class awp_config(object):
 
     def get_config(self):
         config = self._device.cmd('show running-config').replace('\r','').split('\n')
-        self._config = {}
-        self._config='\n'.join(config)
-        return self._config
+        return '\n'.join(config)
 
     def send_config(self, config):
+        log.debug("Executing config {0}".format(config))
         chan = self._device.get_channel()
         if chan:
             try:

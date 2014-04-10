@@ -7,6 +7,9 @@ from os import listdir
 from os.path import dirname, isfile, join
 from jinja2 import Template
 from pynetworking import Feature
+import logging
+
+log = logging.getLogger(__name__)
 
 class Device(object):
     def __init__(self, host, username='manager', password='friend', protocol='ssh', port='auto', os='auto'):
@@ -37,26 +40,26 @@ class Device(object):
 
     @property
     def config(self):
-        return self._config
+        return self.cfg.get_config()
 
     def ping(self):
         if self._protocol == 'ssh':
-            if self._conn.get_transport() != None and self._conn.get_transport().is_active():
+            try:
+            	self._conn.connect(self._host, self._port,self._username, self._password)
+                self._conn.close()
                 return True
-            else:
-                self.open()
-            	if self._conn.get_transport() != None and self._conn.get_transport().is_active():
-                	return True
+            except:
+                pass
         return False
 
     def open(self):
-        if self._protocol == 'ssh':
-            if self._conn.get_transport() == None or not self._conn.get_transport().is_active():
-                self._conn.connect(self._host, self._port,self._username, self._password)
-                self._conn.get_transport().set_keepalive(1)
-        else:
-            raise IOError("Open failed on {0} with protocol {1}".format(self._host,self._protocol))
-            return
+#        if self._protocol == 'ssh':
+#            if self._conn.get_transport() == None or not self._conn.get_transport().is_active():
+#                self._conn.connect(self._host, self._port,self._username, self._password)
+#                self._conn.get_transport().set_keepalive(1)
+#        else:
+#            raise IOError("Open failed on {0} with protocol {1}".format(self._host,self._protocol))
+#            return
         self._load_core_facts()
         self._load_features()
         self.load_config()
@@ -67,13 +70,19 @@ class Device(object):
 
     def get_channel(self):
         if self._protocol == 'ssh':
+            self._conn.connect(self._host, self._port,self._username, self._password)
             return self._conn.invoke_shell()
         return None
 
     def cmd(self, cmd):
+        log.debug("Executing command {0}".format(cmd))
         if self._protocol == 'ssh':
+            self._conn.connect(self._host, self._port,self._username, self._password)
             stdin, stdout, stderr = self._conn.exec_command(cmd)
-            return stdout.read()
+            out = stdout.read()
+            self._conn.close()
+            log.debug("Return for command {0}: {1}".format(cmd,out))
+            return out
         return ""
 
     def _load_core_facts(self):
@@ -119,9 +128,9 @@ class Device(object):
                 print "Error loading class {0} for configuration management".format(self._models['config'])
                 raise
 
-        self._config = self.cfg.get_config()
+        cfg = self.cfg.get_config()
         for fname,fobj in self._features.items():
-            fobj.load_config(self._config)
+            fobj.load_config(cfg)
         
 
 

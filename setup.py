@@ -67,8 +67,8 @@ setup(name             = 'py-networking',
                             'ply',
                             'twisted',
                             'pyasn1',
+                            'pyzmq',
                          ],
-      namespace_packages=['pynetworking'],
       tests_require    = [
                             'tox'
                          ],

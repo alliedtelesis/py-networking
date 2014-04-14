@@ -40,6 +40,9 @@ class SSHProtocol(recvline.HistoricRecvLine):
         return getattr(self, 'do_' + cmd, None)
 
     def lineReceived(self, line):
+        log.msg("new line "+line)
+        if line == '' or re.match('\s+', line):
+            self.showPrompt()
         line = line.strip()
         if line:
             log.msg('Executing shell command "{0}"'.format(line))

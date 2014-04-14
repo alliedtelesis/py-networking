@@ -4,7 +4,8 @@ from time import sleep
 from paramiko.rsakey import RSAKey
 from pprint import pprint
 
-def test_setup_emulated_device(dut):
+def setup_dut(dut):
+    dut.reset()
     dut.cmds['show_system'] =         {'cmd':'show system',         'state':0, 'action':'PRINT','args':["""
 Switch System Status                                   Fri Mar 21 15:45:13 2014
 
@@ -49,17 +50,23 @@ Build type : RELEASE
  """]}
 
 def test_device_open_close(dut):
+    setup_dut(dut)
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol)
     d.open()
+    print d.cmd("show system")
+    print d.cmd("show version")
     d.close()
 
 def test_device_ping(dut):
+    setup_dut(dut)
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol)
+    print dut.port
     d.open()
     assert d.ping()
     d.close()
 
 def test_device_facts(dut):
+    setup_dut(dut)
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol)
     d.open()
     assert d.facts['build_date'] == 'Wed Sep 25 12:57:26 NZST 2013'
@@ -69,6 +76,7 @@ def test_device_facts(dut):
     d.close()
 
 def test_device_config(dut):
+    setup_dut(dut)
     config = """
 !
 service password-encryption
@@ -116,7 +124,7 @@ line con 0
 line vty 0 4
 !
 end
-    """
+"""
     dut.cmds['show_running-config'] = {'cmd':'show running-config', 'state':0, 'action':'PRINT','args':[config]}
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol)
     d.open()

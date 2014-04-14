@@ -3,36 +3,43 @@ from paramiko import SSHClient, AutoAddPolicy
 from pprint import pprint
 import yaml
 import re
-from os import listdir
+import logging
+import sys
+import zmq
+import socket
+import json
+from os import listdir,unlink
 from os.path import dirname, isfile, join
 from jinja2 import Template
 from pynetworking import Feature
-import logging
+from pynetworking import SSHProxy
+from multiprocessing import Process
+from time import sleep
+from tempfile import NamedTemporaryFile
 
 log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
 class Device(object):
     def __init__(self, host, username='manager', password='friend', protocol='ssh', port='auto', os='auto'):
         if protocol not in ('telnet','ssh','serial'):
             raise ValueError("Unsupported protocol "+protocol)
+        self._proxy = None
+        self._proxy_url = ""
         self._host = host
         self._username = username
         self._password = password
         self._protocol = protocol
+        self._port = port
         self._config = ''
-        if protocol == 'ssh':
-            self._conn = SSHClient()
-            self._conn.set_missing_host_key_policy(AutoAddPolicy())
-            if port == 'auto':
-                self._port = 22
-            else:
-                self._port = port
-        else:
-            self._conn = None
         self._os = os
         self._facts = {}
         if os != 'auto':
             self._facts['os'] = os
+        if protocol == 'ssh':
+            self._proxy_target = SSHProxy
+        else:
+            raise ValueError("Protocol {0} is not supported".format(protocol))
 
     @property
     def facts(self):
@@ -43,47 +50,50 @@ class Device(object):
         return self.cfg.get_config()
 
     def ping(self):
-        if self._protocol == 'ssh':
-            try:
-            	self._conn.connect(self._host, self._port,self._username, self._password)
-                self._conn.close()
-                return True
-            except:
-                pass
-        return False
+        try:
+            self.cmd('')
+            return True
+        except:
+            return False
 
     def open(self):
-#        if self._protocol == 'ssh':
-#            if self._conn.get_transport() == None or not self._conn.get_transport().is_active():
-#                self._conn.connect(self._host, self._port,self._username, self._password)
-#                self._conn.get_transport().set_keepalive(1)
-#        else:
-#            raise IOError("Open failed on {0} with protocol {1}".format(self._host,self._protocol))
-#            return
+        if not self._proxy:
+             self._proxy_ipc_file = NamedTemporaryFile().name
+             self._proxy_url = "ipc://{0}".format(self._proxy_ipc_file)
+             log.debug("Creating process {0} with zmq url {1}".format('cq-{0}'.format(self._host), self._proxy_url))
+             self._proxy = Process(name='cq-{0}'.format(self._host),
+                                        target=self._proxy_target,
+                                        args=(self._proxy_url, self._host, self._port,self._username, self._password)
+                                       )
+             self._proxy.start()
         self._load_core_facts()
         self._load_features()
         self.load_config()
 
     def close(self):
-        if self._protocol == 'ssh':
-            self._conn.close()
+        if self._proxy and self._proxy.is_alive():
+            self._proxy.terminate()
+            self._proxy.join()
+            self._proxy = None
+            unlink(self._proxy_ipc_file)
 
-    def get_channel(self):
-        if self._protocol == 'ssh':
-            self._conn.connect(self._host, self._port,self._username, self._password)
-            return self._conn.invoke_shell()
-        return None
+    def cmds(self, cmds):
+        context = zmq.Context()
+        socket = context.socket(zmq.REQ)
+        socket.connect(self._proxy_url)
+        socket.send_string(json.dumps(cmds))
+        return True
 
     def cmd(self, cmd):
         log.debug("Executing command {0}".format(cmd))
-        if self._protocol == 'ssh':
-            self._conn.connect(self._host, self._port,self._username, self._password)
-            stdin, stdout, stderr = self._conn.exec_command(cmd)
-            out = stdout.read()
-            self._conn.close()
-            log.debug("Return for command {0}: {1}".format(cmd,out))
-            return out
-        return ""
+        if type(cmd) is str:
+             cmd = {'cmds':[{'cmd':cmd,'prompt':''}]}
+        context = zmq.Context()
+        socket = context.socket(zmq.REQ)
+        socket.RCVTIMEO = 3000
+        socket.connect(self._proxy_url)
+        socket.send_string(json.dumps(cmd),zmq.NOBLOCK)
+        return socket.recv()
 
     def _load_core_facts(self):
         facts_dir = "{0}/facts/".format(dirname(__file__))
@@ -131,6 +141,4 @@ class Device(object):
         cfg = self.cfg.get_config()
         for fname,fobj in self._features.items():
             fobj.load_config(cfg)
-        
-
 

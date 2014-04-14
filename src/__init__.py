@@ -18,6 +18,7 @@ warnings.filterwarnings(
       DeprecationWarning
 )
 
+from pynetworking.Proxy import SSHProxy
 from pynetworking.Device import Device
 from pynetworking.Feature import Feature
 

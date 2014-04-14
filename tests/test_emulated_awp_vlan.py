@@ -64,6 +64,7 @@ VLAN ID  Name            Type    State   Member ports
 
 def test_create(dut):
     setup_dut(dut)
+    print dut.port
     dut.cmds['create0'] = {'cmd': 'vlan 20 name admin mtu 1300', 'state':0, 'action':'SET_STATE','args':[1]}
     dut.cmds['create1'] = {'cmd': 'show running-config',         'state':1, 'action':'PRINT'    ,'args':["""
 !

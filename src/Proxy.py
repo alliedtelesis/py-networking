@@ -31,7 +31,6 @@ def SSHProxy(url, host, port, username, password):
     conn.connect(host, port,username, password)
     while True:
         cmd = json.loads(socket.recv())
-        pprint(cmd)
         log.debug("SSHProxy command".format(cmd))
         if 'cmds' not in cmd and 'cmd' not in cmd['cmds'][0]:
             log.debug("Commands missing")
@@ -42,7 +41,6 @@ def SSHProxy(url, host, port, username, password):
             chan.recv(999)
             ret=''
             for c in cmd['cmds']:
-               print("Command {0}".format(c['cmd']))
                chan.send(c['cmd']+'\n')
                ret += _get_reply(chan, c['cmd'],c['prompt'])
             chan.close()
@@ -64,7 +62,6 @@ def _get_reply(chan, cmd, prompt=''):
          buff = ''
          while True:
              buff += chan.recv(999)
-             print "buffer >{0}<".format(buff)
              if re.search(prompt,buff):
                  break
     except socket.timeout:

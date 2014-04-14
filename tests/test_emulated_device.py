@@ -53,14 +53,11 @@ def test_device_open_close(dut):
     setup_dut(dut)
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol)
     d.open()
-    print d.cmd("show system")
-    print d.cmd("show version")
     d.close()
 
 def test_device_ping(dut):
     setup_dut(dut)
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol)
-    print dut.port
     d.open()
     assert d.ping()
     d.close()

@@ -18,7 +18,7 @@ from time import sleep
 from tempfile import NamedTemporaryFile
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
+#log.setLevel(logging.DEBUG)
 
 class Device(object):
     def __init__(self, host, username='manager', password='friend', protocol='ssh', port='auto', os='auto'):
@@ -76,13 +76,6 @@ class Device(object):
             self._proxy.join()
             self._proxy = None
             unlink(self._proxy_ipc_file)
-
-    def cmds(self, cmds):
-        context = zmq.Context()
-        socket = context.socket(zmq.REQ)
-        socket.connect(self._proxy_url)
-        socket.send_string(json.dumps(cmds))
-        return True
 
     def cmd(self, cmd):
         log.debug("Executing command {0}".format(cmd))

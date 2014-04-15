@@ -29,15 +29,15 @@ Interface {{ interface }}
 
 def setup_dut(dut):
     dut.reset()
-    dut.cmds['setup0'] = {'cmd':'show version', 'state':0, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd':'show version', 'state':0, 'action':'PRINT','args':["""
 
 AlliedWare Plus (TM) 5.4.2 09/25/13 12:57:26
 
 Build name : x600-5.4.2-3.14.rel
 Build date : Wed Sep 25 12:57:26 NZST 2013
 Build type : RELEASE
-    """]}
-    dut.cmds['setup1'] = {'cmd':'show running-config', 'state':0, 'action':'PRINT','args':["""
+    """]})
+    dut.add_cmd({'cmd':'show running-config', 'state':0, 'action':'PRINT','args':["""
 !
 interface port0.0.1-0.0.10
  description test1
@@ -62,7 +62,7 @@ vlan database
  vlan 6,7 mtu 1000
 !
 end
-    """]}
+    """]})
 
 def test_config(dut):
     setup_dut(dut)
@@ -90,7 +90,7 @@ def test_config(dut):
                 'hardware' : 'VLAN',
                } 
         show_interface += show_interface_template.render(env).encode('ascii','ignore')
-    dut.cmds['config0'] = {'cmd':'show interface', 'state':0, 'action':'PRINT','args':[show_interface]}
+    dut.add_cmd({'cmd':'show interface', 'state':0, 'action':'PRINT','args':[show_interface]})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol)
     d.open()
     assert d.facts['os'] == 'awp'
@@ -110,9 +110,10 @@ def test_enable(dut):
                 'hardware' : 'Ethernet',
               } 
         show_interface += show_interface_template.render(env).encode('ascii','ignore')
-    dut.cmds['enable0'] = {'cmd': 'show interface',       'state':0, 'action':'PRINT','args':[show_interface]}
-    dut.cmds['enable1'] = {'cmd': 'interface port0.0.10', 'state':0, 'action':'SET_STATE','args':[1]}
-    dut.cmds['enable2'] = {'cmd': 'no shutdown',          'state':1, 'action':'SET_STATE','args':[2]}
+    dut.add_cmd({'cmd': 'show interface',       'state':0, 'action':'PRINT','args':[show_interface]})
+    dut.add_cmd({'cmd': 'interface port0.0.10', 'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
+    dut.add_cmd({'cmd': 'interface port0.0.10', 'state':0, 'action':'SET_STATE','args':[1]})
+    dut.add_cmd({'cmd': 'no shutdown',          'state':1, 'action':'SET_STATE','args':[2]})
     show_interface = ''
     for interface in range(1,51):
         env = { 
@@ -122,13 +123,10 @@ def test_enable(dut):
                 'hardware' : 'Ethernet',
               } 
         show_interface += show_interface_template.render(env).encode('ascii','ignore')
-    dut.cmds['enable3'] = {'cmd': 'show interface',       'state':2, 'action':'PRINT','args':[show_interface]}
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol)
-    d.open()
-    assert d.interface['port0.0.10']['enable'] == False
-    d.interface.update('port0.0.10',enable=True)
-    dut.cmds['enable4'] = {'cmd': 'interface port0.0.10', 'state':2, 'action':'SET_STATE','args':[3]}
-    dut.cmds['enable5'] = {'cmd': 'shutdown',             'state':3, 'action':'SET_STATE','args':[4]}
+    dut.add_cmd({'cmd': 'show interface',       'state':2, 'action':'PRINT','args':[show_interface]})
+    dut.add_cmd({'cmd': 'interface port0.0.10', 'state':2, 'action':'SET_PROMPT','args':['(config-if)#']})
+    dut.add_cmd({'cmd': 'interface port0.0.10', 'state':2, 'action':'SET_STATE','args':[3]})
+    dut.add_cmd({'cmd': 'shutdown',             'state':3, 'action':'SET_STATE','args':[4]})
     show_interface = ''
     for interface in range(1,51):
         env = { 
@@ -138,7 +136,11 @@ def test_enable(dut):
                 'hardware' : 'Ethernet',
               } 
         show_interface += show_interface_template.render(env).encode('ascii','ignore')
-    dut.cmds['enable6'] = {'cmd': 'show interface',       'state':4, 'action':'PRINT','args':[show_interface]}
+    dut.add_cmd({'cmd': 'show interface',       'state':4, 'action':'PRINT','args':[show_interface]})
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol)
+    d.open()
+    assert d.interface['port0.0.10']['enable'] == False
+    d.interface.update('port0.0.10',enable=True)
     assert d.interface['port0.0.10']['enable'] == True
     d.interface.update('port0.0.10',enable=True)
     assert d.interface['port0.0.10']['enable'] == True

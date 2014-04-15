@@ -33,5 +33,3 @@ class awp_config(object):
         return self._device.cmd(cmds)
 
 
-
-

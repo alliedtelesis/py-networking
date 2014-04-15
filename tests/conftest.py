@@ -1,6 +1,9 @@
 import pytest
 import sys
 import re
+import os
+from hashlib import md5
+from pprint import pprint
 from multiprocessing import Process, Value, Array, Manager
 from ctypes import c_char_p, c_int
 from time import sleep
@@ -14,7 +17,6 @@ from twisted.internet.error import ProcessTerminated,ProcessDone
 from zope.interface import implements
 from twisted.python import failure, log, logfile
 from os.path import join
-import os
 
 class SSHProtocol(recvline.HistoricRecvLine):
     def __init__(self, user, parent, cmd=None):
@@ -58,18 +60,17 @@ class SSHProtocol(recvline.HistoricRecvLine):
                     self.terminal.nextLine()
             else:
                 ret = None
-                state = 0
-                for cmd,action in self.parent.cmds.items():
-                    if re.search(action['cmd'],line):
+                for action in sorted(self.parent.cmds.values(), key=lambda k: (k['seq'],k['state'])):
+                    if action['cmd']== line and (action['state'] == -1 or action['state'] == self.parent.state):
                         if action['action'] == 'PRINT':
-                            if action['state'] == 0 and state == 0:
-                                ret = action['args'][0]
-                            elif action['state'] > 0 and action['state'] == self.parent.state:
-                                ret = action['args'][0]
-                                state = action['state']
-                        if action['action'] == 'SET_STATE':
+                            ret = action['args'][0]
+                            log.msg("Printing {0}".format(ret))
+                        elif action['action'] == 'SET_STATE':
                             self.parent.state = int(action['args'][0])
                             log.msg("Switching to state {0}".format(self.parent.state))
+                        elif action['action'] == 'SET_PROMPT':
+                            self._prompt = action['args'][0]
+                            log.msg("Set prompt {0}".format(self._prompt))
 
                 if ret:
                     log.msg("Command response")
@@ -81,13 +82,20 @@ class SSHProtocol(recvline.HistoricRecvLine):
                 self.showPrompt()
 
     def do_help(self):
-        for cmd in self.parent.cmds.keys():
-            self.terminal.write(cmd)
+        for cmd in sorted(self.parent.cmds.values(), key=lambda k:(k['seq'],k['state'])):
+            self.terminal.write("{0} {2} {3} {1}".format(cmd['seq'], cmd['cmd'],cmd['state'],cmd['action']))
             self.terminal.nextLine()
         self.showPrompt()
 
     def do_enable(self):
         self._prompt = "#"
+        self.terminal.nextLine()
+        self.showPrompt()
+
+    def do_conf(self,t):
+        if t != 't':
+            return
+        self._prompt = "(config)#"
         self.terminal.nextLine()
         self.showPrompt()
 
@@ -119,7 +127,7 @@ class SSHAvatar(avatar.ConchUser):
     def execCommand(self, protocol, line):
         ret = None
         state = 0
-        for cmd,action in self.parent.cmds.items():
+        for action in self.parent.cmds:
             if re.search(action['cmd'],line):
                 if action['action'] == 'PRINT':
                     if action['state'] == 0 and state == 0:
@@ -199,13 +207,17 @@ class SSHd(Process):
         if self._listeningport:
             return self._listeningport.getHost().port
         return None
-
+    
     def reset(self):
         manager = Manager()
         self._motd.value = "AlliedWare Plus (TM) 5.4.2 09/25/13 12:57:26"
         self._state.value = 0
         for cmdid in self.cmds.keys():
             del self.cmds[cmdid]
+     
+    def add_cmd(self, cmd):
+        cmd['seq'] = len(self.cmds)
+        self.cmds[md5(str(cmd)).hexdigest()]=cmd
 
     def exit(self):
         reactor.stop()
@@ -226,4 +238,10 @@ def dut(request):
     daemon.start()
     return daemon
 
+def pytest_addoption(parser):
+    parser.addoption("--log-debug", action="store_true", help="show debug messages")
 
+def pytest_runtest_setup(item):
+    import logging
+    if item.config.getoption("--log-debug"):
+       logging.basicConfig(format="%(asctime)-15s %(name)-20s %(message)s")

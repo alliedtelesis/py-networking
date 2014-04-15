@@ -24,29 +24,40 @@ class awp_vlan(Feature):
 
     def create(self, vlan_id, **kwargs):
         self._update_vlan()
-        cmd = "vlan database\nvlan {0}".format(vlan_id)
+        cmds = {'cmds':[{'cmd': 'enable',               'prompt':'\n\w+\#'},
+                        {'cmd': 'conf t',               'prompt':'\n\w+\(config\)\#'},
+                        {'cmd': 'vlan database',        'prompt':'\n\w+\(config-vlan\)\#'},
+                       ]}
+        vlan_cmd = 'vlan {0}'.format(vlan_id)
+
         if len(self._get_vlan_ids(vlan_id)) == 1:
             if 'name' in kwargs:
                 if ' ' in kwargs['name']:
-                    cmd += ' name "{0}"'.format(kwargs['name'])
+                    vlan_cmd += ' name "{0}"'.format(kwargs['name'])
                 else:
-                    cmd += " name {0}".format(kwargs['name'])
+                    vlan_cmd += " name {0}".format(kwargs['name'])
         if 'mtu' in kwargs:
-            cmd += " mtu {0}".format(int(kwargs['mtu']))
+            vlan_cmd += " mtu {0}".format(int(kwargs['mtu']))
         if 'state' in kwargs:
             if kwargs['state'] == 'enable' or kwargs['state'] == 'disable':
-                cmd += " state {0}".format(kwargs['state'])
+                vlan_cmd += " state {0}".format(kwargs['state'])
             else:
                 raise ValueError("{0} is and invalid vlan state".format(kwargs['state'])) 
-
-        self._device.cfg.send_config(cmd)
-        #self._device.load_config()
+        
+        cmds['cmds'].append({'cmd': vlan_cmd,'prompt':'\n\w+\(config-vlan\)\#'})
+        self._device.cmd(cmds)
+        self._device.load_config()
 
     def delete(self, vlan_id):
         self._update_vlan()
         self._get_vlan_ids(vlan_id)
-        self._device.cfg.send_config("vlan database\nno vlan {0}".format(vlan_id))
-        #self._device.load_config()
+        cmds = {'cmds':[{'cmd': 'enable',                     'prompt':'\n\w+\#'},
+                        {'cmd': 'conf t',                     'prompt':'\n\w+\(config\)\#'},
+                        {'cmd': 'vlan database',              'prompt':'\n\w+\(config-vlan\)\#'},
+                        {'cmd': 'no vlan {0}'.format(vlan_id),'prompt':'\n\w+\(config-vlan\)\#'},
+                       ]}
+        self._device.cmd(cmds)
+        self._device.load_config()
 
     def update(self, vlan_id, **kwargs):
         self._update_vlan()
@@ -75,19 +86,26 @@ class awp_vlan(Feature):
         if 'switchport mode' not in ifi:
             raise ValueError('{0} interface does not support vlan'.format(ifn))
 
+        cmds = {'cmds':[{'cmd': 'enable',                    'prompt':'\n\w+\#'},
+                        {'cmd': 'conf t',                    'prompt':'\n\w+\(config\)\#'},
+                        {'cmd': 'interface {0}'.format(ifn), 'prompt':'\n\w+\(config-if\)\#'},
+                       ]}
+
         if ifi['switchport mode'] == 'access' and tagged == False:
-            self._device.cfg.send_config('interface {0}\nswitchport access vlan {1}'.format(ifn,vid))
+            cmds['cmds'].append({'cmd': 'switchport access vlan {0}'.format(vid) ,'prompt':'\n\w+\(config-if\)\#'})
         elif ifi['switchport mode'] == 'access' and tagged == True:
             ## should copy access vlan to native
-            self._device.cfg.send_config('interface {0}\nswithport mode trunk\nswitchport trunk allowed vlan add {1}'.format(ifn,vid))
+            cmds['cmds'].append({'cmd': 'switchport mode trunk'                             ,'prompt':'\n\w+\(config-if\)\#'})
+            cmds['cmds'].append({'cmd': 'switchport trunk allowed vlan add {0}'.format(vid) ,'prompt':'\n\w+\(config-if\)\#'})
         elif ifi['switchport mode'] == 'trunk' and tagged == False:
-            self._device.cfg.send_config('interface {0}\nswitchport trunk native vlan {1}'.format(ifn,vid))
+            cmds['cmds'].append({'cmd': 'switchport trunk native vlan {0}'.format(vid) ,'prompt':'\n\w+\(config-if\)\#'})
         elif ifi['switchport mode'] == 'trunk' and tagged == True:
-            self._device.cfg.send_config('interface {0}\nswitchport trunk allowed vlan add {1}'.format(ifn,vid))
+            cmds['cmds'].append({'cmd': 'switchport trunk allowed vlan add {0}'.format(vid) ,'prompt':'\n\w+\(config-if\)\#'})
         else:
             raise ValueError('interface {0} cannot be added to vlan {1}'.format(ifn,vid))
 
-        #self._device.load_config()
+        self._device.cmd(cmds)
+        self._device.load_config()
 
 
     def delete_interface(self, vid, ifn):
@@ -107,17 +125,23 @@ class awp_vlan(Feature):
         if not ifi:    
             raise ValueError('{0} is not a valid interface'.format(ifn))
     
+        cmds = {'cmds':[{'cmd': 'enable',                    'prompt':'\n\w+\#'},
+                        {'cmd': 'conf t',                    'prompt':'\n\w+\(config\)\#'},
+                        {'cmd': 'interface {0}'.format(ifn), 'prompt':'\n\w+\(config-if\)\#'},
+                       ]}
+
         if ifi['switchport mode'] == 'access':
             # this actually move port back to vlan 1
-            self._device.cfg.send_config('interface {0}\nno switchport access vlan'.format(ifn))
+            cmds['cmds'].append({'cmd': 'no switchport access vlan {0}'.format(vid) ,'prompt':'\n\w+\(config-if\)\#'})
         elif ifi['switchport mode'] == 'trunk' and tagged == False:
-            self._device.cfg.send_config('interface {0}\nswitchport trunk native vlan none'.format(ifn))
+            cmds['cmds'].append({'cmd': 'switchport trunk native vlan none' ,'prompt':'\n\w+\(config-if\)\#'})
         elif ifi['switchport mode'] == 'trunk' and tagged == True:
-            self._device.cfg.send_config('interface {0}\nswitchport trunk allowed vlan remove {1}'.format(ifn,vid))
+            cmds['cmds'].append({'cmd': 'switchport trunk allowed vlan remove {0}'.format(vid) ,'prompt':'\n\w+\(config-if\)\#'})
         else:
             raise ValueError('interface {0} cannot be delete from vlan {1}'.format(ifn,vid))
 
-        #self._device.load_config()
+        self._device.cmd(cmds)
+        self._device.load_config()
 
     def items(self):
         self._update_vlan()
@@ -149,7 +173,7 @@ class awp_vlan(Feature):
         raise ValueError('{0} is not a valid vlan id, range or list'.format(vlan_id))
 
     def _update_vlan(self):
-        self.load_config(self._device.config)
+        #self.load_config(self._device.config)
         l = VlanStatusLexer()
         vlan_cfg = self._device.cmd("show vlan all")
         vlan = l.run(vlan_cfg)

@@ -32,15 +32,18 @@ class awp_interface(Feature):
         if ifn not in self._interface.keys():
             raise ValueError('interface {0} does not exist'.format(ifn))
         
-        cmd = "interface {0}".format(ifn)
+        cmds = {'cmds':[{'cmd': 'enable',                    'prompt':'\n\w+\#'},
+                        {'cmd': 'conf t',                    'prompt':'\n\w+\(config\)\#'},
+                        {'cmd': 'interface {0}'.format(ifn), 'prompt':'\n\w+\(config-if\)\#'},
+                       ]}  
         run_cmd = False
         if 'enable' in kwargs:
             if self._interface[ifn]['enable'] != kwargs['enable']:
                 run_cmd = True
                 if kwargs['enable']:
-                    cmd += '\nno shutdown'
+                    cmds['cmds'].append({'cmd': 'no shutdown','prompt':'\n\w+\(config-if\)\#'})
                 else:
-                    cmd += '\nshutdown'
+                    cmds['cmds'].append({'cmd': 'shutdown','prompt':'\n\w+\(config-if\)\#'})
         elif 'description' in kwargs:
             description = kwargs['description']
             if ' ' in description:
@@ -49,10 +52,10 @@ class awp_interface(Feature):
                 return
 
             run_cmd = True
-            cmd +='\ndescription {0}'.format(description) 
+            cmds['cmds'].append({'cmd': 'description {0}'.format(description),'prompt':'\n\w+\(config-if\)\#'})
     
         if run_cmd:
-            self._device.cfg.send_config(cmd)
+            self._device.cmd(cmds)
             self._device.load_config()
 
     def items(self):
@@ -81,7 +84,7 @@ class awp_interface(Feature):
             return [ifn]
 
     def _update_interface(self):
-        self.load_config(self._device.config)
+        #self.load_config(self._device.config)
         log.debug("Updating interface for awp_interface with config{0}".format(str(self._interface_config)))
         l = InterfaceStatusLexer()
         self._interface = l.run(self._device.cmd("show interface"))

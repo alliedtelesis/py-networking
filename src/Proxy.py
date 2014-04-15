@@ -14,7 +14,7 @@ import zmq
 import json
 
 log = logging.getLogger(__name__)
-#log.setLevel(logging.DEBUG)
+log.setLevel(logging.DEBUG)
 
 class ProxyException(Exception):
     pass
@@ -31,28 +31,35 @@ def SSHProxy(url, host, port, username, password):
     conn.connect(host, port,username, password)
     while True:
         cmd = json.loads(socket.recv())
-        log.debug("SSHProxy command".format(cmd))
+        log.debug("Commands {0}".format(cmd))
         if 'cmds' not in cmd and 'cmd' not in cmd['cmds'][0]:
             log.debug("Commands missing")
             continue
         try:
             chan = conn.invoke_shell()
-            chan.settimeout(8)
+            chan.settimeout(5)
             chan.recv(999)
-            ret=''
+            ###################################################
+            ## this should be moved in a device specific module
+            chan.send("terminal length 0\n")
+            _get_reply(chan, "terminal length 0\n")
+            ###################################################
+            out=''
+            ret={'status':'Error','output':'Unknown Error'}
             for c in cmd['cmds']:
+               log.debug("Sending command '{0}'".format(c['cmd']))
                chan.send(c['cmd']+'\n')
-               ret += _get_reply(chan, c['cmd'],c['prompt'])
+               out += _get_reply(chan, c['cmd'],c['prompt'])
+            ret = {'status':'Success','output':out}
             chan.close()
         except SSHException:
             log.debug("Connecting to {0}".format(host))
             conn.connect(host, port,username, password)
-            continue
+            ret = {'status':'Error','output':'SSHException'}
         except ProxyException:
-            log.debug("Timeout")
-            continue
-            #socket.send('')
-        socket.send_string(ret)
+            log.debug("ProxyException")
+            ret = {'status':'Error','output':'ProxyException'}
+        socket.send_string(json.dumps(ret))
     return
 
 def _get_reply(chan, cmd, prompt=''):
@@ -62,9 +69,12 @@ def _get_reply(chan, cmd, prompt=''):
          buff = ''
          while True:
              buff += chan.recv(999)
+             log.debug("Buffer >{0}<".format(buff))
              if re.search(prompt,buff):
+                 log.debug("Got prompt")
                  break
     except socket.timeout:
+         log.debug("Timeout")
          raise ProxyException("Timeout")
     except:
          raise ProxyException("")
@@ -72,4 +82,4 @@ def _get_reply(chan, cmd, prompt=''):
     if re.search(prompt,buff):
         return '\n'.join(buff.split('\n')[1:-1])
     else:
-         raise socket.timeout
+         raise ProxyException("Not seen any prompt")

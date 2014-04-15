@@ -18,7 +18,10 @@ from time import sleep
 from tempfile import NamedTemporaryFile
 
 log = logging.getLogger(__name__)
-#log.setLevel(logging.DEBUG)
+log.setLevel(logging.DEBUG)
+
+class DeviceException(Exception):
+    pass
 
 class Device(object):
     def __init__(self, host, username='manager', password='friend', protocol='ssh', port='auto', os='auto'):
@@ -66,6 +69,7 @@ class Device(object):
                                         args=(self._proxy_url, self._host, self._port,self._username, self._password)
                                        )
              self._proxy.start()
+        sleep(5)
         self._load_core_facts()
         self._load_features()
         self.load_config()
@@ -81,12 +85,20 @@ class Device(object):
         log.debug("Executing command {0}".format(cmd))
         if type(cmd) is str:
              cmd = {'cmds':[{'cmd':cmd,'prompt':''}]}
-        context = zmq.Context()
-        socket = context.socket(zmq.REQ)
-        socket.RCVTIMEO = 3000
-        socket.connect(self._proxy_url)
-        socket.send_string(json.dumps(cmd),zmq.NOBLOCK)
-        return socket.recv()
+        try:
+             context = zmq.Context()
+             socket = context.socket(zmq.REQ)
+             socket.RCVTIMEO = 8000
+             socket.connect(self._proxy_url)
+             socket.send_string(json.dumps(cmd),zmq.NOBLOCK)
+             ret = json.loads(socket.recv())
+             log.debug("Command execution result {0}".format(ret))
+             if ret['status'] == 'Success':
+                 return ret['output']
+             else:
+                 raise DeviceException(ret['output'])
+        except:
+             raise 
 
     def _load_core_facts(self):
         facts_dir = "{0}/facts/".format(dirname(__file__))

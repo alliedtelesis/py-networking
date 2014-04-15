@@ -6,7 +6,7 @@ from pprint import pprint
 
 def setup_dut(dut):
     dut.reset()
-    dut.cmds['show_system'] =         {'cmd':'show system',         'state':0, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd':'show system',         'state':0, 'action':'PRINT','args':["""
 Switch System Status                                   Fri Mar 21 15:45:13 2014
 
 Board       ID  Bay   Board Name                         Rev   Serial number
@@ -35,8 +35,8 @@ System Contact
 
 System Location
 
-    """]}
-    dut.cmds['show_version'] =        {'cmd':'show version',        'state':0, 'action':'PRINT','args':["""
+    """]})
+    dut.add_cmd({'cmd':'show version',        'state':0, 'action':'PRINT','args':["""
 AlliedWare Plus (TM) 5.4.2 09/25/13 12:57:26
 
 Build name : x600-5.4.2-3.14.rel
@@ -47,7 +47,7 @@ Build type : RELEASE
      All rights reserved;
  (c) 2001-2003, Networks Associates Technology, Inc. All rights reserved;
  (c) 2001-2003, Cambridge Broadband Ltd. All rights reserved;
- """]}
+ """]})
 
 def test_device_open_close(dut):
     setup_dut(dut)
@@ -122,7 +122,7 @@ line vty 0 4
 !
 end
 """
-    dut.cmds['show_running-config'] = {'cmd':'show running-config', 'state':0, 'action':'PRINT','args':[config]}
+    dut.add_cmd({'cmd':'show running-config', 'state':0, 'action':'PRINT','args':[config]})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol)
     d.open()
     assert d.config == config

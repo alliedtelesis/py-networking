@@ -118,8 +118,11 @@ class Device(object):
              else:
                  self.log_warn("command execution '{0}' 'error {1}".format(cmd, ret))
                  raise DeviceException(ret['output'])
+        except zmq.core.error.ZMQError, e:
+             self.log_warn("ZMQError {0}".format(repr(e)))
+             raise DeviceException("cannot communicate with device")
         except:
-             raise 
+             raise DeviceException(sys.exc_info()[0])
 
     def _load_core_facts(self):
         self.log_info("loading core facts")

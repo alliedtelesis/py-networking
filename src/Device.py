@@ -23,7 +23,7 @@ class DeviceException(Exception):
 
 class Device(object):
     def __init__(self, host, username='manager', password='friend', protocol='ssh', port='auto', os='auto',
-                 log_level=0, log_output='console:'):
+                 log_level='NOTSET', log_output='console:'):
         if protocol not in ('telnet','ssh','serial'):
             raise ValueError("Unsupported protocol "+protocol)
         self._proxy = None
@@ -34,7 +34,8 @@ class Device(object):
         self._protocol = protocol
         self._port = port
 
-        self._log_level = log_level
+
+        self._log_level = log_level = getattr(logging, log_level.upper())
         if log_level != 0:
             self._log_handler = logging.StreamHandler()
             if log_output.startswith('file://'):

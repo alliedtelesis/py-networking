@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
 import ply.lex as lex
-from pprint import pprint
 from collections import OrderedDict
 
 class VlanStatusLexer(object):
@@ -34,7 +33,6 @@ class VlanStatusLexer(object):
     t_ANY_ignore  = ' \t'
 
     def t_ANY_error(self, t):
-        #print "Illegal character '%s'" % t.value[0]
         t.lexer.skip(1)
 
     def __init__(self):

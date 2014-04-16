@@ -95,8 +95,6 @@ class InterfaceStatusLexer(object):
         t.lexer.lineno += len(t.value)
 
     def t_ANY_error(self, t):
-        if self._debug:
-            print "Illegal character '%s'" % t.value[0]
         t.lexer.skip(1)
 
     def __init__(self,debug=0):

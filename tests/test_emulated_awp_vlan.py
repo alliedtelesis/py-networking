@@ -2,7 +2,6 @@ import pytest
 from pynetworking import Device
 from time import sleep
 from paramiko.rsakey import RSAKey
-from pprint import pprint
 
 def setup_dut(dut):
     dut.reset()
@@ -73,8 +72,6 @@ vlan database
  vlan 20 name admin state enable mtu 1300
 ! 
     """]})
-    #print dut.port
-    #sleep(1000)
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol)
     d.open()
     d.vlan.create(20, name='admin', mtu=1300)

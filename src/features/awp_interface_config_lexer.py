@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
 import ply.lex as lex
-from pprint import pprint
 
 class InterfaceConfigLexer(object):
     states = (
@@ -76,7 +75,6 @@ class InterfaceConfigLexer(object):
         pass
 
     def t_ANY_error(self, t):
-        print "Illegal character '%s'" % t.value[0]
         t.lexer.skip(1)
 
     def __init__(self):

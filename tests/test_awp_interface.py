@@ -2,7 +2,6 @@
 import pytest
 from pynetworking import Device
 from time import sleep
-from pprint import pprint
 from jinja2 import Template
 
 

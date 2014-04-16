@@ -13,23 +13,20 @@ class awp_config(object):
     Configuration feature implementation for AWP
     """
     def __init__(self, device):
-        self._device =  device
+        self._d =  device
 
     def get_config(self):
+        self._d.log_info('getting device configuration')
         config = ''
-        for line in self._device.cmd('show running-config').replace('\r','').split('\n'):
+        cmds = {'cmds':[{'cmd': 'enable',                    'prompt':'\n\w+\#'},
+                        {'cmd': 'show running-config',       'prompt':'\n\w+\#'},
+                       ]}
+        for line in self._d.cmd(cmds).replace('\r','').split('\n'):
             config += line+'\n'
             if line.startswith("end"):
                break
+        self._d.log_debug('got device configuration \n{0}'.format(config))
         return config
 
-    def send_config(self, config):
-        log.debug("Executing config {0}".format(config))
-        cmds = {'cmds':[{'cmd':'enable','prompt': ''}, {'cmd':'conf t','prompt':''}]}
-
-        for line in config.split('\n'):
-            cmds['cmds'].append({'cmd':line,'prompt':''})
-        
-        return self._device.cmd(cmds)
 
 

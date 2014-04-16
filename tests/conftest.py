@@ -239,9 +239,20 @@ def dut(request):
     return daemon
 
 def pytest_addoption(parser):
-    parser.addoption("--log-debug", action="store_true", help="show debug messages")
+    parser.addoption("--log", action="store", help="show log messages")
+
+import logging
+
+class AllowPynet(logging.Filter):
+    def filter(self, record):
+        if 'pynet' in record.name:
+            return True
+        return False
 
 def pytest_runtest_setup(item):
-    import logging
-    if item.config.getoption("--log-debug"):
-       logging.basicConfig(format="%(asctime)-15s %(name)-20s %(message)s")
+    log_level = item.config.getoption("--log")
+    if log_level:
+       log_level = getattr(logging, log_level.upper())
+       logging.basicConfig(level=log_level, format='%(asctime)s - %(name)-40s - %(levelname)-5s - %(message)s')
+       for handler in logging.root.handlers:
+           handler.addFilter(AllowPynet())

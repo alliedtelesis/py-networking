@@ -1,4 +1,5 @@
 import pytest
+import logging
 from pynetworking import Device
 from time import sleep
 from paramiko.rsakey import RSAKey
@@ -49,7 +50,7 @@ Build type : RELEASE
  (c) 2001-2003, Cambridge Broadband Ltd. All rights reserved;
  """]})
 
-def test_device_open_close(dut):
+def test_open_close(dut):
     setup_dut(dut)
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol)
     d.open()

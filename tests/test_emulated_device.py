@@ -50,22 +50,22 @@ Build type : RELEASE
  (c) 2001-2003, Cambridge Broadband Ltd. All rights reserved;
  """]})
 
-def test_open_close(dut):
+def test_open_close(dut, log_level):
     setup_dut(dut)
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol)
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
     d.close()
 
-def test_device_ping(dut):
+def test_device_ping(dut, log_level):
     setup_dut(dut)
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol)
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
     assert d.ping()
     d.close()
 
-def test_device_facts(dut):
+def test_device_facts(dut, log_level):
     setup_dut(dut)
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol)
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
     assert d.facts['build_date'] == 'Wed Sep 25 12:57:26 NZST 2013'
     assert d.facts['build_name'] == 'x600-5.4.2-3.14.rel'
@@ -73,7 +73,7 @@ def test_device_facts(dut):
     assert d.facts['version'] == '5.4.2'
     d.close()
 
-def test_device_config(dut):
+def test_device_config(dut, log_level):
     setup_dut(dut)
     config = """
 !
@@ -124,7 +124,7 @@ line vty 0 4
 end
 """
     dut.add_cmd({'cmd':'show running-config', 'state':0, 'action':'PRINT','args':[config]})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol)
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
     assert d.config == config
     d.close()

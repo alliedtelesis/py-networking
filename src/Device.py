@@ -34,14 +34,17 @@ class Device(object):
         self._protocol = protocol
         self._port = port
 
-
-        self._log_level = log_level = getattr(logging, log_level.upper())
-        if log_level != 0:
-            self._log_handler = logging.StreamHandler()
-            if log_output.startswith('file://'):
-               self._log_handler = logging.FileHandler(log_output.split('://')[1])
-            formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-            self._log_handler.setFormatter(formatter)
+        self._log_level = getattr(logging, log_level.upper())
+        hdl = logging.StreamHandler()
+        if log_output.startswith('file://'):
+            hdl = logging.FileHandler(log_output.split('://')[1])
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)-6s - %(message)s')
+        hdl.setFormatter(formatter)
+        log = logging.getLogger(self._host)
+        log.handlers = []
+        log.setLevel(self._log_level)
+        log.addHandler(hdl)
+        log.propagate = False
 
         self.log_info("Device created")
         self.log_debug("\nHost: {0}\nusername: {1}\npassword:{2}\nprotocol: {3}:{4}\nos: {5}".format(host, username, password, protocol, port, os))
@@ -62,6 +65,17 @@ class Device(object):
     @property
     def config(self):
         return self.cfg.get_config()
+
+    @property
+    def log_level(self):
+        return self._log_level
+
+    @log_level.setter
+    def log_level(self, log_level):
+        self._log_level = getattr(logging, log_level.upper())
+        log = logging.getLogger(self._host)
+        log.setLevel(self._log_level)
+        return
 
     def ping(self):
         try:
@@ -182,27 +196,26 @@ class Device(object):
         for fname,fobj in self._features.items():
             fobj.load_config(cfg)
 
-    def log_debug(self, msg, name=__name__):
-        self._get_logger(name).debug(msg)
+    def log_debug(self, msg):
+        self._logger(msg,'debug')
 
-    def log_info(self, msg, name=__name__):
-        self._get_logger(name).info(msg)
+    def log_info(self, msg):
+        self._logger(msg,'info')
 
-    def log_warn(self, msg, name=__name__):
-        self._get_logger(name).warn(msg)
+    def log_warn(self, msg):
+        self._logger(msg,'warn')
 
-    def log_error(self, msg, name=__name__):
-        self._get_logger(name).error(msg)
+    def log_error(self, msg):
+        self._logger(msg,'error')
 
-    def log_critical(self, msg, name=__name__):
-        self._get_logger(name).critical(msg)
+    def log_critical(self, msg):
+        self._logger(msg,'critical')
 
-    def _get_logger(self, name):
+    def _logger(self, msg, level):
         (frame, filename, lineno, function_name, lines, index) = inspect.getouterframes(inspect.currentframe())[2]
-        filename = 'pynet/'+filename.split('pynetworking/')[1]
-        log = logging.getLogger('{0:12} [{2:>3}] {1:35}'.format(self._host,filename, lineno))
+        filename = filename.split('pynetworking/')[1]
+        msg = '{0:30} [{1:3}] {2}'.format(filename, lineno, msg)
+        log = logging.getLogger(self._host)
         if self._log_level != 0:
-            log.setLevel(self._log_level) 
-            log.addHandler(self._log_handler) 
-        return log
+            getattr(log, level)(msg)
 

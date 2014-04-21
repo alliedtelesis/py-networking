@@ -61,7 +61,7 @@ VLAN ID  Name            Type    State   Member ports
                                          port1.0.19(t) port1.0.30(t)
     """]})
 
-def test_create(dut):
+def test_create(dut, log_level):
     setup_dut(dut)
     dut.add_cmd({'cmd': 'vlan database'              , 'state':0, 'action':'SET_PROMPT','args':['(config-vlan)#']})
     dut.add_cmd({'cmd': 'vlan database'              , 'state':0, 'action':'SET_STATE','args':[1]})
@@ -72,7 +72,7 @@ vlan database
  vlan 20 name admin state enable mtu 1300
 ! 
     """]})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol)
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     d.vlan.create(20, name='admin', mtu=1300)
     assert d.vlan[20]['state'] == 'enable'
@@ -80,16 +80,16 @@ vlan database
     assert d.vlan[20]['mtu'] == 1300
     d.close()
 
-def test_exist(dut):
+def test_exist(dut, log_level):
     setup_dut(dut)
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol)
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert d.vlan[7]['state'] == 'enable'
     assert d.vlan[7]['name'] == 'admin'
     assert d.vlan[10]['name'] == 'marketing vlan'
     d.close()
 
-def test_update(dut):
+def test_update(dut, log_level):
     setup_dut(dut)
     dut.add_cmd({'cmd': 'vlan database'                  , 'state':0, 'action':'SET_PROMPT','args':['(config-vlan)#']})
     dut.add_cmd({'cmd': 'vlan database'                  , 'state':0, 'action':'SET_STATE','args':[1]})
@@ -109,7 +109,7 @@ vlan database
  vlan 20 name "vlan name" state enable mtu 1400
 ! 
     """]})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol)
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     d.vlan.update(20, mtu=1400, name='vlan_name')
     assert d.vlan[20]['mtu'] == 1400
@@ -119,7 +119,7 @@ vlan database
     assert d.vlan[20]['name'] == 'vlan name'
     d.close()
 
-def test_delete(dut):
+def test_delete(dut, log_level):
     setup_dut(dut)
     dut.add_cmd({'cmd': 'vlan database'                  , 'state':0, 'action':'SET_PROMPT','args':['(config-vlan)#']})
     dut.add_cmd({'cmd': 'vlan database'                  , 'state':0, 'action':'SET_STATE','args':[1]})
@@ -160,7 +160,7 @@ VLAN ID  Name            Type    State   Member ports
 20      "this is a long vlan name"
                          STATIC  ACTIVE  port1.0.42(t) port1.0.43(t) 
 """]})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol)
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert d.vlan[10]['state'] == 'enable'
     d.vlan.delete(10)
@@ -169,7 +169,7 @@ VLAN ID  Name            Type    State   Member ports
     d.close()
 
 
-def test_add_interface(dut):
+def test_add_interface(dut, log_level):
     setup_dut(dut)
     dut.add_cmd({'cmd': 'interface port1.0.30',      'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
     dut.add_cmd({'cmd': 'interface port1.0.30',      'state':0, 'action':'SET_STATE','args':[1]})
@@ -263,7 +263,7 @@ vlan database
 !
 end
     """]})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol)
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     d.vlan.add_interface(10,'port1.0.30')
     assert 'port1.0.30' in d.vlan[10]['untagged']
@@ -271,7 +271,7 @@ end
     assert 'port1.0.30' in d.vlan[10]['tagged']
     d.close()
 
-def test_delete_interface(dut):
+def test_delete_interface(dut, log_level):
     setup_dut(dut)
     dut.add_cmd({'cmd': 'interface port1.0.42',                 'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
     dut.add_cmd({'cmd': 'interface port1.0.42',                 'state':0, 'action':'SET_STATE','args':[1]})
@@ -310,7 +310,7 @@ VLAN ID  Name            Type    State   Member ports
                                          port1.0.19(t) port1.0.30(t)
     """]})
 
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol)
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'port1.0.42'in d.vlan[20]['untagged']
     d.vlan.delete_interface(20,'port1.0.42')

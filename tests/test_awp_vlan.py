@@ -10,16 +10,16 @@ import logging
 logging.basicConfig()
 
 @devicenotonline
-def test_device_vlan():
-    d=Device(host=test_device)
+def test_device_vlan(log_level):
+    d=Device(host=test_device, log_level=log_level)
     d.open()
     d.vlan.create(20)
     print d.vlan
     d.close()
 
 @devicenotonline
-def test_get_show_interface():
-    d=Device(host=test_device)
+def test_get_show_interface(log_level):
+    d=Device(host=test_device, log_level=log_level)
     d.open()
     for ifn,ifi in sorted(d.interface.items(), key=lambda ifn: ifn[0]):
         print "\n>>{0}".format(ifn)

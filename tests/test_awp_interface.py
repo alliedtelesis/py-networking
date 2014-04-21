@@ -63,7 +63,7 @@ vlan database
 end
     """]})
 
-def test_config(dut):
+def test_config(dut, log_level):
     setup_dut(dut)
     show_interface = ''
     for interface in range(1,51):
@@ -90,7 +90,7 @@ def test_config(dut):
                } 
         show_interface += show_interface_template.render(env).encode('ascii','ignore')
     dut.add_cmd({'cmd':'show interface', 'state':0, 'action':'PRINT','args':[show_interface]})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol)
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert d.facts['os'] == 'awp'
     assert d.interface['port0.0.10']['description'] == 'test1'
@@ -98,7 +98,7 @@ def test_config(dut):
     assert d.interface['vlan10']['description'] == 'testvlan'
     d.close()
 
-def test_enable(dut):
+def test_enable(dut, log_level):
     setup_dut(dut)
     show_interface = ''
     for interface in range(1,51):
@@ -136,7 +136,7 @@ def test_enable(dut):
               } 
         show_interface += show_interface_template.render(env).encode('ascii','ignore')
     dut.add_cmd({'cmd': 'show interface',       'state':4, 'action':'PRINT','args':[show_interface]})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol)
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert d.interface['port0.0.10']['enable'] == False
     d.interface.update('port0.0.10',enable=True)
@@ -147,6 +147,6 @@ def test_enable(dut):
     assert d.interface['port0.0.10']['enable'] == False
     d.close()
 
-def test_description(dut):
+def test_description(dut, log_level):
     setup_dut(dut)
 

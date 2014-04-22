@@ -30,19 +30,15 @@ def SSHProxy(device):
     conn.connect(device._host, port,device._username, device._password)
     while True:
         cmd = json.loads(socket.recv())
-        device.log_debug("execute ommands {0}".format(cmd))
+        device.log_debug("execute commands {0}".format(cmd))
         if 'cmds' not in cmd and 'cmd' not in cmd['cmds'][0]:
-            device.log_warn("Commands missing in zmq message")
+            device.log_warn("commands missing in zmq message")
             continue
         try:
+            device.log_debug("getting a shell to the device")
             chan = conn.invoke_shell()
             chan.settimeout(5)
             chan.recv(999)
-            ###################################################
-            ## this should be moved in a device specific module
-            chan.send("terminal length 0\n")
-            _get_reply(device, chan, "terminal length 0\n")
-            ###################################################
             out=''
             ret={'status':'Error','output':'Unknown Error'}
             for c in cmd['cmds']:

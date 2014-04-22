@@ -28,5 +28,7 @@ class awp_system(object):
         self._d.log_debug('got device configuration \n{0}'.format(config))
         return config
 
-
+    def shell_init(self):
+        self._d.log_info('shell init')
+        return [{'cmd': 'terminal length 0', 'prompt':'\n\w+\>'},]
 

@@ -128,3 +128,14 @@ end
     d.open()
     assert d.config == config
     d.close()
+
+def test_system(dut, log_level):
+    setup_dut(dut)
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    d.open()
+    cmds = d.system.shell_init()
+    assert cmds[0]['prompt'] == '\n\\w+\\>'
+    assert cmds[0]['cmd'] == 'terminal length 0'
+    assert len(cmds) == 1
+    d.cmd("show system")
+    d.close()

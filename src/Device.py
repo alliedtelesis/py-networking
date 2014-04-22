@@ -118,6 +118,13 @@ class Device(object):
         else:
              for c in cmd['cmds']:
                  self.log_info("executing command '{0}' and wait for {1}".format(c['cmd'],repr(c['prompt'])))
+
+        self.log_info("adding shell initialization commands")
+        try:
+            cmd['cmds'] = self.system.shell_init()+cmd['cmds']
+        except:
+            self.log_info("no shell init {0}".format(sys.exc_info()[0]))
+
         try:
              context = zmq.Context()
              socket = context.socket(zmq.REQ)

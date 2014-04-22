@@ -4,7 +4,10 @@ import re
 
 def core_awp(dev):
     ret = {}
-    out = dev.cmd('show version')
+    cmds = {'cmds':[{'cmd': 'terminal length 0', 'prompt':'\n\w+\>'},
+                    {'cmd': 'show version',      'prompt':'\n\w+\>'},
+                   ]}
+    out = dev.cmd(cmds)
 
     # AlliedWare Plus (TM) 5.4.2 09/25/13 12:57:26
     m = re.search('\s+AlliedWare Plus \(TM\)\s+([\d\.]+)\s+',out) 
@@ -29,7 +32,10 @@ def core_awp(dev):
     if m:
         ret['build_type'] = m.group(1)
 
-    out = dev.cmd('show system')
+    cmds = {'cmds':[{'cmd': 'terminal length 0', 'prompt':'\n\w+\>'},
+                    {'cmd': 'show system',       'prompt':'\n\w+\>'},
+                   ]}
+    out = dev.cmd(cmds)
 
     m = re.search('\s+Board\s+ID\s+Bay[\w\s\-]+Base\s+\d+\s+([\w\-\/]+)\s+([\w\-\/]+)\s+([\w\-\/]+)\s+',out)
     if m:

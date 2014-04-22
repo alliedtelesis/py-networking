@@ -1,5 +1,5 @@
 {% if os == 'awp' %}
-config: awp_config
+system: awp_system
 {% endif %}
 
 features:

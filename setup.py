@@ -49,13 +49,13 @@ setup(name             = 'py-networking',
                             'pynetworking': 'src',
                             'pynetworking.features': 'src/features',
                             'pynetworking.facts': 'src/facts',
-                            'pynetworking.config': 'src/config',
+                            'pynetworking.system': 'src/system',
                          },
       packages         = [
                             'pynetworking',
                             'pynetworking.features',
                             'pynetworking.facts',
-                            'pynetworking.config',
+                            'pynetworking.system',
                          ],
       package_data     = {
                             'pynetworking': ['*.yaml']

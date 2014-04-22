@@ -239,7 +239,7 @@ def dut(request):
     return daemon
 
 def pytest_addoption(parser):
-    parser.addoption("--log", action="store", help="show log messages")
+    parser.addoption("--log", default='notset', action="store", help="show log messages")
 
 @pytest.fixture(scope="module")
 def log_level(request):

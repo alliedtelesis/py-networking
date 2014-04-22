@@ -54,7 +54,7 @@ class awp_interface(Feature):
     
         if run_cmd:
             self._device.cmd(cmds)
-            self._device.load_config()
+            self._device.load_system()
 
     def items(self):
         self._update_interface()

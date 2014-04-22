@@ -8,7 +8,7 @@ import json
 
 log = logging.getLogger(__name__)
 
-class awp_config(object):
+class awp_system(object):
     """
     Configuration feature implementation for AWP
     """

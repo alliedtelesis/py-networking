@@ -50,7 +50,7 @@ class awp_vlan(Feature):
         
         cmds['cmds'].append({'cmd': vlan_cmd,'prompt':'\n\w+\(config-vlan\)\#'})
         self._device.cmd(cmds)
-        self._device.load_config()
+        self._device.load_system()
 
     def delete(self, vlan_id):
         self._d.log_info("delete {0}".format(vlan_id))
@@ -62,7 +62,7 @@ class awp_vlan(Feature):
                         {'cmd': 'no vlan {0}'.format(vlan_id),'prompt':'\n\w+\(config-vlan\)\#'},
                        ]}
         self._device.cmd(cmds)
-        self._device.load_config()
+        self._device.load_system()
 
     def update(self, vlan_id, **kwargs):
         self._d.log_info("update {0} {1}".format(vlan_id,pformat(kwargs)))
@@ -112,7 +112,7 @@ class awp_vlan(Feature):
             raise ValueError('interface {0} cannot be added to vlan {1}'.format(ifn,vid))
 
         self._device.cmd(cmds)
-        self._device.load_config()
+        self._device.load_system()
 
 
     def delete_interface(self, vid, ifn):
@@ -149,7 +149,7 @@ class awp_vlan(Feature):
             raise ValueError('interface {0} cannot be delete from vlan {1}'.format(ifn,vid))
 
         self._device.cmd(cmds)
-        self._device.load_config()
+        self._device.load_system()
 
     def items(self):
         self._update_vlan()

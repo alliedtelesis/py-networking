@@ -64,7 +64,7 @@ class Device(object):
 
     @property
     def config(self):
-        return self.cfg.get_config()
+        return self.system.get_config()
 
     @property
     def log_level(self):
@@ -100,7 +100,7 @@ class Device(object):
              self.log_debug("proxy process started")
         self._load_core_facts()
         self._load_features()
-        self.load_config()
+        self.load_system()
 
     def close(self):
         self.log_info("close")
@@ -175,23 +175,23 @@ class Device(object):
                 self.log_critical("Error loading class {1} for feature {0}".format(fname,fclass))
                 raise
 
-    def load_config(self):
-        self.log_info("load config")
-        if 'config' in self._models:
+    def load_system(self):
+        self.log_info("load system")
+        if 'system' in self._models:
             try:
-                self.log_info("loading config module {0}".format(self._models['config']))
-                m = __import__('pynetworking.config.{0}'.format(self._models['config']))
-                for comp in ('config',self._models['config'],self._models['config']):
+                self.log_info("loading system module {0}".format(self._models['system']))
+                m = __import__('pynetworking.system.{0}'.format(self._models['system']))
+                for comp in ('system',self._models['system'],self._models['system']):
                     m = getattr(m, comp)
                 o = m(self)
-                setattr(self, 'cfg', o)
+                setattr(self, 'system', o)
             except:
-                self.log_warn("Error loading class {0} for configuration management".format(self._models['config']))
+                self.log_warn("Error loading class {0} for system management".format(self._models['system']))
                 raise
         else:
-            self.log_warn("missing config module")
+            self.log_warn("missing system module")
 
-        cfg = self.cfg.get_config()
+        cfg = self.system.get_config()
         self.log_debug("device configuration\n{0}".format(cfg))
         for fname,fobj in self._features.items():
             fobj.load_config(cfg)

@@ -1,5 +1,7 @@
 {% if os == 'awp' %}
 system: awp_system
+{% elif os == 'ats' %}
+system: ats_system
 {% endif %}
 
 features:

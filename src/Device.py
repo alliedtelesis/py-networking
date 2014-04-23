@@ -9,6 +9,7 @@ import zmq
 import socket
 import json
 import inspect
+import traceback
 from os import listdir,unlink
 from os.path import dirname, isfile, join
 from jinja2 import Template
@@ -19,6 +20,9 @@ from time import sleep
 from tempfile import NamedTemporaryFile
 
 class DeviceException(Exception):
+    pass
+
+class DeviceNotDetected(Exception):
     pass
 
 class Device(object):
@@ -76,6 +80,18 @@ class Device(object):
         log = logging.getLogger(self._host)
         log.setLevel(self._log_level)
         return
+
+    @property
+    def host(self):
+        return self._host
+
+    @property
+    def username(self):
+        return self._username
+
+    @property
+    def password(self):
+        return self._password
 
     def ping(self):
         try:
@@ -158,17 +174,25 @@ class Device(object):
                     f = getattr(f, comp)
                 self._facts =  dict(self._facts.items() + f(self).items())
                 self.log_info("core facts loaded \n{0}".format(pformat(self._facts)))
-            except AttributeError:
-                self.log_critical("Error executing core fact {0}".format(cf))
+            except:
+                self.log_info("error executing core fact {0} ({1})".format(cf, sys.exc_info()[0]))
+                traceback.print_exc(file=sys.stdout)
+        if 'os' not in self._facts:
+            self.close()
+            raise DeviceNotDetected
 
     def _load_features(self):
         self.log_info("loading features")
         self._features = {}
         with open("{0}/Device.yaml".format(dirname(__file__)), 'r') as f:
             self._models = yaml.load(Template(f.read()).render(self._facts))
-        if self._models == None or self._models['features'] == None:
+            self.log_debug("models {0}".format(self._models))
+        if self._models == None:
             self.log_warn("no features loaded")
             self._models = {'features':{}}
+        elif self._models['features'] == None:
+            self.log_warn("no features loaded")
+            self._models['features'] = {}
         for fname,fclass in self._models['features'].items():
             self.log_info("loading feature {0}/{1}".format(fname,fclass))
             try:
@@ -184,6 +208,7 @@ class Device(object):
 
     def load_system(self):
         self.log_info("load system")
+        self.log_debug("models {0}".format(self._models))
         if 'system' in self._models:
             try:
                 self.log_info("loading system module {0}".format(self._models['system']))

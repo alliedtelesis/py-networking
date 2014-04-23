@@ -8,9 +8,9 @@ import json
 
 log = logging.getLogger(__name__)
 
-class awp_system(object):
+class ats_system(object):
     """
-    Configuration feature implementation for AWP
+    Configuration feature implementation for ATS
     """
     def __init__(self, device):
         self._d =  device
@@ -18,10 +18,7 @@ class awp_system(object):
     def get_config(self):
         self._d.log_info('getting device configuration')
         config = ''
-        cmds = {'cmds':[{'cmd': 'enable',                    'prompt':'\n\w+\#'},
-                        {'cmd': 'show running-config',       'prompt':'\n\w+\#'},
-                       ]}
-        for line in self._d.cmd(cmds).replace('\r','').split('\n'):
+        for line in self._d.cmd('show running-config').replace('\r','').split('\n'):
             config += line+'\n'
             if line.startswith("end"):
                break
@@ -30,5 +27,5 @@ class awp_system(object):
 
     def shell_init(self):
         self._d.log_info('shell init')
-        return [{'cmd': 'terminal length 0', 'prompt':'\n[\w_]+\>'},]
+        return [{'cmd': 'terminal datadump', 'prompt':r'[\n\r]+[\w\_]+\#'},]
 

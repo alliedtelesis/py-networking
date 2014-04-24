@@ -1,4 +1,4 @@
-from pynetworking import Device
+from pynetworking import Device, DeviceOfflineException
 from pprint import pprint
 import re
 
@@ -7,7 +7,10 @@ def core_awp(dev):
     cmds = {'cmds':[{'cmd': 'terminal length 0', 'prompt':'\n\w+\>'},
                     {'cmd': 'show version',      'prompt':'\n\w+\>'},
                    ]}
-    out = dev.cmd(cmds)
+    try:
+        out = dev.cmd(cmds)
+    except DeviceOfflineException:
+        return ret
 
     # AlliedWare Plus (TM) 5.4.2 09/25/13 12:57:26
     m = re.search('\s+AlliedWare Plus \(TM\)\s+([\d\.]+)\s+',out) 

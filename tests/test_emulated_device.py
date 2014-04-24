@@ -56,14 +56,14 @@ def test_open_close(dut, log_level):
     d.open()
     d.close()
 
-def test_device_ping(dut, log_level):
+def test_ping(dut, log_level):
     setup_dut(dut)
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
     assert d.ping()
     d.close()
 
-def test_device_facts(dut, log_level):
+def test_facts(dut, log_level):
     setup_dut(dut)
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
@@ -73,7 +73,7 @@ def test_device_facts(dut, log_level):
     assert d.facts['version'] == '5.4.2'
     d.close()
 
-def test_device_config(dut, log_level):
+def test_config(dut, log_level):
     setup_dut(dut)
     config = """
 !

@@ -19,7 +19,7 @@ warnings.filterwarnings(
 )
 
 from pynetworking.Proxy import SSHProxy, ProxyException
-from pynetworking.Device import Device
+from pynetworking.Device import Device, DeviceOfflineException
 from pynetworking.Feature import Feature
 
 import inspect

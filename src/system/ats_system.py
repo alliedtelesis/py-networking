@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 
 class ats_system(object):
     """
-    Configuration feature implementation for ATS
+    System for ATS
     """
     def __init__(self, device):
         self._d =  device
@@ -29,3 +29,7 @@ class ats_system(object):
         self._d.log_info('shell init')
         return [{'cmd': 'terminal datadump', 'prompt':r'[\n\r]+[\w\_]+\#'},]
 
+    def ping(self):
+        self._d.log_info('ping')
+        self._d.cmd('show version')
+        

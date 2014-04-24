@@ -106,7 +106,7 @@ def SSHProxy(device):
 
 def _get_reply(device, chan, prompt=''):
     if not prompt:
-        prompt=r'\n[\w\_]*[\>\#]{1}'
+        prompt=r'[\n\r]{1}[\w\_]*[\>\#]{1}'
     try:
          device.log_debug("waiting for {0}".format(repr(prompt)))
          buff = ''

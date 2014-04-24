@@ -25,6 +25,9 @@ class DeviceException(Exception):
 class DeviceNotDetected(Exception):
     pass
 
+class DeviceOfflineException(Exception):
+    pass
+
 class Device(object):
     def __init__(self, host, username='manager', password='friend', protocol='ssh', port='auto', os='auto',
                  log_level='NOTSET', log_output='console:'):
@@ -95,7 +98,7 @@ class Device(object):
 
     def ping(self):
         try:
-            self.cmd('')
+            self.system.ping()
             self.log_debug("ping up")
             return True
         except:
@@ -155,9 +158,9 @@ class Device(object):
              else:
                  self.log_warn("command execution '{0}' 'error {1}".format(cmd, ret))
                  raise DeviceException(ret['output'])
-        except zmq.core.error.ZMQError, e:
+        except zmq.error.ZMQError, e:
              self.log_warn("ZMQError {0}".format(repr(e)))
-             raise DeviceException("cannot communicate with device")
+             raise DeviceOfflineException
         except:
              raise DeviceException(sys.exc_info()[0])
 

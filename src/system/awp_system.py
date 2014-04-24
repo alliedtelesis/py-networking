@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 
 class awp_system(object):
     """
-    Configuration feature implementation for AWP
+    System for AWP
     """
     def __init__(self, device):
         self._d =  device
@@ -32,3 +32,6 @@ class awp_system(object):
         self._d.log_info('shell init')
         return [{'cmd': 'terminal length 0', 'prompt':'\n[\w_]+\>'},]
 
+    def ping(self):
+        self._d.log_info('ping')
+        self._d.cmd('show version')

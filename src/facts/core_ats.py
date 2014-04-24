@@ -1,4 +1,4 @@
-from pynetworking import Device, ProxyException
+from pynetworking import Device, ProxyException, DeviceOfflineException
 from pprint import pprint
 import re
 
@@ -7,7 +7,11 @@ def core_ats(dev):
     ret = {}
     #cmds = {'cmds':[{'cmd': 'show version', 'prompt':'\n\w+\#'}]}
 
-    out = dev.cmd('show version')
+    try:
+        out = dev.cmd('show version')
+    except DeviceOfflineException:
+        return ret
+
     dev.log_debug("show version\n{0}".format(out))
 
     #

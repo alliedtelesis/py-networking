@@ -64,6 +64,8 @@ def test_ping(dut, log_level):
     d.close()
 
 def test_facts(dut, log_level):
+    if dut.mode != 'emulated':
+        pytest.skip("only on emulated")
     setup_dut(dut)
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
@@ -74,6 +76,8 @@ def test_facts(dut, log_level):
     d.close()
 
 def test_config(dut, log_level):
+    if dut.mode != 'emulated':
+        pytest.skip("only on emulated")
     setup_dut(dut)
     config = """
 !
@@ -130,11 +134,11 @@ end
     d.close()
 
 def test_system(dut, log_level):
+    if dut.mode != 'emulated':
+        pytest.skip("only on emulated")
     setup_dut(dut)
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
     cmds = d.system.shell_init()
     assert cmds[0]['cmd'] == 'terminal length 0'
-    assert len(cmds) == 1
-    d.cmd("show system")
     d.close()

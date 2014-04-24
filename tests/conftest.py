@@ -170,6 +170,7 @@ class DUTd(Process):
 
         users = {'manager': 'friend'}
         if self.host == '127.0.0.1':
+            self.mode = 'emulated'
             self._sshFactory.portal.registerChecker(checkers.InMemoryUsernamePasswordDatabaseDontUse(**users))
 
             with open(join(os.getcwd(),'tests/id_rsa')) as privateBlobFile:
@@ -180,6 +181,8 @@ class DUTd(Process):
                 self._sshFactory.publicKeys = {'ssh-rsa': keys.Key.fromString(data=publicBlob)}
 
             self._listeningport = reactor.listenTCP(self._port, self._sshFactory,interface=self.host)
+        else:
+            self.mode = 'passthrou'
     
     @property
     def motd(self):
@@ -246,4 +249,6 @@ def pytest_addoption(parser):
 def log_level(request):
     log_level = request.config.getoption("--log")
     return log_level
+
+
 

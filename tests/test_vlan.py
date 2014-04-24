@@ -62,6 +62,8 @@ VLAN ID  Name            Type    State   Member ports
     """]})
 
 def test_create(dut, log_level):
+    if dut.mode != 'emulated':
+        pytest.skip("only on emulated")
     setup_dut(dut)
     dut.add_cmd({'cmd': 'vlan database'              , 'state':0, 'action':'SET_PROMPT','args':['(config-vlan)#']})
     dut.add_cmd({'cmd': 'vlan database'              , 'state':0, 'action':'SET_STATE','args':[1]})
@@ -81,6 +83,8 @@ vlan database
     d.close()
 
 def test_exist(dut, log_level):
+    if dut.mode != 'emulated':
+        pytest.skip("only on emulated")
     setup_dut(dut)
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
@@ -90,6 +94,8 @@ def test_exist(dut, log_level):
     d.close()
 
 def test_update(dut, log_level):
+    if dut.mode != 'emulated':
+        pytest.skip("only on emulated")
     setup_dut(dut)
     dut.add_cmd({'cmd': 'vlan database'                  , 'state':0, 'action':'SET_PROMPT','args':['(config-vlan)#']})
     dut.add_cmd({'cmd': 'vlan database'                  , 'state':0, 'action':'SET_STATE','args':[1]})
@@ -120,6 +126,8 @@ vlan database
     d.close()
 
 def test_delete(dut, log_level):
+    if dut.mode != 'emulated':
+        pytest.skip("only on emulated")
     setup_dut(dut)
     dut.add_cmd({'cmd': 'vlan database'                  , 'state':0, 'action':'SET_PROMPT','args':['(config-vlan)#']})
     dut.add_cmd({'cmd': 'vlan database'                  , 'state':0, 'action':'SET_STATE','args':[1]})
@@ -170,6 +178,8 @@ VLAN ID  Name            Type    State   Member ports
 
 
 def test_add_interface(dut, log_level):
+    if dut.mode != 'emulated':
+        pytest.skip("only on emulated")
     setup_dut(dut)
     dut.add_cmd({'cmd': 'interface port1.0.30',      'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
     dut.add_cmd({'cmd': 'interface port1.0.30',      'state':0, 'action':'SET_STATE','args':[1]})
@@ -272,6 +282,8 @@ end
     d.close()
 
 def test_delete_interface(dut, log_level):
+    if dut.mode != 'emulated':
+        pytest.skip("only on emulated")
     setup_dut(dut)
     dut.add_cmd({'cmd': 'interface port1.0.42',                 'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
     dut.add_cmd({'cmd': 'interface port1.0.42',                 'state':0, 'action':'SET_STATE','args':[1]})

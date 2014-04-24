@@ -64,6 +64,8 @@ end
     """]})
 
 def test_config(dut, log_level):
+    if dut.mode != 'emulated':
+        pytest.skip("only on emulated")
     setup_dut(dut)
     show_interface = ''
     for interface in range(1,51):
@@ -99,6 +101,8 @@ def test_config(dut, log_level):
     d.close()
 
 def test_enable(dut, log_level):
+    if dut.mode != 'emulated':
+        pytest.skip("only on emulated")
     setup_dut(dut)
     show_interface = ''
     for interface in range(1,51):
@@ -148,5 +152,7 @@ def test_enable(dut, log_level):
     d.close()
 
 def test_description(dut, log_level):
+    if dut.mode != 'emulated':
+        pytest.skip("only on emulated")
     setup_dut(dut)
 

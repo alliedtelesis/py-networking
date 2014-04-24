@@ -26,7 +26,7 @@ class VlanStatusLexer(object):
 
     def t_INITIAL_INTERFACE(self, t):
         r'port\d+\.\d+\.\d+\((u|t)\)'
-        v = t.value[:-1].split('(')
+        v = t.value[4:-1].split('(')
         t.value = (t.lexer.id,v[0],v[1])
         return t 
 

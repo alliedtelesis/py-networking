@@ -275,10 +275,10 @@ end
     """]})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
-    d.vlan.add_interface(10,'port1.0.30')
-    assert 'port1.0.30' in d.vlan[10]['untagged']
-    d.vlan.add_interface(10,'port1.0.30',tagged=True)
-    assert 'port1.0.30' in d.vlan[10]['tagged']
+    d.vlan.add_interface(10,'1.0.30')
+    assert '1.0.30' in d.vlan[10]['untagged']
+    d.vlan.add_interface(10,'1.0.30',tagged=True)
+    assert '1.0.30' in d.vlan[10]['tagged']
     d.close()
 
 def test_delete_interface(dut, log_level):
@@ -324,7 +324,7 @@ VLAN ID  Name            Type    State   Member ports
 
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
-    assert 'port1.0.42'in d.vlan[20]['untagged']
-    d.vlan.delete_interface(20,'port1.0.42')
-    assert 'port1.0.42'in d.vlan[1]['untagged']
+    assert '1.0.42'in d.vlan[20]['untagged']
+    d.vlan.delete_interface(20,'1.0.42')
+    assert '1.0.42'in d.vlan[1]['untagged']
     d.close()

@@ -23,13 +23,13 @@ class InterfaceConfigLexer(object):
 
     def t_INITIAL_IF_PORT_RANGE(self, t):
         r'interface\s+port\d+\.\d+\.\d+\-\d+\.\d+\.\d+\s*\n'
-        t.value = re.split('\s+',t.value)[1]
+        t.value = re.split('\s+',t.value)[1][4:]
         t.lexer.push_state('ifportrange')
         t.lexer.id = t.value
 
     def t_INITIAL_IF_PORT(self, t):
         r'interface\s+port\d+\.\d+\.\d+\s*\n'
-        t.value = re.split('\s+',t.value)[1]
+        t.value = re.split('\s+',t.value)[1][4:]
         t.lexer.push_state('ifport')
         t.lexer.id = t.value
 

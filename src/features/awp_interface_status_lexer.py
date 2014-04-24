@@ -25,7 +25,7 @@ class InterfaceStatusLexer(object):
 
     def t_INITIAL_IF(self, t):
         r'Interface\s+port\d+\.\d+\.\d+\s*\n'
-        t.value = re.split('\s+',t.value)[1]
+        t.value = re.split('\s+',t.value)[1][4:]
         t.lexer.push_state('if')
         t.lexer.id = t.value
 

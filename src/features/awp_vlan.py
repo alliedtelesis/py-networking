@@ -95,7 +95,7 @@ class awp_vlan(Feature):
 
         cmds = {'cmds':[{'cmd': 'enable',                    'prompt':'\n\w+\#'},
                         {'cmd': 'conf t',                    'prompt':'\n\w+\(config\)\#'},
-                        {'cmd': 'interface {0}'.format(ifn), 'prompt':'\n\w+\(config-if\)\#'},
+                        {'cmd': 'interface port{0}'.format(ifn), 'prompt':'\n\w+\(config-if\)\#'},
                        ]}
 
         if ifi['switchport mode'] == 'access' and tagged == False:
@@ -135,7 +135,7 @@ class awp_vlan(Feature):
     
         cmds = {'cmds':[{'cmd': 'enable',                    'prompt':'\n\w+\#'},
                         {'cmd': 'conf t',                    'prompt':'\n\w+\(config\)\#'},
-                        {'cmd': 'interface {0}'.format(ifn), 'prompt':'\n\w+\(config-if\)\#'},
+                        {'cmd': 'interface port{0}'.format(ifn), 'prompt':'\n\w+\(config-if\)\#'},
                        ]}
 
         if ifi['switchport mode'] == 'access':
@@ -193,9 +193,9 @@ class awp_vlan(Feature):
     def _get_interface_config(self, ifn):
         ret = {}
         for ifr,ifi in self._interface_config.items():
-            m  = re.match('^port(?P<prefix>\d+\.\d+\.)(?P<start_no>\d+)\-\d+\.\d+\.(?P<end_no>\d+)$', ifr)
+            m  = re.match('^(?P<prefix>\d+\.\d+\.)(?P<start_no>\d+)\-\d+\.\d+\.(?P<end_no>\d+)$', ifr)
             if m:
-                ifr = ['port{0}{1}'.format(m.group('prefix'),n) for n in range(int(m.group('start_no')),1+int(m.group('end_no')))]
+                ifr = ['{0}{1}'.format(m.group('prefix'),n) for n in range(int(m.group('start_no')),1+int(m.group('end_no')))]
             else:
                 ifr = [ifr]
 

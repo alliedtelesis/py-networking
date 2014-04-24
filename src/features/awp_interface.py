@@ -32,7 +32,7 @@ class awp_interface(Feature):
         
         cmds = {'cmds':[{'cmd': 'enable',                    'prompt':'\n\w+\#'},
                         {'cmd': 'conf t',                    'prompt':'\n\w+\(config\)\#'},
-                        {'cmd': 'interface {0}'.format(ifn), 'prompt':'\n\w+\(config-if\)\#'},
+                        {'cmd': 'interface port{0}'.format(ifn), 'prompt':'\n\w+\(config-if\)\#'},
                        ]}  
         run_cmd = False
         if 'enable' in kwargs:
@@ -74,9 +74,9 @@ class awp_interface(Feature):
 
     def _get_interface_ns(self, ifn):
         ifn = str(ifn)
-        m  = re.match('^port(?P<prefix>\d+\.\d+\.)(?P<start_no>\d+)\-\d+\.\d+\.(?P<end_no>\d+)$', ifn)
+        m  = re.match('^(?P<prefix>\d+\.\d+\.)(?P<start_no>\d+)\-\d+\.\d+\.(?P<end_no>\d+)$', ifn)
         if m:
-            ret = ['port{0}{1}'.format(m.group('prefix'),n) for n in range(int(m.group('start_no')),1+int(m.group('end_no')))]
+            ret = ['{0}{1}'.format(m.group('prefix'),n) for n in range(int(m.group('start_no')),1+int(m.group('end_no')))]
             return ret 
         else:
             return [ifn]

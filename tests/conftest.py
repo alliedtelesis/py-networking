@@ -18,7 +18,7 @@ from zope.interface import implements
 from twisted.python import failure, log, logfile
 from os.path import join
 
-class SSHProtocol(recvline.HistoricRecvLine):
+class Emulator(recvline.HistoricRecvLine):
     def __init__(self, user, parent, cmd=None):
         self.user = user
         self._hostname = "awplus"
@@ -108,6 +108,18 @@ class SSHProtocol(recvline.HistoricRecvLine):
         self.terminal.nextLine()
 
 
+class Forwarder(recvline.HistoricRecvLine):
+    def __init__(self, user, parent, cmd=None):
+        self.user = user
+        self.parent = parent
+
+    def connectionMade(self):
+        pass
+
+    def lineReceived(self, line):
+        pass
+
+
 class SSHAvatar(avatar.ConchUser):
     implements(ISession)
     def __init__(self, username, parent):
@@ -117,7 +129,7 @@ class SSHAvatar(avatar.ConchUser):
         self.parent = parent
 
     def openShell(self, protocol):
-        serverProtocol = insults.ServerProtocol(SSHProtocol, self, self.parent)
+        serverProtocol = insults.ServerProtocol(Emulator, self, self.parent)
         serverProtocol.makeConnection(protocol)
         protocol.makeConnection(session.wrapProtocol(serverProtocol))
 
@@ -125,25 +137,7 @@ class SSHAvatar(avatar.ConchUser):
         return None
 
     def execCommand(self, protocol, line):
-        ret = None
-        state = 0
-        for action in self.parent.cmds:
-            if re.search(action['cmd'],line):
-                if action['action'] == 'PRINT':
-                    if action['state'] == 0 and state == 0:
-                        ret = action['args'][0]
-                    elif action['state'] > 0 and action['state'] == self.parent.state:
-                        ret = action['args'][0]
-                        state = action['state']
-                if action['action'] == 'SET_STATE':
-                    self.parent.state = action['args'][0]
-                    log.msg("Switching to state {0}".format(self.parent.state))
-
-        if ret:
-            log.msg("Command response")
-            log.msg(ret)
-            protocol.session.write(ret)
-        reactor.spawnProcess(protocol,'echo')
+        protocol.session.write("not supported")
 
     def closed(self):
         pass
@@ -161,8 +155,8 @@ class SSHRealm(object):
         else:
             raise NotImplementedError("No supported interfaces found.")
 
-class SSHd(Process):
-    def __init__(self,port=0):
+class DUTd(Process):
+    def __init__(self,port=0, host='127.0.0.1'):
         Process.__init__(self, target = self._run)
         self._port = port
         self._sshFactory = factory.SSHFactory()
@@ -172,19 +166,20 @@ class SSHd(Process):
         self._state = manager.Value(c_int, 0)
         self.cmds = manager.dict()
         self.protocol = 'ssh'
-        self.host = '127.0.0.1'
+        self.host = host
 
         users = {'manager': 'friend'}
-        self._sshFactory.portal.registerChecker(checkers.InMemoryUsernamePasswordDatabaseDontUse(**users))
+        if self.host == '127.0.0.1':
+            self._sshFactory.portal.registerChecker(checkers.InMemoryUsernamePasswordDatabaseDontUse(**users))
 
-        with open(join(os.getcwd(),'tests/id_rsa')) as privateBlobFile:
-            privateBlob = privateBlobFile.read()
-            self._sshFactory.privateKeys = {'ssh-rsa': keys.Key.fromString(data=privateBlob)}
-        with open(join(os.getcwd(),'tests/id_rsa.pub')) as publicBlobFile:
-            publicBlob = publicBlobFile.read()
-            self._sshFactory.publicKeys = {'ssh-rsa': keys.Key.fromString(data=publicBlob)}
+            with open(join(os.getcwd(),'tests/id_rsa')) as privateBlobFile:
+                privateBlob = privateBlobFile.read()
+                self._sshFactory.privateKeys = {'ssh-rsa': keys.Key.fromString(data=privateBlob)}
+            with open(join(os.getcwd(),'tests/id_rsa.pub')) as publicBlobFile:
+                publicBlob = publicBlobFile.read()
+                self._sshFactory.publicKeys = {'ssh-rsa': keys.Key.fromString(data=publicBlob)}
 
-        self._listeningport = reactor.listenTCP(self._port, self._sshFactory,interface=self.host)
+            self._listeningport = reactor.listenTCP(self._port, self._sshFactory,interface=self.host)
     
     @property
     def motd(self):
@@ -204,9 +199,9 @@ class SSHd(Process):
 
     @property
     def port(self):
-        if self._listeningport:
+        if self.host == '127.0.0.1' and self._listeningport:
             return self._listeningport.getHost().port
-        return None
+        return 22
     
     def reset(self):
         manager = Manager()
@@ -223,14 +218,19 @@ class SSHd(Process):
         reactor.stop()
 
     def _run(self):
-        f = logfile.LogFile("dut.log", "/tmp", rotateLength=100000,maxRotatedFiles=10)
-        log.startLogging(f)
-        log.msg("Listening on port {0}".format(self.port))
-        reactor.run()        
+        if self.host == '127.0.0.1':
+            f = logfile.LogFile("dut.log", "/tmp", rotateLength=100000,maxRotatedFiles=10)
+            log.startLogging(f)
+            log.msg("Listening on port {0}".format(self.port))
+            reactor.run()
+        else:
+            while True:
+                sleep(1)
 
 @pytest.fixture(scope="module")
 def dut(request):
-    daemon = SSHd()
+    host = request.config.getoption("--dut-host")
+    daemon = DUTd(host=host)
     def fin():
         daemon.terminate()
         daemon.join()
@@ -240,6 +240,7 @@ def dut(request):
 
 def pytest_addoption(parser):
     parser.addoption("--log", default='notset', action="store", help="show log messages")
+    parser.addoption("--dut-host", default='127.0.0.1', action="store", help="dut hostname or address")
 
 @pytest.fixture(scope="module")
 def log_level(request):

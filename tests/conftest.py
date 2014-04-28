@@ -22,7 +22,7 @@ class Emulator(recvline.HistoricRecvLine):
     def __init__(self, user, parent, cmd=None):
         self.user = user
         self._hostname = "awplus"
-        self._prompt = ">"
+        #self._prompt = ">"
         self.parent = parent
         self._cmd = cmd
 
@@ -36,7 +36,7 @@ class Emulator(recvline.HistoricRecvLine):
         self.showPrompt()
 
     def showPrompt(self):
-        self.terminal.write(self._hostname+self._prompt)
+        self.terminal.write(self._hostname+self.parent.prompt)
 
     def getCommandFunc(self, cmd):
         return getattr(self, 'do_' + cmd, None)
@@ -69,8 +69,8 @@ class Emulator(recvline.HistoricRecvLine):
                             self.parent.state = int(action['args'][0])
                             log.msg("Switching to state {0}".format(self.parent.state))
                         elif action['action'] == 'SET_PROMPT':
-                            self._prompt = action['args'][0]
-                            log.msg("Set prompt {0}".format(self._prompt))
+                            self.parent.prompt = action['args'][0]
+                            log.msg("Set prompt {0}".format(self.parent.prompt))
 
                 if ret:
                     log.msg("Command response")
@@ -88,14 +88,14 @@ class Emulator(recvline.HistoricRecvLine):
         self.showPrompt()
 
     def do_enable(self):
-        self._prompt = "#"
+        self.parent.prompt = "#"
         self.terminal.nextLine()
         self.showPrompt()
 
     def do_conf(self,t):
         if t != 't':
             return
-        self._prompt = "(config)#"
+        self.parent.prompt = "(config)#"
         self.terminal.nextLine()
         self.showPrompt()
 
@@ -163,6 +163,7 @@ class DUTd(Process):
         self._sshFactory.portal = portal.Portal(SSHRealm(self))
         manager = Manager()
         self._motd = manager.Value(c_char_p, "AlliedWare Plus (TM) 5.4.2 09/25/13 12:57:26")
+        self._prompt = manager.Value(c_char_p, ">")
         self._state = manager.Value(c_int, 0)
         self.cmds = manager.dict()
         self.protocol = 'ssh'
@@ -191,6 +192,14 @@ class DUTd(Process):
     @motd.setter
     def motd(self, value):
         self._motd.value = value
+
+    @property
+    def prompt(self):
+        return self._prompt.value
+
+    @prompt.setter
+    def prompt(self, value):
+        self._prompt.value = value
 
     @property
     def state(self):

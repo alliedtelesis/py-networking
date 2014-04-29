@@ -51,3 +51,9 @@ _build
 
 # Gerrit
 .gitreview
+
+# Documentation Build
+doc/_build
+
+# Idea
+.idea

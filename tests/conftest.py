@@ -22,9 +22,9 @@ class Emulator(recvline.HistoricRecvLine):
     def __init__(self, user, parent, cmd=None):
         self.user = user
         self._hostname = "awplus"
-        #self._prompt = ">"
         self.parent = parent
         self._cmd = cmd
+        self._prompt = self.parent.prompt
 
     def connectionMade(self):
         recvline.HistoricRecvLine.connectionMade(self)
@@ -36,7 +36,7 @@ class Emulator(recvline.HistoricRecvLine):
         self.showPrompt()
 
     def showPrompt(self):
-        self.terminal.write(self._hostname+self.parent.prompt)
+        self.terminal.write(self._hostname+self._prompt)
 
     def getCommandFunc(self, cmd):
         return getattr(self, 'do_' + cmd, None)
@@ -69,8 +69,8 @@ class Emulator(recvline.HistoricRecvLine):
                             self.parent.state = int(action['args'][0])
                             log.msg("Switching to state {0}".format(self.parent.state))
                         elif action['action'] == 'SET_PROMPT':
-                            self.parent.prompt = action['args'][0]
-                            log.msg("Set prompt {0}".format(self.parent.prompt))
+                            self._prompt = action['args'][0]
+                            log.msg("Set prompt {0}".format(self._prompt))
 
                 if ret:
                     log.msg("Command response")
@@ -88,14 +88,14 @@ class Emulator(recvline.HistoricRecvLine):
         self.showPrompt()
 
     def do_enable(self):
-        self.parent.prompt = "#"
+        self._prompt = "#"
         self.terminal.nextLine()
         self.showPrompt()
 
     def do_conf(self,t):
         if t != 't':
             return
-        self.parent.prompt = "(config)#"
+        self._prompt = "(config)#"
         self.terminal.nextLine()
         self.showPrompt()
 

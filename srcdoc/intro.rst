@@ -6,6 +6,4 @@ This is a subsection
 ---------------------
 This is subsection content
 
-This a paragraph
-""""""""""""""""
-This is a paragraph
+

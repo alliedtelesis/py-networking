@@ -52,8 +52,9 @@ _build
 # Gerrit
 .gitreview
 
-# Documentation Build
-doc/_build
+# doc
+srcdoc/py-networking*.pdf
+doc
 
 # Idea
 .idea

@@ -6,6 +6,9 @@ import glob
 from setuptools import setup, find_packages, Command
 from setuptools.command.test import test as TestCommand
 import versioneer
+from sphinx.application import Sphinx
+from sphinx.util.console import darkred, nocolor
+import subprocess
 
 versioneer.versionfile_source = 'src/_version.py'
 versioneer.versionfile_build = 'pynetworking/_version.py'
@@ -31,14 +34,65 @@ class CleanCommand(Command):
         self.cwd = os.getcwd()
     def run(self):
         assert os.getcwd() == self.cwd, 'Must be in package root: %s' % self.cwd
-        os.system ('rm -rf ./MANIFEST ./.tox ./build ./dist ./*.pyc ./*.tgz ./*.egg ./*.egg-info ./py-networking-* ./doc/_build')
+        os.system ('rm -rf ./MANIFEST ./.tox ./build ./dist ./*.pyc ./*.tgz ./*.egg ./*.egg-info ./py-networking-* ./doc')
+
+class DocCommand(Command):
+    user_options = []
+    def initialize_options(self):
+        pass
+    def finalize_options(self):
+        pass
+    def run(self):
+        self.source_dir = os.path.abspath('srcdoc')
+        self.build_dir = os.path.join('./build', 'sphinx')
+        self.mkpath(self.build_dir)
+        self.doctree_dir = os.path.join(self.build_dir, 'doctrees')
+        self.mkpath(self.doctree_dir)
+        self.builder_target_dir = 'doc'
+        self.mkpath(self.builder_target_dir)
+
+        app = Sphinx(self.source_dir, self.source_dir,
+                     self.build_dir, self.doctree_dir,
+                     'latex', {}, sys.stdout,
+                     freshenv=False)
+
+        try:
+            app.builder.build_update()
+        except Exception, err:
+            from docutils.utils import SystemMessage
+            if isinstance(err, SystemMessage):
+                sys.stderr, darkred('reST markup error:')
+                print >>sys.stderr, err.args[0].encode('ascii', 'backslashreplace')
+            else:
+                raise
+        print "Generating PDF"
+        subprocess.check_output(
+            "pushd {0} && make all-pdf && popd && cp {0}/*.pdf ./srcdoc".format(self.build_dir, self.build_dir),
+            stderr=subprocess.STDOUT,
+            shell=True)
+
+        app = Sphinx(self.source_dir, self.source_dir,
+                     'doc', self.doctree_dir,
+                     'html', {}, sys.stdout,
+                     freshenv=True)
+
+        try:
+            app.builder.build_update()
+        except Exception, err:
+            from docutils.utils import SystemMessage
+            if isinstance(err, SystemMessage):
+                sys.stderr, darkred('reST markup error:')
+                print >>sys.stderr, err.args[0].encode('ascii', 'backslashreplace')
+            else:
+                raise
 
 setup(name             = 'py-networking',
       version          = versioneer.get_version(),
       cmdclass         = dict(versioneer.get_cmdclass().items() +
                          {
                             'test': ToxCommand,
-                            'clean': CleanCommand
+                            'clean': CleanCommand,
+                            'doc': DocCommand
                           }.items()),
       description      = 'Library for network programmability and automation',
       long_description = 'Library for network programmability and automation',
@@ -69,6 +123,7 @@ setup(name             = 'py-networking',
                             'pyasn1',
                             'pyzmq',
                          ],
+      setup_requires   = [ 'sphinx'],
       tests_require    = [
                             'tox'
                          ],

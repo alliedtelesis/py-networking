@@ -6,9 +6,6 @@ import glob
 from setuptools import setup, find_packages, Command
 from setuptools.command.test import test as TestCommand
 import versioneer
-from sphinx.application import Sphinx
-from sphinx.util.console import darkred, nocolor
-import subprocess
 
 versioneer.versionfile_source = 'src/_version.py'
 versioneer.versionfile_build = 'pynetworking/_version.py'
@@ -43,6 +40,10 @@ class DocCommand(Command):
     def finalize_options(self):
         pass
     def run(self):
+        from sphinx.application import Sphinx
+        from sphinx.util.console import darkred, nocolor
+        import subprocess
+
         self.source_dir = os.path.abspath('srcdoc')
         self.build_dir = os.path.join('./build', 'sphinx')
         self.mkpath(self.build_dir)

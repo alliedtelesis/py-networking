@@ -43,7 +43,6 @@ class ats_interface(Feature):
                     ifn += 24
                 elif self._d.facts['model'] == 'AT-8000S/48' and m.group('ifp') == 'g':
                     ifn += 48
-
                 ifn = '{0}.0.{1}'.format(m.group('stack_no'), ifn)
 
                 if m.group('enable') == 'Up':
@@ -57,6 +56,20 @@ class ats_interface(Feature):
                                                 'configured_polarity': m.group('configured_polarity').lower(),
                                                }
         self._d.log_debug("Configuration {0}".format(pformat(json.dumps(self._interface_config))))
+
+        ifre = re.compile('(?P<stack_no>\d)/(?P<ifp>[eg])(?P<ifn>\d+)\s+'
+                          '(?P<description>[ \w\_]+)')
+        for line in self._device.cmd("show interfaces description").split('\n'):
+            m = ifre.match(line)
+            if m and m.group('description') != '':
+                self._d.log_debug("description for {0} is '{1}'".format(ifn, m.group('description')))
+                ifn = int(m.group('ifn'))
+                if self._d.facts['model'] == 'AT-8000S/24' and m.group('ifp') == 'g':
+                    ifn += 24
+                elif self._d.facts['model'] == 'AT-8000S/48' and m.group('ifp') == 'g':
+                    ifn += 48
+                ifn = '{0}.0.{1}'.format(m.group('stack_no'), ifn)
+                self._interface_config[ifn]['description'] = m.group('description')
 
     def update(self, ifn, **kwargs):
         self._d.log_info("update {0} {1}".format(ifn,pformat(kwargs)))

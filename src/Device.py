@@ -179,7 +179,7 @@ class Device(object):
                 self.log_info("core facts loaded \n{0}".format(pformat(self._facts)))
             except:
                 self.log_info("error executing core fact {0} ({1})".format(cf, sys.exc_info()[0]))
-                traceback.print_exc(file=sys.stdout)
+                self.log_debug(traceback.format_exc())
         if 'os' not in self._facts:
             self.close()
             raise DeviceNotDetected

@@ -156,6 +156,10 @@ class ats_vlan(Feature):
         self._update_vlan()
         return self._vlan.items()
 
+    def keys(self):
+        self._update_vlan()
+        return self._vlan.keys()
+
     def __str__(self):
         self._update_vlan()
         return json.dumps(self._vlan)
@@ -181,25 +185,89 @@ class ats_vlan(Feature):
 
     def _update_vlan(self):
         self._d.log_info("_update_vlan")
-        l = VlanStatusLexer()
-        vlan_cfg = self._device.cmd("show vlan")
-        vlan = l.run(vlan_cfg)
+
+        cvid = ''
+        vlan = {}
+        for line in self._device.cmd("show vlan").split('\n'):
+            m = re.match('\s?(?P<vid>\d+)\s', line)
+            print line
+            if m:
+                vlan[m.group('vid')] = {'type': line[52:64].strip(), 'ports': line[23:51].strip()}
+                if vlan[m.group('vid')]['ports'].endswith(','):
+                    cvid = m.group('vid')
+            elif cvid != '':
+                self._d.log_info(vlan)
+                vlan[cvid]['ports'] += line[23:51].strip()
+                if not vlan[cvid]['ports'].endswith(','):
+                    cvid = ''
+
         for vln,vli in vlan.items():
+            vlan[vln]['ports'] = self._expand_interface_list(vlan[vln]['ports'])
             for vlr,vlc in self._vlan_config.items():
-                if int(vln) in self._get_vlan_ids(vlr):
-                    vlan[vln] = dict(vlan[vln].items() + vlc.items())
+                vlan[vln] = dict(vlan[vln].items() + vlc.items())
         self._vlan = vlan
         self._d.log_debug(pformat(json.dumps(self._vlan)))
 
-    def _get_interface_config(self, ifn):
-        ret = {}
-        for ifr,ifi in self._interface_config.items():
-            m  = re.match('^(?P<prefix>\d+\.\d+\.)(?P<start_no>\d+)\-\d+\.\d+\.(?P<end_no>\d+)$', ifr)
-            if m:
-                ifr = ['{0}{1}'.format(m.group('prefix'),n) for n in range(int(m.group('start_no')),1+int(m.group('end_no')))]
-            else:
-                ifr = [ifr]
+    def _expand_interface_list(self, ifranges):
+        ret = []
+        self._d.log_info("_expand_interface_list {0}".format(ifranges))
+        if ifranges == '':
+            return ret
 
-            if ifn in ifr:
-               ret = dict(ret.items() + ifi.items())
-        return ret 
+        m = re.search('{0}/e(?P<single>\d+)'.format(self._d.facts['unit_number']), ifranges)
+        if m:
+            ret = '{0}.0.{1}'.format(self._d.facts['unit_number'], m.group('single'))
+        else:
+            m = re.search('{0}/e\((?P<ranges>[^\)]+)'.format(self._d.facts['unit_number']), ifranges)
+            if m:
+                for r in m.group('ranges').split(','):
+                    m = re.match('(?P<start_no>\d+)\-(?P<end_no>\d+)', r)
+                    if m:
+                        end_no = int(m.group('end_no'))
+                        start_no = int(m.group('start_no'))
+                        if self._d.facts['model'] == 'AT-8000S/24' and start_no > 24:
+                            continue
+                        if self._d.facts['model'] == 'AT-8000S/24' and end_no > 24:
+                             end_no = 24
+                        ret += ['{0}.0.{1}'.format(self._d.facts['unit_number'],n) for n in range(start_no,1+end_no)]
+                    else:
+                        r = int(r)
+                        if self._d.facts['model'] == 'AT-8000S/24' and r > 24:
+                            continue
+                        ret.append('{0}.0.{1}'.format(self._d.facts['unit_number'],r))
+
+        m = re.search('{0}/g(?P<single>\d+)'.format(self._d.facts['unit_number']), ifranges)
+        if m:
+            ret = '{0}.0.{1}'.format(self._d.facts['unit_number'], m.group('single'))
+        else:
+            m = re.search('{0}/g\((?P<ranges>[^\)]+)'.format(self._d.facts['unit_number']), ifranges)
+            if m:
+                for r in m.group('ranges').split(','):
+                    m = re.match('(?P<start_no>\d+)\-(?P<end_no>\d+)', r)
+                    if m:
+                        start_no = int(m.group('start_no'))
+                        end_no = int(m.group('end_no'))
+                        if self._d.facts['model'] == 'AT-8000S/24' and start_no > 2:
+                            continue
+                        if self._d.facts['model'] == 'AT-8000S/24' and end_no > 2:
+                             end_no = 2
+
+                        if self._d.facts['model'] == 'AT-8000S/24':
+                            start_no += 24
+                            end_no += 24
+                        else:
+                            start_no += 48
+                            end_no += 48
+                        ret += ['{0}.0.{1}'.format(self._d.facts['unit_number'],n) for n in range(start_no,1+end_no)]
+                    else:
+                        r = int(r)
+                        if self._d.facts['model'] == 'AT-8000S/24' and r > 2:
+                            continue
+                        if self._d.facts['model'] == 'AT-8000S/24':
+                            r += 24
+                        else:
+                            r += 48
+                        ret.append('{0}.0.{1}'.format(self._d.facts['unit_number'],r))
+
+        self._d.log_info("_expand_interface_list return {0}".format(ret))
+        return ret

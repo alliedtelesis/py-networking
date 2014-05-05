@@ -248,7 +248,7 @@ ip ssh server
 
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
-#    print(d.vlan)
+    print(d.vlan)
     d.close()
 
 

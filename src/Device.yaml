@@ -12,6 +12,6 @@ features:
   interface: awp_interface
 {% elif os == 'ats' %}
   interface: ats_interface
-  interface: ats_vlan
+  vlan: ats_vlan
 {% endif %}
 

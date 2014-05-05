@@ -54,7 +54,7 @@ class VlanConfigLexer(object):
     def t_ANY_error(self, t):
         t.lexer.skip(1)
 
-    def __init__(self, debug=1):
+    def __init__(self, debug=0):
         self._debug = debug
         self.lexer = lex.lex(object=self, debug=debug)
 

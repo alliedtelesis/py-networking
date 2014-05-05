@@ -74,17 +74,24 @@ class ats_interface(Feature):
         self._update_interface()
         return self._interface.items()
 
+    def keys(self):
+        self._update_interface()
+        return self._interface.keys()
+
     def __str__(self):
         self._update_interface()
         return json.dumps(self._interface)
 
-    __repr__ = __str__
+    def __repr__(self):
+        self._update_interface()
+        return self._interface
 
     def __getitem__(self, ifn):
         self._update_interface()
+        print ifn
         if ifn in self._interface.keys():
             return self._interface[ifn]
-        raise KeyError('{0} key does not exist'.format(key))
+        raise IndexError
 
     def _get_interface_ns(self, ifn):
         ifn = str(ifn)

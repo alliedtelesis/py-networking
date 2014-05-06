@@ -92,7 +92,7 @@ class Emulator(recvline.HistoricRecvLine):
         self.terminal.nextLine()
         self.showPrompt()
 
-    def do_conf(self,t):
+    def do_conf(self,t='t'):
         if t != 't':
             return
         self._prompt = "(config)#"

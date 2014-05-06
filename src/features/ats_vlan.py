@@ -22,43 +22,29 @@ class ats_vlan(Feature):
         self._d.log_info("loading config")
         l = VlanConfigLexer()
         self._vlan_config = l.run(config)
-#       l = VlanInterfaceConfigLexer()
-#       self._interface_config = l.run(config)
         self._d.log_debug("vlan configuration {0}".format(self._vlan_config))
 
     def create(self, vlan_id, **kwargs):
         self._d.log_info("create {0} {1}".format(vlan_id,pformat(kwargs)))
         self._update_vlan()
-        cmds = {'cmds':[{'cmd': 'enable',               'prompt':'\n\w+\#'},
-                        {'cmd': 'conf t',               'prompt':'\n\w+\(config\)\#'},
+        cmds = {'cmds':[{'cmd': 'conf',                 'prompt':'\n\w+\(config\)\#'},
                         {'cmd': 'vlan database',        'prompt':'\n\w+\(config-vlan\)\#'},
                        ]}
         vlan_cmd = 'vlan {0}'.format(vlan_id)
 
-        if len(self._get_vlan_ids(vlan_id)) == 1:
-            if 'name' in kwargs:
-                if ' ' in kwargs['name']:
-                    vlan_cmd += ' name "{0}"'.format(kwargs['name'])
-                else:
-                    vlan_cmd += " name {0}".format(kwargs['name'])
-        if 'mtu' in kwargs:
-            vlan_cmd += " mtu {0}".format(int(kwargs['mtu']))
-        if 'state' in kwargs:
-            if kwargs['state'] == 'enable' or kwargs['state'] == 'disable':
-                vlan_cmd += " state {0}".format(kwargs['state'])
-            else:
-                raise ValueError("{0} is and invalid vlan state".format(kwargs['state'])) 
-        
         cmds['cmds'].append({'cmd': vlan_cmd,'prompt':'\n\w+\(config-vlan\)\#'})
         self._device.cmd(cmds)
         self._device.load_system()
+
+        if len(self._get_vlan_ids(vlan_id)) == 1:
+            if 'name' in kwargs:
+                self.update(vlan_id,**kwargs)
 
     def delete(self, vlan_id):
         self._d.log_info("delete {0}".format(vlan_id))
         self._update_vlan()
         self._get_vlan_ids(vlan_id)
-        cmds = {'cmds':[{'cmd': 'enable',                     'prompt':'\n\w+\#'},
-                        {'cmd': 'conf t',                     'prompt':'\n\w+\(config\)\#'},
+        cmds = {'cmds':[{'cmd': 'conf',                       'prompt':'\n\w+\(config\)\#'},
                         {'cmd': 'vlan database',              'prompt':'\n\w+\(config-vlan\)\#'},
                         {'cmd': 'no vlan {0}'.format(vlan_id),'prompt':'\n\w+\(config-vlan\)\#'},
                        ]}
@@ -76,7 +62,17 @@ class ats_vlan(Feature):
         non_existing_ids = [i for i in vlan_ids if i not in existing_vlan_ids]
 
         if len(non_existing_ids) == 0:
-            self.create(vlan_id, **kwargs)
+            if 'name' in kwargs:
+                cmds = {'cmds':[{'cmd': 'conf',                       'prompt':'\n\w+\(config\)\#'},
+                                {'cmd': 'interface vlan {0}'.format(vlan_id),'prompt':'\n\w+\(config-if\)\#'},
+                                ]}
+                if ' ' in kwargs['name']:
+                    vlan_cmd = 'name "{0}"'.format(kwargs['name'])
+                else:
+                    vlan_cmd = "name {0}".format(kwargs['name'])
+                cmds['cmds'].append({'cmd': vlan_cmd,'prompt':'\n\w+\(config-if\)\#'})
+                self._device.cmd(cmds)
+                self._device.load_system()
         else:
             raise KeyError('{0} vlans do not exist'.format(non_existing_ids))
 

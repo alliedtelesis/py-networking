@@ -32,8 +32,8 @@ Serial number:
 
 
 def test_get_interface(dut, log_level):
-    if dut.mode != 'emulated':
-        pytest.skip("only on emulated")
+#    if dut.mode != 'emulated':
+#        pytest.skip("only on emulated")
     setup_dut(dut)
     dut.add_cmd({'cmd':'show interfaces status', 'state':0, 'action':'PRINT','args':["""
 

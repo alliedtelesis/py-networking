@@ -30,7 +30,6 @@ Unit Number:   1
 Serial number:  
     """]})
 
-
 def test_get_vlan(dut, log_level):
     if dut.mode != 'emulated':
         pytest.skip("only on emulated")
@@ -237,10 +236,11 @@ vlan database
 vlan 10,30
 exit
 interface vlan 10
-name "pippo pluto paperino"
+name "long vlan name"
 exit
 interface vlan 1
 ip address 10.17.39.252 255.255.255.0
+name default_vlan
 exit
 hostname nac_dev
 ip ssh server
@@ -251,4 +251,88 @@ ip ssh server
     print(d.vlan)
     d.close()
 
+
+def test_create(dut, log_level):
+    setup_dut(dut)
+    dut.add_cmd({'cmd':'show vlan',                  'state':0, 'action':'PRINT','args':["""
+
+Vlan       Name                   Ports                Type     Authorization
+---- ----------------- --------------------------- ------------ -------------
+ 1           1         1/e(1-48),1/g(1-4),          other       Required
+                       2/e(1-48),2/g(1-4),
+                       3/e(1-48),3/g(1-4),
+                       4/e(1-48),4/g(1-4),
+                       5/e(1-48),5/g(1-4),
+                       6/e(1-48),6/g(1-4),ch(1-8)
+
+    """]})
+    dut.add_cmd({'cmd':'show running-config', 'state':0, 'action':'PRINT','args':["""
+interface vlan 1
+ip address 10.17.39.252 255.255.255.0
+name default_vlan
+exit
+hostname nac_dev
+ip ssh server
+    """]})
+    dut.add_cmd({'cmd': 'vlan database',                 'state':0, 'action':'SET_PROMPT','args':['(config-vlan)#']})
+    dut.add_cmd({'cmd': 'vlan database',                 'state':0, 'action':'SET_STATE','args':[1]})
+    dut.add_cmd({'cmd': 'vlan 10',                       'state':1, 'action':'SET_STATE','args':[2]})
+    dut.add_cmd({'cmd': 'show vlan',                     'state':2, 'action':'PRINT','args':["""
+
+Vlan       Name                   Ports                Type     Authorization
+---- ----------------- --------------------------- ------------ -------------
+ 1           1         1/e(1-48),1/g(1-4),          other       Required
+                       2/e(1-48),2/g(1-4),
+                       3/e(1-48),3/g(1-4),
+                       4/e(1-48),4/g(1-4),
+                       5/e(1-48),5/g(1-4),
+                       6/e(1-48),6/g(1-4),ch(1-8)
+10           10                                     permanent   Required
+
+    """]})
+    dut.add_cmd({'cmd':'show running-config',             'state':2, 'action':'PRINT','args':["""
+vlan database
+vlan 10
+exit
+interface vlan 1
+ip address 10.17.39.252 255.255.255.0
+name default_vlan
+exit
+hostname nac_dev
+ip ssh server
+    """]})
+    dut.add_cmd({'cmd': 'interface vlan 10',             'state':2, 'action':'SET_PROMPT','args':['(config-if)#']})
+    dut.add_cmd({'cmd': 'interface vlan 10',             'state':2, 'action':'SET_STATE','args':[3]})
+    dut.add_cmd({'cmd': 'name "new vlan"',               'state':3, 'action':'SET_STATE','args':[4]})
+    dut.add_cmd({'cmd': 'show vlan',                     'state':4, 'action':'PRINT','args':["""
+
+Vlan       Name                   Ports                Type     Authorization
+---- ----------------- --------------------------- ------------ -------------
+ 1           1         1/e(1-48),1/g(1-4),          other       Required
+                       2/e(1-48),2/g(1-4),
+                       3/e(1-48),3/g(1-4),
+                       4/e(1-48),4/g(1-4),
+                       5/e(1-48),5/g(1-4),
+                       6/e(1-48),6/g(1-4),ch(1-8)
+10           new vlan                                permanent   Required
+
+    """]})
+    dut.add_cmd({'cmd':'show running-config', 'state':4, 'action':'PRINT','args':["""
+vlan database
+vlan 10
+exit
+interface vlan 10
+name "new vlan"
+exit
+interface vlan 1
+ip address 10.17.39.252 255.255.255.0
+name default_vlan
+exit
+hostname nac_dev
+ip ssh server
+    """]})
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d.open()
+    d.vlan.create(10,name='new vlan')
+    d.close()
 

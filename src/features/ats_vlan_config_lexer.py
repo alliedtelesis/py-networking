@@ -60,7 +60,7 @@ class VlanConfigLexer(object):
 
     def run(self, data):
         self.lexer.input(data)
-        result = {}
+        result = {'1': {'name':'1'}}
         for tok in self.lexer:
             if tok.type == 'VLANLIST':
                 for vid in tok.value.split(','):

@@ -87,6 +87,13 @@ class Emulator(recvline.HistoricRecvLine):
             self.terminal.nextLine()
         self.showPrompt()
 
+    def keystrokeReceived(self, keyID, modifier):
+        if keyID == '\x1a':
+            self.do_enable()
+            log.msg("Received control-z")
+            return
+        recvline.RecvLine.keystrokeReceived(self, keyID, modifier)
+
     def do_enable(self):
         self._prompt = "#"
         self.terminal.nextLine()

@@ -5,10 +5,9 @@ import re
 def core_ats(dev):
     dev.log_info("core_ats")
     ret = {}
-    #cmds = {'cmds':[{'cmd': 'show version', 'prompt':'\n\w+\#'}]}
 
     try:
-        out = dev.cmd('show version')
+        out = dev.cmd({'cmds':[{'cmd': 'show version', 'prompt':r'\n\w+\#'}]})
     except DeviceOfflineException:
         return ret
 
@@ -29,7 +28,7 @@ def core_ats(dev):
     else:
         return ret
 
-    out = dev.cmd('show system')
+    out = dev.cmd({'cmds':[{'cmd': 'show system', 'prompt':'\n\w+\#'}]})
     dev.log_debug("show system\n{0}".format(out))
 
     #

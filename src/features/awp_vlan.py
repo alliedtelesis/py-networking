@@ -48,7 +48,8 @@ class awp_vlan(Feature):
             else:
                 raise ValueError("{0} is and invalid vlan state".format(kwargs['state'])) 
         
-        cmds['cmds'].append({'cmd': vlan_cmd,'prompt':'\n\w+\(config-vlan\)\#'})
+        cmds['cmds'].append({'cmd': vlan_cmd,             'prompt':'\n\w+\(config-vlan\)\#'})
+        cmds['cmds'].append({'cmd': chr(26),              'prompt':'\n\w+\#'})
         self._device.cmd(cmds)
         self._device.load_system()
 
@@ -60,6 +61,7 @@ class awp_vlan(Feature):
                         {'cmd': 'conf t',                     'prompt':'\n\w+\(config\)\#'},
                         {'cmd': 'vlan database',              'prompt':'\n\w+\(config-vlan\)\#'},
                         {'cmd': 'no vlan {0}'.format(vlan_id),'prompt':'\n\w+\(config-vlan\)\#'},
+                        {'cmd': chr(26),                      'prompt':'\n\w+\#'},
                        ]}
         self._device.cmd(cmds)
         self._device.load_system()
@@ -111,6 +113,7 @@ class awp_vlan(Feature):
         else:
             raise ValueError('interface {0} cannot be added to vlan {1}'.format(ifn,vid))
 
+        cmds['cmds'].append({'cmd': chr(26),                               'prompt':'\n\w+\#'})
         self._device.cmd(cmds)
         self._device.load_system()
 
@@ -148,6 +151,7 @@ class awp_vlan(Feature):
         else:
             raise ValueError('interface {0} cannot be delete from vlan {1}'.format(ifn,vid))
 
+        cmds['cmds'].append({'cmd': chr(26),                               'prompt':'\n\w+\#'})
         self._device.cmd(cmds)
         self._device.load_system()
 

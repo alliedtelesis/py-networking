@@ -51,8 +51,9 @@ class awp_interface(Feature):
 
             run_cmd = True
             cmds['cmds'].append({'cmd': 'description {0}'.format(description),'prompt':'\n\w+\(config-if\)\#'})
-    
+
         if run_cmd:
+            cmds['cmds'].append({'cmd': chr(26),                               'prompt':'\n\w+\#'})
             self._device.cmd(cmds)
             self._device.load_system()
 

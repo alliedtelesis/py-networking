@@ -32,7 +32,8 @@ class ats_vlan(Feature):
                        ]}
         vlan_cmd = 'vlan {0}'.format(vlan_id)
 
-        cmds['cmds'].append({'cmd': vlan_cmd,'prompt':'\n\w+\(config-vlan\)\#'})
+        cmds['cmds'].append({'cmd': vlan_cmd,            'prompt':'\n\w+\(config-vlan\)\#'})
+        cmds['cmds'].append({'cmd': chr(26),             'prompt':'\n\w+\#'})
         self._device.cmd(cmds)
         self._device.load_system()
 
@@ -47,6 +48,7 @@ class ats_vlan(Feature):
         cmds = {'cmds':[{'cmd': 'conf',                       'prompt':'\n\w+\(config\)\#'},
                         {'cmd': 'vlan database',              'prompt':'\n\w+\(config-vlan\)\#'},
                         {'cmd': 'no vlan {0}'.format(vlan_id),'prompt':'\n\w+\(config-vlan\)\#'},
+                        {'cmd': chr(26),                      'prompt':'\n\w+\#'},
                        ]}
         self._device.cmd(cmds)
         self._device.load_system()
@@ -63,14 +65,15 @@ class ats_vlan(Feature):
 
         if len(non_existing_ids) == 0:
             if 'name' in kwargs:
-                cmds = {'cmds':[{'cmd': 'conf',                       'prompt':'\n\w+\(config\)\#'},
+                cmds = {'cmds':[{'cmd': 'conf',                              'prompt':'\n\w+\(config\)\#'},
                                 {'cmd': 'interface vlan {0}'.format(vlan_id),'prompt':'\n\w+\(config-if\)\#'},
                                 ]}
                 if ' ' in kwargs['name']:
                     vlan_cmd = 'name "{0}"'.format(kwargs['name'])
                 else:
                     vlan_cmd = "name {0}".format(kwargs['name'])
-                cmds['cmds'].append({'cmd': vlan_cmd,'prompt':'\n\w+\(config-if\)\#'})
+                cmds['cmds'].append({'cmd': vlan_cmd,            'prompt':'\n\w+\(config-if\)\#'})
+                cmds['cmds'].append({'cmd': chr(26),             'prompt':'\n\w+\#'})
                 self._device.cmd(cmds)
                 self._device.load_system()
         else:

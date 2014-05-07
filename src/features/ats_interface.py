@@ -65,7 +65,8 @@ class ats_interface(Feature):
                 elif self._d.facts['model'] == 'AT-8000S/48' and m.group('ifp') == 'g':
                     ifn += 48
                 ifn = '{0}.0.{1}'.format(m.group('stack_no'), ifn)
-                self._interface_config[ifn]['description'] = m.group('description')
+                if ifn in self._interface_config:
+                    self._interface_config[ifn]['description'] = m.group('description')
 
     def update(self, ifn, **kwargs):
         self._d.log_info("update {0} {1}".format(ifn,pformat(kwargs)))

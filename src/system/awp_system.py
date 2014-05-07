@@ -29,8 +29,12 @@ class awp_system(object):
         return config
 
     def shell_init(self):
-        self._d.log_info('shell init')
-        return [{'cmd': 'terminal length 0', 'prompt':'\n[\w_]+\>'},]
+        self._d.log_info('shell_init')
+        return [{'cmd': 'terminal length 0', 'prompt':r'[\n\r]{1}[\w\_]*[\>\#]{1}'},]
+
+    def shell_prompt(self):
+        self._d.log_info('shell_prompt')
+        return r'[\n\r]{1}[\w\_]*[\>\#]{1}'
 
     def ping(self):
         self._d.log_info('ping')

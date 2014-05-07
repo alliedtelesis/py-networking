@@ -30,11 +30,13 @@ class DeviceOfflineException(Exception):
 
 class Device(object):
     def __init__(self, host, username='manager', password='friend', protocol='ssh', port='auto', os='auto',
-                 log_level='NOTSET', log_output='console:'):
+                 log_level='NOTSET', log_output='console:', connection_timeout=20):
         if protocol not in ('telnet','ssh','serial'):
             raise ValueError("Unsupported protocol "+protocol)
         self._proxy = None
-        self._proxy_url = ""
+        self._proxy_ipc_file = NamedTemporaryFile().name
+        self._proxy_url = "ipc://{0}".format(self._proxy_ipc_file)
+        self._proxy_connection_timeout=connection_timeout*1000
         self._host = host
         self._username = username
         self._password = password
@@ -107,62 +109,62 @@ class Device(object):
 
     def open(self):
         self.log_info("open")
-        if not self._proxy:
-             self._proxy_ipc_file = NamedTemporaryFile().name
-             self._proxy_url = "ipc://{0}".format(self._proxy_ipc_file)
-             self.log_info("creating proxy process {0} with zmq url {1}".format('cq-{0}'.format(self._host), self._proxy_url))
-             self._proxy = Process(name='cq-{0}'.format(self._host),
-                                        target=self._proxy_target,
-                                        args=(self,)
-                                       )
-             self._proxy.start()
-             self.log_debug("proxy process started")
+        self._start_proxy()
         self._load_core_facts()
         self._load_features()
         self.load_system()
 
     def close(self):
         self.log_info("close")
-        if self._proxy and self._proxy.is_alive():
-            self.log_debug("shutting down proxy process")
-            self._proxy.terminate()
-            self._proxy.join()
-            self._proxy = None
-            unlink(self._proxy_ipc_file)
+        self.cmd({'cmds':[{'cmd':'_exit', 'prompt': ''}]})
 
     def cmd(self, cmd):
         if type(cmd) is str:
              self.log_info("executing command '{0}'".format(cmd))
-             cmd = {'cmds':[{'cmd':cmd,'prompt':''}]}
+             cmd = {'cmds':[{'cmd':cmd,'prompt': self.system.shell_prompt()}]}
         else:
              for c in cmd['cmds']:
                  self.log_info("executing command '{0}' and wait for {1}".format(c['cmd'],repr(c['prompt'])))
 
-        self.log_info("adding shell initialization commands")
-        try:
-            cmd['cmds'] = self.system.shell_init()+cmd['cmds']
-        except:
-            self.log_info("no shell init {0}".format(sys.exc_info()[0]))
+        if not cmd['cmds'][0]['cmd'].startswith('_'):
+            self.log_info("adding shell initialization commands")
+            try:
+                cmd['cmds'] = self.system.shell_init()+cmd['cmds']
+            except:
+                self.log_info("no shell init {0}".format(sys.exc_info()[0]))
 
-        try:
-             context = zmq.Context()
-             socket = context.socket(zmq.REQ)
-             socket.RCVTIMEO = 8000
-             socket.connect(self._proxy_url)
-             socket.send_string(json.dumps(cmd),zmq.NOBLOCK)
-             ret = json.loads(socket.recv())
-             if ret['status'] == 'Success':
-                 self.log_debug("command execution success")
-                 self.log_debug("command execution output \n{0}".format(ret['output']))
-                 return ret['output']
-             else:
-                 self.log_warn("command execution '{0}' 'error {1}".format(cmd, ret))
-                 raise DeviceException(ret['output'])
-        except zmq.error.ZMQError, e:
-             self.log_warn("ZMQError {0}".format(repr(e)))
-             raise DeviceOfflineException
-        except:
-             raise DeviceException(sys.exc_info()[0])
+        i = 0
+        self._start_proxy()
+        while True:
+            try:
+                context = zmq.Context()
+                socket = context.socket(zmq.REQ)
+                socket.connect(self._proxy_url)
+                socket.send_string(json.dumps(cmd),zmq.NOBLOCK)
+
+                poller = zmq.Poller()
+                poller.register(socket, zmq.POLLIN)
+                if len(poller.poll(8000)) == 0:
+                    self._start_proxy()
+                    i += 1
+                    if i > 1:
+                        return False
+                    sleep(1)
+                    continue
+
+                ret = json.loads(socket.recv(zmq.NOBLOCK))
+                if ret['status'] == 'Success':
+                    self.log_debug("command execution success")
+                    self.log_debug("command execution output \n{0}".format(ret['output']))
+                    return ret['output']
+                else:
+                    self.log_warn("command execution '{0}' 'error {1}".format(cmd, ret))
+                    raise DeviceException(ret['output'])
+            except zmq.error.ZMQError, e:
+                 self.log_warn("ZMQError {0}".format(repr(e)))
+                 raise DeviceOfflineException
+            except:
+                 raise DeviceException(sys.exc_info()[0])
 
     def _load_core_facts(self):
         self.log_info("loading core facts")
@@ -254,3 +256,13 @@ class Device(object):
         if self._log_level != 0:
             getattr(log, level)(msg)
 
+    def _start_proxy(self):
+        if not isinstance(self._proxy,Process) or (isinstance(self._proxy,Process) and not self._proxy.is_alive()):
+            self.log_debug("_start_proxy")
+            self.log_info("creating proxy process {0} with zmq url {1}".format('cq-{0}'.format(self._host), self._proxy_url))
+            self._proxy = Process(name='cq-{0}'.format(self._host),
+                              target=self._proxy_target,
+                              args=(self,)
+                            )
+            self._proxy.start()
+            self.log_debug("proxy process started")

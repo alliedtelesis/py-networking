@@ -28,7 +28,7 @@ Interface {{ interface }}
 
 def setup_dut(dut):
     dut.reset()
-    dut.add_cmd({'cmd':'show version', 'state':0, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd':'show version', 'state':-1, 'action':'PRINT','args':["""
 
 AlliedWare Plus (TM) 5.4.2 09/25/13 12:57:26
 

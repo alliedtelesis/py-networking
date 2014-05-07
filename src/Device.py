@@ -257,8 +257,8 @@ class Device(object):
             getattr(log, level)(msg)
 
     def _start_proxy(self):
+        self.log_debug("_start_proxy")
         if not isinstance(self._proxy,Process) or (isinstance(self._proxy,Process) and not self._proxy.is_alive()):
-            self.log_debug("_start_proxy")
             self.log_info("creating proxy process {0} with zmq url {1}".format('cq-{0}'.format(self._host), self._proxy_url))
             self._proxy = Process(name='cq-{0}'.format(self._host),
                               target=self._proxy_target,

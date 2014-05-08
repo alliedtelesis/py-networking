@@ -30,11 +30,11 @@ def SSHProxy(device):
 
     # connect to host
     try:
-        device.log_debug("connecting to {0}:{1}".format(device.host, port))
+        device.log_info("connecting to {0}:{1}".format(device.host, port))
         device_s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         device_s.connect((device.host, port))
     except:
-        device.log_debug("cannot connecting to {0}:{1} ({2})".format(device.host, port, sys.exc_info()[0]))
+        device.log_warn("cannot connecting to {0}:{1} ({2})".format(device.host, port, sys.exc_info()[0]))
         ret = {'status': 'Error', 'output': 'Cannot connect to host'}
         exit(1)
 
@@ -44,7 +44,7 @@ def SSHProxy(device):
         t = Transport(device_s)
         t.start_client()
     except SSHException:
-        device.log_debug("cannot open an ssh  trasport to {0}:{1}".format(device.host, port))
+        device.log_warn("cannot open an ssh  trasport to {0}:{1}".format(device.host, port))
         ret = {'status': 'Error', 'output': 'Cannot connect ssh to host'}
         exit(1)
 
@@ -52,17 +52,17 @@ def SSHProxy(device):
     try:
         t.auth_password(device.username, device.password)
     except:
-        device.log_debug("username/password authentication failed")
+        device.log_debug("username/password authentication failed...trying in session auth")
 
     # try in session authentication
-    try:
-        if not t.is_authenticated():
+    if not t.is_authenticated():
+        try:
             t.auth_none(device.username)
             device.log_debug("none authentication succeed")
-    except:
-        device.log_debug("none authentication failed")
-        ret = {'status': 'Error', 'output': 'Cannot autenticate to the device'}
-        exit(1)
+        except:
+            device.log_warn("authentication failed")
+            ret = {'status': 'Error', 'output': 'Cannot authenticate to the device'}
+            exit(1)
 
     try:
         device.log_debug("getting a shell to the device")
@@ -86,7 +86,7 @@ def SSHProxy(device):
         ret = {'status':'Error','output':'ProxyException'}
         exit(1)
 
-
+    device.log_info("ready to accept commands")
     while True:
         # getting command to execute
         if len(zmq_p.poll(device._proxy_connection_timeout)) == 0:

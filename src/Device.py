@@ -144,7 +144,7 @@ class Device(object):
 
                 poller = zmq.Poller()
                 poller.register(socket, zmq.POLLIN)
-                if len(poller.poll(8000)) == 0:
+                if len(poller.poll(12000)) == 0:
                     self._start_proxy()
                     i += 1
                     if i > 1:
@@ -266,3 +266,4 @@ class Device(object):
                             )
             self._proxy.start()
             self.log_debug("proxy process started")
+            #sleep(5)

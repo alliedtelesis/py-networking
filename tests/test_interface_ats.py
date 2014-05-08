@@ -208,8 +208,9 @@ Port      Description
     """]})
 
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
-    print dut.port
     d.open()
+    print(d.interface)
+    sleep(25)
     print(d.interface)
     d.close()
 

@@ -51,14 +51,10 @@ class DocCommand(Command):
         self.mkpath(self.doctree_dir)
         self.builder_target_dir = 'doc'
         self.mkpath(self.builder_target_dir)
-        confoverrides = {
-                            'version': versioneer.get_version(),
-                            'release': versioneer.get_version(),
-                        }
 
         app = Sphinx(self.source_dir, self.source_dir,
                      self.build_dir, self.doctree_dir,
-                     'latex', confoverrides, sys.stdout,
+                     'latex', {}, sys.stdout,
                      freshenv=False)
 
         try:
@@ -78,7 +74,7 @@ class DocCommand(Command):
 
         app = Sphinx(self.source_dir, self.source_dir,
                      'doc', self.doctree_dir,
-                     'html', confoverrides, sys.stdout,
+                     'html', {}, sys.stdout,
                      freshenv=True)
 
         try:
@@ -128,7 +124,7 @@ setup(name             = 'py-networking',
                             'pyasn1',
                             'pyzmq',
                          ],
-      setup_requires   = [ 'sphinx'],
+      setup_requires   = [ 'sphinx' ],
       tests_require    = [
                             'tox'
                          ],

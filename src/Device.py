@@ -29,6 +29,8 @@ class DeviceOfflineException(Exception):
     pass
 
 class Device(object):
+    """ test doc
+    """
     def __init__(self, host, username='manager', password='friend', protocol='ssh', port='auto', os='auto',
                  log_level='NOTSET', log_output='console:', connection_timeout=20):
         if protocol not in ('telnet','ssh','serial'):

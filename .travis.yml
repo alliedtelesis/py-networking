@@ -5,7 +5,3 @@ install:
   - "pip install . "
   - "pip install pytest"
 script: "py.test"
-notifications:
-  email:
-    - francesco_salamida@alliedtelesis.com
-    - michele_mensuali@alliedtelesis.com

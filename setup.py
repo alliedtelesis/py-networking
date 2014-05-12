@@ -87,9 +87,11 @@ class DocCommand(Command):
             else:
                 raise
 
-long_description = 'Library for network programmability and automation'
-with open('srcdoc/intro.rst') as file:
-    long_description = file.read()
+if os.path.exists('srcdoc/intro.rst'):
+    with open('srcdoc/intro.rst') as file:
+        long_description = file.read()
+else:
+    long_description = 'Library for network programmability and automation'
 
 setup(name             = 'py-networking',
       version          = versioneer.get_version(),

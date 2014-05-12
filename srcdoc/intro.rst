@@ -42,9 +42,7 @@ For further information on how to develop and contribute to py-networking refer 
         $ gcc
         clang: error: no input files
 
-    gcc is already installed. Otherwise you will a dialog box like the following
-
-    .. image:: ./images/mac_install_gcc.png
+    gcc is already installed. Otherwise you will a dialog box asking you if you want to **Get Xcode** or **Install**.
 
     **PRESS INSTALL and not Get Xcode unless you want to install the full development environment**
 

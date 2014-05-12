@@ -9,6 +9,8 @@ Contents
     facts
     interface
     vlan
+    cookbook
+    developing
 
 
 

@@ -87,6 +87,10 @@ class DocCommand(Command):
             else:
                 raise
 
+long_description = 'Library for network programmability and automation'
+with open('srcdoc/intro.rst') as file:
+    long_description = file.read()
+
 setup(name             = 'py-networking',
       version          = versioneer.get_version(),
       cmdclass         = dict(versioneer.get_cmdclass().items() +
@@ -96,7 +100,7 @@ setup(name             = 'py-networking',
                             'doc': DocCommand
                           }.items()),
       description      = 'Library for network programmability and automation',
-      long_description = 'Library for network programmability and automation',
+      long_description = long_description,
       author           = 'Francesco Salamida',
       author_email     = 'salamida.francesco@gmail.com',
       license          = 'Apache License 2.0',

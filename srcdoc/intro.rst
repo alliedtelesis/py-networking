@@ -8,6 +8,11 @@ Py-Networking (PN) is a python library that provides a new way to interact and c
 PN abstract the physical device and provides to the user an uniform API that does not depends from the specific device configuration or configuration syntax.
 PN does not emulate features that device maybe missing but if two different devices implement a specific feature, this is exposed to the user in the same way.
 
+Notice
+------
+Py-Networking is at early stages of development. You are free to look around but we do not provide support at the moment
+and the library can go throughout a significant changes and backward compatibility cannot be guaranteed.
+
 Install
 -------
 Installation of Py-Networking can be done from pypi repository (recommended method) or from source code.
@@ -27,5 +32,8 @@ Assuming you have python and git command installed::
 
 For further information on how to develop and contribute to py-networking refer to Developing Py-Networking chapter.
 
+License
+-------
+Apache 2.0
 
 

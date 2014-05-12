@@ -14,7 +14,11 @@
 
 import sys
 import os
-import versioneer
+try:
+    import versioneer
+except ImportError:
+    sys.path.insert(0, os.path.abspath('..'))    
+    import versioneer
 
 versioneer.versionfile_source = '../src/_version.py'
 versioneer.versionfile_build = 'pynetworking/_version.py'

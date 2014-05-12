@@ -126,12 +126,12 @@ setup(name             = 'py-networking',
                             'PyYAML',
                             'Jinja2',
                             'ply',
-                            'twisted',
                             'pyasn1',
                             'pyzmq',
                          ],
       setup_requires   = [ 'sphinx' ],
       tests_require    = [
+                            'twisted',
                             'tox'
                          ],
       url              = 'https://github.com/alliedtelesis/py-networking/',

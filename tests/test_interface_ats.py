@@ -5,6 +5,21 @@ from time import sleep
 from jinja2 import Template
 
 
+ats_supported_sw_version = '3.0.0.44'
+ats_supported_boot_version = '1.0.1.07'
+ats_basic_supported_model = 'AT-8000S'
+ats_supported_model = [ats_basic_supported_model + '/' + '24', ats_basic_supported_model + '/' + '48']
+ats_model_port_number = 0
+ats_total_port_number = 0
+
+show_interface_header = """
+
+                                               Flow    Admin     Back   Mdix
+Port     Type         Duplex  Speed  Neg      control  State   Pressure Mode
+-------- ------------ ------  -----  -------- -------  -----   -------- ----
+"""
+
+
 def setup_dut(dut):
     dut.reset()
     dut.prompt = '#'
@@ -31,9 +46,41 @@ Serial number:
     """]})
 
 
+def test_show_system(dut, log_level):
+    if dut.mode != 'emulated':
+        pytest.skip("only on emulated")
+    setup_dut(dut)
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d.open()
+    if (d.model in ats_supported_model):
+        print("Model {0} accepted\n".format(d.model))
+    else:
+        pytest.skip("Model {0} not supported".format(d.model))
+    global ats_model_port_number
+    ats_model_port_number = d.model[len(ats_basic_supported_model) + 1:]
+    d.close()
+
+
+def test_show_version(dut, log_level):
+    if dut.mode != 'emulated':
+        pytest.skip("only on emulated")
+    setup_dut(dut)
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d.open()
+
+    if d.sw_version < ats_supported_sw_version :
+        print("\nSw version older than the one supported: some features could not be present")
+    else :
+        if d.sw_version == ats_supported_sw_version :
+            print("\nSw version correct")
+        else :
+            print("\nSw version more recent than the one supported: some features could not be tested")
+    d.close()
+
+
 def test_get_interface(dut, log_level):
-#    if dut.mode != 'emulated':
-#        pytest.skip("only on emulated")
+    if dut.mode != 'emulated':
+        pytest.skip("only on emulated")
     setup_dut(dut)
     dut.add_cmd({'cmd':'show interfaces status', 'state':0, 'action':'PRINT','args':["""
 
@@ -209,9 +256,52 @@ Port      Description
 
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
+    # print(d.interface)
+    # sleep(25)
     print(d.interface)
-    sleep(25)
-    print(d.interface)
+    assert d.facts['os'] == 'ats'
+    assert d.interface['1.0.4']['link'] == False
+    assert d.interface['1.0.4']['description'] == 'singleworddescription'
+    assert d.interface['1.0.12']['description'] == 'some_description'
+    assert d.interface['1.0.20']['description'] == 'some description'
+
+    ats_total_port_number = len(d.interface.keys())
+
+    for index in range(1,ats_total_port_number+1):
+        ref = '1.0.{0}'.format(index)
+        assert d.interface[ref]['configured_duplex'] == 'full'
+        assert d.interface[ref]['configured_polarity'] == 'auto'
+        assert d.interface[ref]['enable'] == True
+        assert d.interface[ref]['link'] == False
+
+    for index in range(1,25):
+        ref = '1.0.{0}'.format(index)
+        assert d.interface[ref]['configured_speed'] == '100'
+
+    for index in range(25,ats_total_port_number+1):
+        ref = '1.0.{0}'.format(index)
+        assert d.interface[ref]['configured_speed'] == '1000'
+
+    print('There are {0} available ports'.format(ats_total_port_number))
+
     d.close()
 
 
+def test_enable_interface(dut, log_level):
+    if dut.mode != 'emulated':
+       pytest.skip("only on emulated")
+    setup_dut(dut)
+    show_interface = show_interface_header
+# 1/e1     100M-Copper  Full    100    Enabled  Off      Up      Disabled Auto
+    for interface in range(1,int(ats_model_port_number)+1):
+        entry = '1/e%-2d    100M-Copper  Full    100    Enabled  Off      Up      Disabled Auto\n' % (interface)
+        show_interface += entry
+
+    dut.add_cmd({'cmd': 'show interfaces configuration',       'state':0, 'action':'PRINT','args':[show_interface]})
+
+    print('\nAdd here code to test enabling and disabling of interfaces')
+
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d.open()
+
+    d.close()

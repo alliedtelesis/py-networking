@@ -28,6 +28,9 @@ def core_ats(dev):
     else:
         return ret
 
+    dev.sw_version = ret['version']
+    dev.boot_version = ret['boot version']
+
     out = dev.cmd({'cmds':[{'cmd': 'show system', 'prompt':'\n\w+\#'}]})
     dev.log_debug("show system\n{0}".format(out))
 
@@ -47,6 +50,7 @@ def core_ats(dev):
     m = re.search("\nUnit\s+Type\s*\n[^\n]+\n\s+\d\s+(?P<model>[^\s]+)\s*\n", out)
     if m:
         ret['model'] = m.group('model')
+        dev.model = ret['model']
     else:
         ret['model'] = 'not found'
         dev.log_warn("cannot capture model")

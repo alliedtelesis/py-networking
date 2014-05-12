@@ -128,6 +128,7 @@ setup(name             = 'py-networking',
                             'ply',
                             'pyasn1',
                             'pyzmq',
+                            'ordereddict'
                          ],
       setup_requires   = [ 'sphinx' ],
       tests_require    = [

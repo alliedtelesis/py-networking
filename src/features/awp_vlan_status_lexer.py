@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 import re
 import ply.lex as lex
-from collections import OrderedDict
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 
 class VlanStatusLexer(object):
     tokens = (

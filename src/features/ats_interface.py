@@ -3,7 +3,10 @@ import re
 import json
 from pprint import pformat
 from pynetworking import Feature
-from collections import OrderedDict
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 
 class ats_interface(Feature):
     """

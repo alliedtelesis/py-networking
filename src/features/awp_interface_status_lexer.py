@@ -2,7 +2,10 @@
 import re
 import ply.lex as lex
 from pprint import pprint
-from collections import OrderedDict
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 
 class InterfaceStatusLexer(object):
     states = (

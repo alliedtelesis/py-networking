@@ -1,8 +1,12 @@
-Unit Tests on Travis-CI
+Unit Tests       |unittest|
 
-.. image:: https://travis-ci.org/alliedtelesis/py-networking.svg?branch=develop
+Pypi Repository  |pypi|
+
+.. |unittest| image:: https://travis-ci.org/alliedtelesis/py-networking.svg?branch=develop
    :target: https://travis-ci.org/alliedtelesis/py-networking
 
+.. |pypi| image:: https://badge.fury.io/py/py-networking.svg
+    :target: http://badge.fury.io/py/py-networking
 
 Notice
 ######

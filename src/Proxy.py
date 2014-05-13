@@ -140,19 +140,22 @@ def _get_reply(device, chan, prompt=''):
          buff = ''
          while True:
              buff += chan.recv(999)
-             device.log_debug("received >{0}<".format(buff))
+#             device.log_debug("received >{0}<".format(buff))
              if re.search(prompt,buff):
                  device.log_debug("got prompt")
                  break
     except socket.timeout:
-         device.log_warn("timeout waiting a reply or a prompt")
-         raise ProxyException("Timeout")
+        device.log_debug("received >{0}<".format(buff))
+        device.log_warn("timeout waiting a reply or a prompt")
+        raise ProxyException("Timeout")
     except:
-         device.log_warn("exception waiting a reply or a prompt")
-         raise ProxyException("")
+        device.log_debug("received >{0}<".format(buff))
+        device.log_warn("exception waiting a reply or a prompt")
+        raise ProxyException("")
 
     if re.search(prompt,buff):
         return '\n'.join(buff.split('\n')[1:-1])
     else:
-         device.log_warn("Not seen any prompt")
-         raise ProxyException("Not seen any prompt")
+        device.log_debug("received >{0}<".format(buff))
+        device.log_warn("Not seen any prompt")
+        raise ProxyException("Not seen any prompt")

@@ -28,9 +28,9 @@ class awp_vlan(Feature):
     def create(self, vlan_id, **kwargs):
         self._d.log_info("create {0} {1}".format(vlan_id,pformat(kwargs)))
         self._update_vlan()
-        cmds = {'cmds':[{'cmd': 'enable',               'prompt':'\n\w+\#'},
-                        {'cmd': 'conf t',               'prompt':'\n\w+\(config\)\#'},
-                        {'cmd': 'vlan database',        'prompt':'\n\w+\(config-vlan\)\#'},
+        cmds = {'cmds':[{'cmd': 'enable',               'prompt':'\#'},
+                        {'cmd': 'conf t',               'prompt':'\(config\)\#'},
+                        {'cmd': 'vlan database',        'prompt':'\(config-vlan\)\#'},
                        ]}
         vlan_cmd = 'vlan {0}'.format(vlan_id)
 
@@ -48,8 +48,8 @@ class awp_vlan(Feature):
             else:
                 raise ValueError("{0} is and invalid vlan state".format(kwargs['state'])) 
         
-        cmds['cmds'].append({'cmd': vlan_cmd,             'prompt':'\n\w+\(config-vlan\)\#'})
-        cmds['cmds'].append({'cmd': chr(26),              'prompt':'\n\w+\#'})
+        cmds['cmds'].append({'cmd': vlan_cmd,             'prompt':'\(config-vlan\)\#'})
+        cmds['cmds'].append({'cmd': chr(26),              'prompt':'\#'})
         self._device.cmd(cmds)
         self._device.load_system()
 
@@ -57,11 +57,11 @@ class awp_vlan(Feature):
         self._d.log_info("delete {0}".format(vlan_id))
         self._update_vlan()
         self._get_vlan_ids(vlan_id)
-        cmds = {'cmds':[{'cmd': 'enable',                     'prompt':'\n\w+\#'},
-                        {'cmd': 'conf t',                     'prompt':'\n\w+\(config\)\#'},
-                        {'cmd': 'vlan database',              'prompt':'\n\w+\(config-vlan\)\#'},
-                        {'cmd': 'no vlan {0}'.format(vlan_id),'prompt':'\n\w+\(config-vlan\)\#'},
-                        {'cmd': chr(26),                      'prompt':'\n\w+\#'},
+        cmds = {'cmds':[{'cmd': 'enable',                     'prompt':'\#'},
+                        {'cmd': 'conf t',                     'prompt':'\(config\)\#'},
+                        {'cmd': 'vlan database',              'prompt':'\(config-vlan\)\#'},
+                        {'cmd': 'no vlan {0}'.format(vlan_id),'prompt':'\(config-vlan\)\#'},
+                        {'cmd': chr(26),                      'prompt':'\#'},
                        ]}
         self._device.cmd(cmds)
         self._device.load_system()
@@ -95,25 +95,25 @@ class awp_vlan(Feature):
         if 'switchport mode' not in ifi:
             raise ValueError('{0} interface does not support vlan'.format(ifn))
 
-        cmds = {'cmds':[{'cmd': 'enable',                    'prompt':'\n\w+\#'},
-                        {'cmd': 'conf t',                    'prompt':'\n\w+\(config\)\#'},
-                        {'cmd': 'interface port{0}'.format(ifn), 'prompt':'\n\w+\(config-if\)\#'},
+        cmds = {'cmds':[{'cmd': 'enable',                    'prompt':'\#'},
+                        {'cmd': 'conf t',                    'prompt':'\(config\)\#'},
+                        {'cmd': 'interface port{0}'.format(ifn), 'prompt':'\(config-if\)\#'},
                        ]}
 
         if ifi['switchport mode'] == 'access' and tagged == False:
-            cmds['cmds'].append({'cmd': 'switchport access vlan {0}'.format(vid) ,'prompt':'\n\w+\(config-if\)\#'})
+            cmds['cmds'].append({'cmd': 'switchport access vlan {0}'.format(vid) ,'prompt':'\(config-if\)\#'})
         elif ifi['switchport mode'] == 'access' and tagged == True:
             ## should copy access vlan to native
-            cmds['cmds'].append({'cmd': 'switchport mode trunk'                             ,'prompt':'\n\w+\(config-if\)\#'})
-            cmds['cmds'].append({'cmd': 'switchport trunk allowed vlan add {0}'.format(vid) ,'prompt':'\n\w+\(config-if\)\#'})
+            cmds['cmds'].append({'cmd': 'switchport mode trunk'                             ,'prompt':'\(config-if\)\#'})
+            cmds['cmds'].append({'cmd': 'switchport trunk allowed vlan add {0}'.format(vid) ,'prompt':'\(config-if\)\#'})
         elif ifi['switchport mode'] == 'trunk' and tagged == False:
-            cmds['cmds'].append({'cmd': 'switchport trunk native vlan {0}'.format(vid) ,'prompt':'\n\w+\(config-if\)\#'})
+            cmds['cmds'].append({'cmd': 'switchport trunk native vlan {0}'.format(vid) ,'prompt':'\(config-if\)\#'})
         elif ifi['switchport mode'] == 'trunk' and tagged == True:
-            cmds['cmds'].append({'cmd': 'switchport trunk allowed vlan add {0}'.format(vid) ,'prompt':'\n\w+\(config-if\)\#'})
+            cmds['cmds'].append({'cmd': 'switchport trunk allowed vlan add {0}'.format(vid) ,'prompt':'\(config-if\)\#'})
         else:
             raise ValueError('interface {0} cannot be added to vlan {1}'.format(ifn,vid))
 
-        cmds['cmds'].append({'cmd': chr(26),                               'prompt':'\n\w+\#'})
+        cmds['cmds'].append({'cmd': chr(26),                               'prompt':'\#'})
         self._device.cmd(cmds)
         self._device.load_system()
 
@@ -136,22 +136,22 @@ class awp_vlan(Feature):
         if not ifi:    
             raise ValueError('{0} is not a valid interface'.format(ifn))
     
-        cmds = {'cmds':[{'cmd': 'enable',                    'prompt':'\n\w+\#'},
-                        {'cmd': 'conf t',                    'prompt':'\n\w+\(config\)\#'},
-                        {'cmd': 'interface port{0}'.format(ifn), 'prompt':'\n\w+\(config-if\)\#'},
+        cmds = {'cmds':[{'cmd': 'enable',                    'prompt':'\#'},
+                        {'cmd': 'conf t',                    'prompt':'\(config\)\#'},
+                        {'cmd': 'interface port{0}'.format(ifn), 'prompt':'\(config-if\)\#'},
                        ]}
 
         if ifi['switchport mode'] == 'access':
             # this actually move port back to vlan 1
-            cmds['cmds'].append({'cmd': 'no switchport access vlan {0}'.format(vid) ,'prompt':'\n\w+\(config-if\)\#'})
+            cmds['cmds'].append({'cmd': 'no switchport access vlan {0}'.format(vid) ,'prompt':'\(config-if\)\#'})
         elif ifi['switchport mode'] == 'trunk' and tagged == False:
-            cmds['cmds'].append({'cmd': 'switchport trunk native vlan none' ,'prompt':'\n\w+\(config-if\)\#'})
+            cmds['cmds'].append({'cmd': 'switchport trunk native vlan none' ,'prompt':'\(config-if\)\#'})
         elif ifi['switchport mode'] == 'trunk' and tagged == True:
-            cmds['cmds'].append({'cmd': 'switchport trunk allowed vlan remove {0}'.format(vid) ,'prompt':'\n\w+\(config-if\)\#'})
+            cmds['cmds'].append({'cmd': 'switchport trunk allowed vlan remove {0}'.format(vid) ,'prompt':'\(config-if\)\#'})
         else:
             raise ValueError('interface {0} cannot be delete from vlan {1}'.format(ifn,vid))
 
-        cmds['cmds'].append({'cmd': chr(26),                               'prompt':'\n\w+\#'})
+        cmds['cmds'].append({'cmd': chr(26),                               'prompt':'\#'})
         self._device.cmd(cmds)
         self._device.load_system()
 

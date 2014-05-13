@@ -18,8 +18,8 @@ class awp_system(object):
     def get_config(self):
         self._d.log_info('getting device configuration')
         config = ''
-        cmds = {'cmds':[{'cmd': 'enable',                    'prompt':'\n\w+\#'},
-                        {'cmd': 'show running-config',       'prompt':'\n\w+\#'},
+        cmds = {'cmds':[{'cmd': 'enable',                    'prompt':'\#'},
+                        {'cmd': 'show running-config',       'prompt':'\#'},
                        ]}
         for line in self._d.cmd(cmds).replace('\r','').split('\n'):
             config += line+'\n'
@@ -30,11 +30,11 @@ class awp_system(object):
 
     def shell_init(self):
         self._d.log_info('shell_init')
-        return [{'cmd': 'terminal length 0', 'prompt':r'[\n\r]{1}[\w\_]*[\>\#]{1}'},]
+        return [{'cmd': 'terminal length 0', 'prompt':'[\>\#]'},]
 
     def shell_prompt(self):
         self._d.log_info('shell_prompt')
-        return r'[\n\r]{1}[\w\_]*[\>\#]{1}'
+        return r'[\>\#]'
 
     def ping(self):
         self._d.log_info('ping')

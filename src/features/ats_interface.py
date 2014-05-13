@@ -77,8 +77,8 @@ class ats_interface(Feature):
         if ifn not in self._interface.keys():
             raise ValueError('interface {0} does not exist'.format(ifn))
 
-        cmds = {'cmds':[{'cmd': 'conf',                                         'prompt':'[\n\r]\w+\(config\)\#'},
-                        {'cmd': 'interface ethernet '+self._to_ifn_native(ifn), 'prompt':'[\n\r]\w+\(config-if\)\#'},
+        cmds = {'cmds':[{'cmd': 'conf',                                         'prompt':'\(config\)\#'},
+                        {'cmd': 'interface ethernet '+self._to_ifn_native(ifn), 'prompt':'\(config-if\)\#'},
                        ]}
         run_cmd = False
         if 'description' in kwargs:
@@ -89,10 +89,10 @@ class ats_interface(Feature):
                 return
 
             run_cmd = True
-            cmds['cmds'].append({'cmd': 'description {0}'.format(description),'prompt':'[\n\r]\w+\(config-if\)\#'})
+            cmds['cmds'].append({'cmd': 'description {0}'.format(description),'prompt':'\(config-if\)\#'})
 
         if run_cmd:
-            cmds['cmds'].append({'cmd': chr(26),                               'prompt':'[\n\r]\w+\#'})
+            cmds['cmds'].append({'cmd': chr(26),                               'prompt':'\#'})
             self._device.cmd(cmds)
             self._device.load_system()
 

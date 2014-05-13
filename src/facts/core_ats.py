@@ -7,7 +7,7 @@ def core_ats(dev):
     ret = {}
 
     try:
-        out = dev.cmd({'cmds':[{'cmd': 'show version', 'prompt':r'\n\w+\#'}]})
+        out = dev.cmd({'cmds':[{'cmd': 'show version', 'prompt':'\#'}]})
     except DeviceOfflineException:
         return ret
 
@@ -31,7 +31,7 @@ def core_ats(dev):
     dev.sw_version = ret['version']
     dev.boot_version = ret['boot version']
 
-    out = dev.cmd({'cmds':[{'cmd': 'show system', 'prompt':'\n\w+\#'}]})
+    out = dev.cmd({'cmds':[{'cmd': 'show system', 'prompt':'\#'}]})
     dev.log_debug("show system\n{0}".format(out))
 
     #

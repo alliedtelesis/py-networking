@@ -27,11 +27,11 @@ class ats_system(object):
 
     def shell_init(self):
         self._d.log_info('shell_init')
-        return [{'cmd': 'terminal datadump', 'prompt':r'[\n\r]+[\w\_]+\#'},]
+        return [{'cmd': 'terminal datadump', 'prompt':'\#'},]
 
     def shell_prompt(self):
         self._d.log_info('shell_prompt')
-        return r'[\n\r]{1}[\w\_]*[\>\#]{1}'
+        return r'[\>\#]'
 
     def ping(self):
         self._d.log_info('ping')

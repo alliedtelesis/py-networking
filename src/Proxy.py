@@ -135,12 +135,12 @@ def SSHProxy(device):
 def _get_reply(device, chan, prompt=''):
     if prompt == '':
         return
+    prompt = '[\n\r]\w*' + prompt
     try:
          device.log_debug("waiting for {0}".format(repr(prompt)))
          buff = ''
          while True:
              buff += chan.recv(999)
-#             device.log_debug("received >{0}<".format(buff))
              if re.search(prompt,buff):
                  device.log_debug("got prompt")
                  break

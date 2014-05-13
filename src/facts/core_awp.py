@@ -4,8 +4,8 @@ import re
 
 def core_awp(dev):
     ret = {}
-    cmds = {'cmds':[{'cmd': 'terminal length 0', 'prompt':'\n\w+\>'},
-                    {'cmd': 'show version',      'prompt':'\n\w+\>'},
+    cmds = {'cmds':[{'cmd': 'terminal length 0', 'prompt':'\>'},
+                    {'cmd': 'show version',      'prompt':'\>'},
                    ]}
     try:
         out = dev.cmd(cmds)
@@ -35,8 +35,8 @@ def core_awp(dev):
     if m:
         ret['build_type'] = m.group(1)
 
-    cmds = {'cmds':[{'cmd': 'terminal length 0', 'prompt':'\n\w+\>'},
-                    {'cmd': 'show system',       'prompt':'\n\w+\>'},
+    cmds = {'cmds':[{'cmd': 'terminal length 0', 'prompt':'\>'},
+                    {'cmd': 'show system',       'prompt':'\>'},
                    ]}
     out = dev.cmd(cmds)
 

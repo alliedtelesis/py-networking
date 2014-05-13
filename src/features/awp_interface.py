@@ -30,18 +30,18 @@ class awp_interface(Feature):
         if ifn not in self._interface.keys():
             raise ValueError('interface {0} does not exist'.format(ifn))
         
-        cmds = {'cmds':[{'cmd': 'enable',                    'prompt':'\n\w+\#'},
-                        {'cmd': 'conf t',                    'prompt':'\n\w+\(config\)\#'},
-                        {'cmd': 'interface port{0}'.format(ifn), 'prompt':'\n\w+\(config-if\)\#'},
+        cmds = {'cmds':[{'cmd': 'enable',                    'prompt':'\#'},
+                        {'cmd': 'conf t',                    'prompt':'\(config\)\#'},
+                        {'cmd': 'interface port{0}'.format(ifn), 'prompt':'\(config-if\)\#'},
                        ]}  
         run_cmd = False
         if 'enable' in kwargs:
             if self._interface[ifn]['enable'] != kwargs['enable']:
                 run_cmd = True
                 if kwargs['enable']:
-                    cmds['cmds'].append({'cmd': 'no shutdown','prompt':'\n\w+\(config-if\)\#'})
+                    cmds['cmds'].append({'cmd': 'no shutdown','prompt':'\(config-if\)\#'})
                 else:
-                    cmds['cmds'].append({'cmd': 'shutdown','prompt':'\n\w+\(config-if\)\#'})
+                    cmds['cmds'].append({'cmd': 'shutdown','prompt':'\(config-if\)\#'})
         elif 'description' in kwargs:
             description = kwargs['description']
             if ' ' in description:
@@ -50,10 +50,10 @@ class awp_interface(Feature):
                 return
 
             run_cmd = True
-            cmds['cmds'].append({'cmd': 'description {0}'.format(description),'prompt':'\n\w+\(config-if\)\#'})
+            cmds['cmds'].append({'cmd': 'description {0}'.format(description),'prompt':'\(config-if\)\#'})
 
         if run_cmd:
-            cmds['cmds'].append({'cmd': chr(26),                               'prompt':'\n\w+\#'})
+            cmds['cmds'].append({'cmd': chr(26),                               'prompt':'\#'})
             self._device.cmd(cmds)
             self._device.load_system()
 

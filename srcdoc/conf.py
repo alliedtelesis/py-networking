@@ -20,6 +20,8 @@ except ImportError:
     sys.path.insert(0, os.path.abspath('..'))    
     import versioneer
 
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+
 versioneer.versionfile_source = '../src/_version.py'
 versioneer.versionfile_build = 'pynetworking/_version.py'
 versioneer.tag_prefix = 'v' # tags are like v1.2.0
@@ -108,26 +110,12 @@ pygments_style = 'sphinx'
 
 # -- Options for HTML output ----------------------------------------------
 
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
-html_theme = 'default'
-
-# Theme options are theme-specific and customize the look and feel of a theme
-# further.  For a list of options available for each theme, see the
-# documentation.
-html_theme_options = {
-    "rightsidebar": "true",
-    "sidebarbgcolor": "white",
-    "sidebartextcolor": "black",
-    "sidebarlinkcolor": "#003C69",
-    "footerbgcolor": "gray",
-    "relbarbgcolor": "#983222",
-    "headfont": "#003C69"
-
-}
-
-# Add any paths that contain custom themes here, relative to this directory.
-#html_theme_path = []
+if not on_rtd:  # only import and set the theme if we're building docs locally
+    import sphinx_rtd_theme
+    html_theme = 'sphinx_rtd_theme'
+    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+else:
+    html_theme = 'default'
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -277,3 +265,5 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+
+

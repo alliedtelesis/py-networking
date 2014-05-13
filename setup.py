@@ -130,7 +130,9 @@ setup(name             = 'py-networking',
                             'pyzmq',
                             'ordereddict'
                          ],
-      setup_requires   = [ 'sphinx' ],
+      setup_requires   = [ 'sphinx',
+                           'sphinx_rtd_theme'
+                         ],
       tests_require    = [
                             'twisted',
                             'tox'

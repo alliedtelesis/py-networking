@@ -54,7 +54,6 @@ class ats_interface(Feature):
                                                 'configured_duplex': m.group('configured_duplex').lower(),
                                                 'configured_polarity': m.group('configured_polarity').lower(),
                                                }
-        self._d.log_debug("Configuration {0}".format(pformat(json.dumps(self._interface_config))))
 
         ifre = re.compile('(?P<stack_no>\d)/(?P<ifp>[eg])(?P<ifn>\d+)\s+'
                           '(?P<description>[ \w\_]+)')
@@ -70,9 +69,32 @@ class ats_interface(Feature):
                 ifn = '{0}.0.{1}'.format(m.group('stack_no'), ifn)
                 if ifn in self._interface_config:
                     self._interface_config[ifn]['description'] = m.group('description')
+        self._d.log_debug("Configuration {0}".format(pformat(json.dumps(self._interface_config))))
 
     def update(self, ifn, **kwargs):
         self._d.log_info("update {0} {1}".format(ifn,pformat(kwargs)))
+        self._update_interface()
+        if ifn not in self._interface.keys():
+            raise ValueError('interface {0} does not exist'.format(ifn))
+
+        cmds = {'cmds':[{'cmd': 'conf',                                         'prompt':'[\n\r]\w+\(config\)\#'},
+                        {'cmd': 'interface ethernet '+self._to_ifn_native(ifn), 'prompt':'[\n\r]\w+\(config-if\)\#'},
+                       ]}
+        run_cmd = False
+        if 'description' in kwargs:
+            description = kwargs['description']
+            if ' ' in description:
+                description = '"{0}"'.format(description)
+            if 'description' in self._interface[ifn] and self._interface[ifn]['description'] == description:
+                return
+
+            run_cmd = True
+            cmds['cmds'].append({'cmd': 'description {0}'.format(description),'prompt':'[\n\r]\w+\(config-if\)\#'})
+
+        if run_cmd:
+            cmds['cmds'].append({'cmd': chr(26),                               'prompt':'[\n\r]\w+\#'})
+            self._device.cmd(cmds)
+            self._device.load_system()
 
     def items(self):
         self._update_interface()
@@ -149,5 +171,14 @@ class ats_interface(Feature):
 
         self._d.log_debug("Status {0}".format(pformat(json.dumps(self._interface))))
 
-
+    def _to_ifn_native(self, ifn):
+        self._d.log_info("_to_ifn_native "+ifn)
+        stack_no = ifn.split('.')[0]
+        if_no = int(ifn.split('.')[2])
+        if self._d.facts['model'] == 'AT-8000S/24' and if_no > 24:
+            return "{0}/g{1}".format(stack_no, if_no-24)
+        elif self._d.facts['model'] == 'AT-8000S/48'and if_no > 48:
+            return "{0}/g{1}".format(stack_no, if_no-48)
+        else:
+            return "{0}/e{1}".format(stack_no, if_no)
 

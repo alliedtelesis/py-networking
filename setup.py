@@ -87,8 +87,8 @@ class DocCommand(Command):
             else:
                 raise
 
-if os.path.exists('srcdoc/intro.rst'):
-    with open('srcdoc/intro.rst') as file:
+if os.path.exists('README.rst'):
+    with open('README.rst') as file:
         long_description = file.read()
 else:
     long_description = 'Library for network programmability and automation'

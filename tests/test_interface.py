@@ -68,7 +68,8 @@ def test_config(dut, log_level):
         pytest.skip("only on emulated")
     setup_dut(dut)
     show_interface = ''
-    for interface in range(1,51):
+    max_if = 51
+    for interface in range(1,max_if):
         env = { 
                 'interface': 'port0.0.{0}'.format(interface),
                 'link' : 'UP',
@@ -92,13 +93,46 @@ def test_config(dut, log_level):
                } 
         show_interface += show_interface_template.render(env).encode('ascii','ignore')
     dut.add_cmd({'cmd':'show interface', 'state':0, 'action':'PRINT','args':[show_interface]})
+
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
+
     assert d.facts['os'] == 'awp'
-    assert d.interface['0.0.10']['description'] == 'test1'
-    assert d.interface['0.0.11']['description'] == 'this is a test description'
+
+#   interface checks (try just one or a few to solicitate the whole software)
+    interface = 15
+    tern = '0.0.{0}'.format(interface)
+#   configuration check
+    assert d.interface[tern]['configured duplex'] == 'auto'
+    assert d.interface[tern]['configured speed'] == 'auto'
+    assert d.interface[tern]['configured polarity'] == 'auto'
+
+#   status check
+    assert d.interface[tern]['link'] == True
+    assert d.interface[tern]['current polarity'] == 'mdix'
+    assert d.interface[tern]['enable'] == False
+    assert d.interface[tern]['current duplex'] == 'full'
+    assert d.interface[tern]['current speed'] == '1000'
+
+#   description check
+    assert d.interface['0.0.1']['description'] == 'test1'
+    assert d.interface['0.0.5']['description'] == 'test1'
+    assert d.interface['0.0.8']['description'] == 'test1'
+    assert d.interface['0.0.31']['description'] == 'this is a test description'
+    assert d.interface['0.0.50']['description'] == 'this is a test description'
+    assert d.interface['vlan1']['description'] == 'testvlan'
     assert d.interface['vlan10']['description'] == 'testvlan'
+
+#   mode check
+    assert d.interface['0.0.2']['switchport mode'] == 'access'
+    assert d.interface['0.0.8']['switchport mode'] == 'access'
+    assert d.interface['0.0.10']['switchport mode'] == 'access'
+    assert d.interface['0.0.11']['switchport mode'] == 'trunk'
+    assert d.interface['0.0.27']['switchport mode'] == 'trunk'
+    assert d.interface['0.0.41']['switchport mode'] == 'trunk'
+
     d.close()
+
 
 def test_enable(dut, log_level):
     if dut.mode != 'emulated':
@@ -119,10 +153,14 @@ def test_enable(dut, log_level):
     dut.add_cmd({'cmd': 'no shutdown',          'state':1, 'action':'SET_STATE','args':[2]})
     show_interface = ''
     for interface in range(1,51):
-        env = { 
+        if (interface == 10):
+            state = 'UP'
+        else:
+            state = 'DOWN'
+        env = {
                 'interface': 'port0.0.{0}'.format(interface),
                 'link' : 'UP',
-                'state': 'UP',
+                'state': '{0}'.format(state),
                 'hardware' : 'Ethernet',
               } 
         show_interface += show_interface_template.render(env).encode('ascii','ignore')

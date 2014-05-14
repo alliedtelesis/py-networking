@@ -52,10 +52,7 @@ def test_show_system(dut, log_level):
     setup_dut(dut)
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
-    if (d.model in ats_supported_model):
-        print("Model {0} accepted\n".format(d.model))
-    else:
-        pytest.skip("Model {0} not supported".format(d.model))
+    assert (d.model in ats_supported_model)
     global ats_model_port_number
     ats_model_port_number = d.model[len(ats_basic_supported_model) + 1:]
     d.close()
@@ -67,14 +64,7 @@ def test_show_version(dut, log_level):
     setup_dut(dut)
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
-
-    if d.sw_version < ats_supported_sw_version :
-        print("\nSw version older than the one supported: some features could not be present")
-    else :
-        if d.sw_version == ats_supported_sw_version :
-            print("\nSw version correct")
-        else :
-            print("\nSw version more recent than the one supported: some features could not be tested")
+    assert (d.sw_version == ats_supported_sw_version)
     d.close()
 
 
@@ -256,9 +246,7 @@ Port      Description
 
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
-    # print(d.interface)
-    # sleep(25)
-    print(d.interface)
+
     assert d.facts['os'] == 'ats'
     assert d.interface['1.0.4']['link'] == False
     assert d.interface['1.0.4']['description'] == 'singleworddescription'
@@ -267,14 +255,16 @@ Port      Description
 
     ats_total_port_number = len(d.interface.keys())
 
-    for index in range(1,ats_total_port_number+1):
+    index_list = [1,8,24,25,26]
+
+    for index in index_list:
         ref = '1.0.{0}'.format(index)
         assert d.interface[ref]['configured_duplex'] == 'full'
         assert d.interface[ref]['configured_polarity'] == 'auto'
         assert d.interface[ref]['enable'] == True
         assert d.interface[ref]['link'] == False
 
-    for index in range(1,25):
+    for index in range(1,2):
         ref = '1.0.{0}'.format(index)
         assert d.interface[ref]['configured_speed'] == '100'
 

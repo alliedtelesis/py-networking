@@ -114,7 +114,6 @@ class ats_interface(Feature):
 
     def __getitem__(self, ifn):
         self._update_interface()
-        print ifn
         if ifn in self._interface.keys():
             return self._interface[ifn]
         raise IndexError

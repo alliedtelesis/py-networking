@@ -14,6 +14,7 @@ class InterfaceConfigLexer(object):
         'IF_PORT_RANGE',
         'IF_VLAN',
         'description',
+        'switchport_mode',
         'END',
     )
 
@@ -46,6 +47,12 @@ class InterfaceConfigLexer(object):
             t.value = (t.lexer.id, v[1][1:-1])
         else:
             t.value = (t.lexer.id, v[1])
+        return t
+
+    def t_ifport_ifportrange_ifvlan_switchport_mode(self, t):
+        r'switchport\s+mode\s+(access|trunk)'
+        v = re.split('\s+', t.value, maxsplit=2)
+        t.value = (t.lexer.id, v[2])
         return t
 
     def t_ifport_ifportrange_ifvlan_end(self, t):

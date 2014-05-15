@@ -946,4 +946,14 @@ ip ssh server
     assert '1.0.20' in d.vlan[10]['tagged']
     d.close()
 
+def test_get_vlan_ids(dut, log_level):
+    if dut.mode != 'emulated':
+        pytest.skip("only on emulated")
+    setup_dut(dut)
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d.open()
+    assert d.vlan._get_vlan_ids('10,20,30,40,50') == [10,20,30,40,50]
+    assert d.vlan._get_vlan_ids('10-15') == [10,11,12,13,14,15]
+    assert d.vlan._get_vlan_ids('10-11,60,1000-1001') == [10,11,60,1000,1001]
+    d.close()
 

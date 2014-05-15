@@ -22,7 +22,7 @@ class VlanConfigLexer(object):
         t.lexer.begin('INITIAL')
 
     def t_vlandb_VLANLIST(self, t):
-        r'vlan\s+\d+(\,\d+)*'
+        r'vlan\s+[^\n]+'
         t.value = re.split('\s+',t.value)[1]
         return t
 

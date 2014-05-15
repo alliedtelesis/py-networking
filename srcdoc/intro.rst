@@ -63,10 +63,10 @@ Here is an example of python script using the PN library::
 
     from pynetworking import Device
 
-        d=Device('<your device IP address>')
-        d.open()
-        print(d.facts)
-        d.close()
+    d=Device('<your device IP address>')
+    d.open()
+    print(d.facts)
+    d.close()
  
 Save it in 'myscript.py' and run it::
 
@@ -91,7 +91,7 @@ The final result is the same::
     >>> d.close()
 
 In spite all, things could not be working good as explained above.
-Strange to say, the device is connected to your network and the board software is perfectly running.
+Strange to say, the device is connected to your network and it is operational.
 What is going wrong?
 
 The answer is: the device must be reachable through SSH protocol.
@@ -99,10 +99,12 @@ Indeed the communication toward the device is managed by a proxy process creatin
 This permits to send CLI commands to the device and to receive CLI output if any.
 Unfortunately, this is not always possible; some devices, if not all, have SSH disabled as default.
 Therefore a previous step is necessary: connect manually the device through telnet, that is always enabled, and enable SSH protocol.
+Once sure that SSH connection is enabled, your script can be executed correctly.
+Next evolutions of PN will overcome the above explained problem by enabling the SSH session automatically when necessary.
 
 .. note::
 
-    On AW+ devices, once logged in, type::
+    To enable SSH on AlliedWare Plus devices type::
 
         enable
         configure terminal
@@ -116,10 +118,6 @@ Therefore a previous step is necessary: connect manually the device through teln
         ip ssh server
         exit
         copy running-config startup-config
-
-Once sure that SSH connection is enabled, your script can be executed correctly.
-Next evolutions of PN will overcome the above explained problem by enabling the SSH session automatically when necessary.
-
 
 License
 -------

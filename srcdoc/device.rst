@@ -14,7 +14,7 @@ Constructor
         The host or ip address of the device.
 
     - *username*: string
-        The username of the device user with enough privilages to interact with the device. Usually is the superuser.
+        The username of the device user with enough privileges to interact with the device. Usually is the superuser.
 
     - *protocol*: string
         The protocol used to interact with the device. Currently only ssh is supported.
@@ -49,7 +49,7 @@ Constructor
     a device object if creator succeed
 
 **Example**
-    This example instantiate a device object with ssh service enabled at address 192.168.1.10. The os is auto detected and
+    This example instantiates a device object with ssh service enabled at address 192.168.1.10. The os is auto detected and
     username/password are the default manager/friend. The log level verbosity is increased to INFO and log is shown on the
     standard output. The object does not connect to the physical device until open method is executed.::
 

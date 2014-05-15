@@ -1,6 +1,6 @@
 Vlan Feature
 *****************
-Vlan feature provide access to ethernet layer2 Vlan of the device.
+Vlan feature provides access to ethernet layer2 vlan of the device.
 
 
 Operations
@@ -26,43 +26,44 @@ Methods
 """""""""""""""""
 **Mandatory**
 
-**Description**: *TBD*
+**Description**: Add an interface to a vlan.
 
 **delete_interface**
 """"""""""""""""""""
 **Mandatory**
 
-**Description**: *TBD*
+**Description**: Remove an interface from a vlan.
 
 **create**
 """"""""""
 **Mandatory**
 
-**Description**: *TBD*
+**Description**: Create a vlan.
 
 **delete**
 """"""""""
 **Mandatory**
 
-**Description**: *TBD*
+**Description**: Delete a vlan.
 
 **keys**
 """"""""
 **Mandatory**
 
-**Description**: *TBD*
+**Description**: Return the list of available parameters.
 
 **items**
 """""""""
 **Mandatory**
 
-**Description**: *TBD*
+**Description**: Select one of the available parameters.
 
 **update**
 """"""""""
 **Mandatory**
 
-**Description**: *TBD*
+**Description**: Update one of the writable parameters listed below by sending the 
+corresponding CLI command to the device through the SSH connection opened.
 
 
 Parameters
@@ -76,7 +77,7 @@ mtu
 
 **Type:** Integer
 
-**Description**: *TBD*
+**Description**: Maximum transmit unit size in bytes.
 
 **name**
 """"""""
@@ -86,7 +87,7 @@ mtu
 
 **Type:** String
 
-**Description**: *TBD*
+**Description**: vlan name.
 
 state
 """""
@@ -96,7 +97,7 @@ state
 
 **Type:** Boolean
 
-**Description**: *TBD*
+**Description**: Enable if the vlan is enabled, disable if disabled.
 
 **tagged**
 """"""""""
@@ -106,7 +107,7 @@ state
 
 **Type:** List of Strings
 
-**Description**: *TBD*
+**Description**: List of interfaces to which a tagged vlan is associated.
 
 **type**
 """"""""""
@@ -130,4 +131,4 @@ state
 
 **Type:** List of Strings
 
-**Description**: *TBD*
+**Description**: List of interfaces to which an untagged vlan is associated.

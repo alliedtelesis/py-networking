@@ -123,14 +123,6 @@ def test_config(dut, log_level):
     assert d.interface['vlan1']['description'] == 'testvlan'
     assert d.interface['vlan10']['description'] == 'testvlan'
 
-#   mode check
-    assert d.interface['0.0.2']['switchport mode'] == 'access'
-    assert d.interface['0.0.8']['switchport mode'] == 'access'
-    assert d.interface['0.0.10']['switchport mode'] == 'access'
-    assert d.interface['0.0.11']['switchport mode'] == 'trunk'
-    assert d.interface['0.0.27']['switchport mode'] == 'trunk'
-    assert d.interface['0.0.41']['switchport mode'] == 'trunk'
-
     d.close()
 
 

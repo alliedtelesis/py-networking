@@ -6,6 +6,7 @@ from pprint import pformat
 import re
 import json
 
+
 class ats_vlan(Feature):
     """
     Vlan feature implementation for ATS
@@ -120,7 +121,6 @@ class ats_vlan(Feature):
         self._device.cmd(cmds)
         self._device.load_system()
 
-
     def delete_interface(self, vid, ifn):
         self._d.log_info("delete_interface {0} ifn={1}".format(vid, ifn))
         self._update_vlan()
@@ -130,30 +130,32 @@ class ats_vlan(Feature):
 
         if 'tagged' in self._vlan[vid] and ifn in self._vlan[vid]['tagged']:
                 tagged = True
-        if 'untagged' in self._vlan[vid] and ifn in self._vlan[vid]['untagged']:
+        elif 'untagged' in self._vlan[vid] and ifn in self._vlan[vid]['untagged']:
                 tagged = False
         else:
             raise ValueError('interface {0} does not belong to vlan {1}'.format(ifn,vid))
 
-        ifi = self._get_interface_config(ifn)
-        if not ifi:    
-            raise ValueError('{0} is not a valid interface'.format(ifn))
+        if ifn in self._interface_config:
+            mode = self._interface_config[ifn].get('switchport mode', 'access')
+        else:
+            mode = 'access'
     
-        cmds = {'cmds':[{'cmd': 'enable',                    'prompt':'\#'},
-                        {'cmd': 'conf t',                    'prompt':'\(config\)\#'},
-                        {'cmd': 'interface port{0}'.format(ifn), 'prompt':'\(config-if\)\#'},
+
+        cmds = {'cmds':[{'cmd': 'conf',                                                                'prompt':'\(config\)\#'},
+                        {'cmd': 'interface ethernet {0}'.format(self._d.interface._to_ifn_native(ifn)),'prompt':'\(config-if\)\#'},
                        ]}
 
-        if ifi['switchport mode'] == 'access':
+        if mode == 'access' and vid != '1':
             # this actually move port back to vlan 1
-            cmds['cmds'].append({'cmd': 'no switchport access vlan {0}'.format(vid) ,'prompt':'\(config-if\)\#'})
-        elif ifi['switchport mode'] == 'trunk' and tagged == False:
-            cmds['cmds'].append({'cmd': 'switchport trunk native vlan none' ,'prompt':'\(config-if\)\#'})
-        elif ifi['switchport mode'] == 'trunk' and tagged == True:
+            cmds['cmds'].append({'cmd': 'no switchport access vlan','prompt':'\(config-if\)\#'})
+        elif mode == 'trunk' and tagged == False:
+            cmds['cmds'].append({'cmd': 'no switchport trunk native vlan' ,'prompt':'\(config-if\)\#'})
+        elif mode == 'trunk' and tagged == True:
             cmds['cmds'].append({'cmd': 'switchport trunk allowed vlan remove {0}'.format(vid) ,'prompt':'\(config-if\)\#'})
         else:
             raise ValueError('interface {0} cannot be delete from vlan {1}'.format(ifn,vid))
 
+        cmds['cmds'].append({'cmd': chr(26),                               'prompt':'\#'})
         self._device.cmd(cmds)
         self._device.load_system()
 

@@ -5,7 +5,7 @@ What is Py-Networking?
 ----------------------
 
 Py-Networking (PN) is a python library that provides a new way to interact and configure your networking devices.
-PN abstract the physical device and provides to the user an uniform API that does not depends from the specific device configuration or configuration syntax.
+PN abstracts the physical device and provides to the user an uniform API that does not depend on the specific device configuration or configuration syntax.
 PN does not emulate features that device maybe missing but if two different devices implement a specific feature, this is exposed to the user in the same way.
 
 Notice
@@ -42,7 +42,7 @@ For further information on how to develop and contribute to py-networking refer 
         $ gcc
         clang: error: no input files
 
-    gcc is already installed. Otherwise you will a dialog box asking you if you want to **Get Xcode** or **Install**.
+    gcc is already installed. Otherwise you will have a dialog box asking you if you want to **Get Xcode** or **Install**.
 
     **PRESS INSTALL and not Get Xcode unless you want to install the full development environment**
 
@@ -54,6 +54,44 @@ For further information on how to develop and contribute to py-networking refer 
 
         brew install python
         brew install zmq
+
+
+Run
+---
+Now that you have python and you have downloaded PN, you can use it.
+Write your python script using the available test functions exported by the library and try it out on your networking device, so to interact with it and configure it properly.
+At this time, things could not be working as expected, in spite the device is connected to your network and the board software is perfectly running.
+What is going wrong?
+
+The answer is clear.
+The device must be reachable through SSH protocol.
+Indeed a SSH session toward the device is opened by PN and all the interaction and configuration commands are sent through it.
+Unfortunately, this is not always possible; some devices, if not all, have SSH disabled as default.
+Therefore a previous step is necessary: connect manually the board through telnet, that is always enabled, and enable SSH protocol.
+On AW+ devices, once logged in type::
+
+    enable
+    configure terminal
+    service ssh ip
+    
+and on ATS ones instead::
+
+    configure
+    ip ssh server
+        
+Once sure that SSH connection is enabled, your script can be executed correctly.
+
+Communication between PN and the device is guaranteed by a proxy process, that creates an SSH link between them and manage it.
+CLI commands are sent to the device through it and CLI output is returned if any.
+Next evolutions of PN will overcome the above explained problem by enabling the SSH session automatically if necessary.
+
+Now that your script can run as expected, two things can occur: either the test function is successful or it fails. 
+Each successful test produces a print like this:
+
+    tests/test_interface.py:192: test_description PASSED
+
+while otherwise an exception is raised.
+In the latter case, python shows exactly in which part of the software the test has failed.
 
 
 License

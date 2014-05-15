@@ -1,19 +1,19 @@
 Interface Feature
 *****************
-Interface feature provide access to all physical and virtual network interface of the device.
+Interface feature provides access to all physical and virtual network interfaces of the device.
 
 Interface Naming Convention
 ---------------------------
-Since there isn't a common industry standard to name interfaces, PN define a flexible convention that should be mapped by
+Since there isn't a common industry standard to name interfaces, PN defines a flexible convention that should be mapped by
 the individual implementation of this module to the actual device.
 
 Each interface is identified by three digits separated by dots, for example *1.2.10*
 
-The first digit identify the physical units within a set of devices, for example connected with a stacking technology,
+The first digit identifies the physical units within a set of devices, for example connected with a stacking technology,
 but seen from the library throughout a single IP address or hostname.
-The second digit represent the slot within the physical device. The digit **0** identify interfaces that belong to the
+The second digit represents the slot within the physical device. The digit **0** identifies interfaces that belong to the
 main board and are not on a separated card.
-The last digit is a number uniquely identify the interface on the main board or card.
+The last digit is a number uniquely identifying the interface on the main board or card.
 
 
 Operations
@@ -23,13 +23,13 @@ Operations
 """"""""""""
 **Mandatory**
 
-**Description**: Return a dictionary with specific interface information
+**Description**: Return a dictionary with specific interface information.
 
 **(String)**
 """"""""""""
 **Mandatory**
 
-**Description**: Return a dictionary with all the interfaces information
+**Description**: Return a dictionary with all the interfaces information.
 
 
 Methods
@@ -39,19 +39,20 @@ Methods
 """"""""""
 **Mandatory**
 
-**Description**: *TBD*
+**Description**: Updates one of the writable parameters listed below by sending the 
+corresponding CLI command to the device through the SSH connection opened.
 
 **items**
 """""""""
 **Mandatory**
 
-**Description**: *TBD*
+**Description**: Select one of the available parameters.
 
 **keys**
 """"""""
 **Mandatory**
 
-**Description**: *TBD*
+**Description**: Return the list of available parameters.
 
 
 Parameters
@@ -85,7 +86,7 @@ Parameters
 
 **Type:** String
 
-**Description**: *TBD*
+**Description**: Configured interface speed in Mbit/secs. Available values are 100 and 1000.
 
 **current_duplex**
 """"""""""""""""""
@@ -115,7 +116,7 @@ Parameters
 
 **Type:** String
 
-**Description**: *TBD*
+**Description**: Current interface speed.
 
 **description**
 """""""""""""""

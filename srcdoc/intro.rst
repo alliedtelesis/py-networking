@@ -58,40 +58,67 @@ For further information on how to develop and contribute to py-networking refer 
 
 Run
 ---
-Now that you have python and you have downloaded PN, you can use it.
-Write your python script using the available test functions exported by the library and try it out on your networking device, so to interact with it and configure it properly.
-At this time, things could not be working as expected, in spite the device is connected to your network and the board software is perfectly running.
+Now that you have PN installed, you can use it.
+Here is an example of python script using the PN library::
+
+    from pynetworking import Device
+
+        d=Device('<your device IP address>')
+        d.open()
+        print(d.facts)
+        d.close()
+ 
+Save it in 'myscript.py' and run it::
+
+    python myscript.py
+
+An output like this will be produced::
+
+    {'boot version': u'1.0.1.07', 'model': u'AT-8000S/24', 'version': u'3.0.0.44', 'serial_number': '123456789', 'hardware_rev': u'00.01.00', 'os': 'ats', 'unit_number': u'1'}
+
+Alternatively you can run python and execute each command separately in the python shell.
+The final result is the same::
+
+    (your_virtual_env)user:your_virtual_env name.surname$ python
+    Python 2.7.6 (default, Apr  9 2014, 11:48:52) 
+    [GCC 4.2.1 Compatible Apple LLVM 5.1 (clang-503.0.38)] on darwin
+    Type "help", "copyright", "credits" or "license" for more information.
+    >>> from pynetworking import Device
+    >>> d=Device('<your device address>')
+    >>> d.open()
+    >>> print(d.facts)
+    {'boot version': u'1.0.1.07', 'model': u'AT-8000S/24', 'version': u'3.0.0.44', 'serial_number': 'not found', 'hardware_rev': u'00.01.00', 'os': 'ats', 'unit_number': u'1'}
+    >>> d.close()
+
+In spite all, things could not be working good as explained above.
+Strange to say, the device is connected to your network and the board software is perfectly running.
 What is going wrong?
 
-The answer is clear.
-The device must be reachable through SSH protocol.
-Indeed a SSH session toward the device is opened by PN and all the interaction and configuration commands are sent through it.
+The answer is: the device must be reachable through SSH protocol.
+Indeed the communication toward the device is managed by a proxy process creating an SSH protocol session.
+This permits to send CLI commands to the device and to receive CLI output if any.
 Unfortunately, this is not always possible; some devices, if not all, have SSH disabled as default.
-Therefore a previous step is necessary: connect manually the board through telnet, that is always enabled, and enable SSH protocol.
-On AW+ devices, once logged in type::
+Therefore a previous step is necessary: connect manually the device through telnet, that is always enabled, and enable SSH protocol.
 
-    enable
-    configure terminal
-    service ssh ip
+.. note::
+
+    On AW+ devices, once logged in, type::
+
+        enable
+        configure terminal
+        service ssh ip
+        exit
+        write
     
-and on ATS ones instead::
+    On ATS devices instead type::
 
-    configure
-    ip ssh server
-        
+        configure
+        ip ssh server
+        exit
+        copy running-config startup-config
+
 Once sure that SSH connection is enabled, your script can be executed correctly.
-
-Communication between PN and the device is guaranteed by a proxy process, that creates an SSH link between them and manage it.
-CLI commands are sent to the device through it and CLI output is returned if any.
-Next evolutions of PN will overcome the above explained problem by enabling the SSH session automatically if necessary.
-
-Now that your script can run as expected, two things can occur: either the test function is successful or it fails. 
-Each successful test produces a print like this:
-
-    tests/test_interface.py:192: test_description PASSED
-
-while otherwise an exception is raised.
-In the latter case, python shows exactly in which part of the software the test has failed.
+Next evolutions of PN will overcome the above explained problem by enabling the SSH session automatically when necessary.
 
 
 License

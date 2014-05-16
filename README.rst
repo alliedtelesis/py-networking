@@ -1,6 +1,12 @@
-Unit Tests       |unittest|
+Py-Networking
+#############
 
-Pypi Repository  |pypi|
+|unittest|    |coverage|    |pypi|
+
+
+.. |coverage| image:: https://coveralls.io/repos/alliedtelesis/py-networking/badge.png
+   :target: https://coveralls.io/r/alliedtelesis/py-networking
+
 
 .. |unittest| image:: https://travis-ci.org/alliedtelesis/py-networking.svg?branch=develop
    :target: https://travis-ci.org/alliedtelesis/py-networking

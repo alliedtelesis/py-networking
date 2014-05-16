@@ -4,9 +4,8 @@ Py-Networking
 |unittest|    |coverage|    |pypi|
 
 
-.. |coverage| image:: https://coveralls.io/repos/alliedtelesis/py-networking/badge.png
-   :target: https://coveralls.io/r/alliedtelesis/py-networking
-
+.. |coverage| image:: https://coveralls.io/repos/alliedtelesis/py-networking/badge.png?branch=develop
+   :target: https://coveralls.io/r/alliedtelesis/py-networking?branch=develop
 
 .. |unittest| image:: https://travis-ci.org/alliedtelesis/py-networking.svg?branch=develop
    :target: https://travis-ci.org/alliedtelesis/py-networking

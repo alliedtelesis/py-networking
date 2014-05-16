@@ -12,5 +12,5 @@ install:
 script: 
   - py.test --cov pynetworking tests/
 after_success:
-  - coveralls
+  - coveralls -v
 

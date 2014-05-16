@@ -24,6 +24,16 @@ Documentation
 #############
 Draft documentation is available at https://py-networking.readthedocs.org
 
+Mailing List
+############
+User's mailing list can be |browsed_link| or posted_.  
+
+.. |browsed_link| raw:: html
+   
+   <a href="https://groups.google.com/forum/?hl=en#!forum/py-networking-users" target="_blank">browsed</a>
+
+.. _posted: mailto:py-networking-users@googlegroups.com
+
 License
 #######
 

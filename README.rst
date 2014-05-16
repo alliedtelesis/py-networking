@@ -28,7 +28,7 @@ Mailing List
 ############
 User's mailing list can be browsed_ or posted_.  
 
-.. _bowsed: https://groups.google.com/forum/?hl=en#!forum/py-networking-users
+.. _browsed: https://groups.google.com/forum/?hl=en#!forum/py-networking-users
 
 .. _posted: mailto:py-networking-users@googlegroups.com
 

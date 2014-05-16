@@ -190,13 +190,18 @@ class ats_vlan(Feature):
 
     def _get_vlan_ids(self, vlan_id):
         vlan_id = str(vlan_id)
-        m  = re.match('^\d+(,\d+)*$', vlan_id)
-        if m:
-            return map(int,vlan_id.split(','))
-        m = re.search('^(?P<start>\d+)\-(?P<end>\d+)$',vlan_id)
-        if m:
-            return range(int(m.group('start')),int(m.group('end'))+1)
-        raise ValueError('{0} is not a valid vlan id, range or list'.format(vlan_id))
+        vlan_ids = []
+        for r in vlan_id.split(','):
+            m = re.search('^(?P<start>\d+)\-(?P<end>\d+)$',r)
+            if m:
+                vlan_ids.extend(range(int(m.group('start')),int(m.group('end'))+1))
+                continue
+            m  = re.match('\s*(?P<id>\d+)\s*',r)
+            if m:
+                vlan_ids.append(int(m.group('id')))
+                continue
+            raise ValueError('{0} is not a valid vlan id, range or list'.format(vlan_id))
+        return vlan_ids
 
     def _update_vlan(self):
         self._d.log_info("_update_vlan")

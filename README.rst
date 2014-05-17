@@ -27,7 +27,7 @@ PN does not emulate features that device maybe missing but if two different devi
 
 Documentation
 #############
-Draft documentation is available at https://py-networking.readthedocs.org
+Draft documentation is available at http://docs.py-networking.com
 
 Mailing List
 ############

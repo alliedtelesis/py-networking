@@ -261,15 +261,17 @@ ip ssh server
                  "100": {"untagged": ["1.0.13"], "tagged": [], "type": "permanent", "name": "100"},
                  "4000": {"untagged": [], "tagged": [], "type": "permanent", "name": "4000"},
                  "10": {"untagged": [], "tagged": [], "type": "permanent", "name": "long vlan name"}}
+        str(d.vlan)
     else:
         assert '1' in d.vlan
         assert 'tagged' in d.vlan[1]
         assert 'untagged' in d.vlan[1]
         assert d.vlan[1]['name'] == '1'
+        str(d.vlan)
     d.close()
 
 
-def test_create(dut, log_level):
+def test_create1(dut, log_level):
     setup_dut(dut)
     dut.add_cmd({'cmd':'show vlan',                  'state':0, 'action':'PRINT','args':["""
 
@@ -356,6 +358,96 @@ ip ssh server
     d.close()
 
 
+def test_create2(dut, log_level):
+    setup_dut(dut)
+    dut.add_cmd({'cmd':'show vlan',                  'state':0, 'action':'PRINT','args':["""
+
+Vlan       Name                   Ports                Type     Authorization
+---- ----------------- --------------------------- ------------ -------------
+ 1           1         1/e(1-48),1/g(1-4),          other       Required
+                       2/e(1-48),2/g(1-4),
+                       3/e(1-48),3/g(1-4),
+                       4/e(1-48),4/g(1-4),
+                       5/e(1-48),5/g(1-4),
+                       6/e(1-48),6/g(1-4),ch(1-8)
+
+    """]})
+    dut.add_cmd({'cmd':'show running-config', 'state':0, 'action':'PRINT','args':["""
+interface vlan 1
+ip address 10.17.39.252 255.255.255.0
+name default_vlan
+exit
+hostname nac_dev
+ip ssh server
+    """]})
+    dut.add_cmd({'cmd': 'vlan database',                 'state':0, 'action':'SET_PROMPT','args':['(config-vlan)#']})
+    dut.add_cmd({'cmd': 'vlan database',                 'state':0, 'action':'SET_STATE','args':[1]})
+    dut.add_cmd({'cmd': 'vlan 10',                       'state':1, 'action':'SET_STATE','args':[2]})
+    dut.add_cmd({'cmd': 'show vlan',                     'state':2, 'action':'PRINT','args':["""
+
+Vlan       Name                   Ports                Type     Authorization
+---- ----------------- --------------------------- ------------ -------------
+ 1           1         1/e(1-48),1/g(1-4),          other       Required
+                       2/e(1-48),2/g(1-4),
+                       3/e(1-48),3/g(1-4),
+                       4/e(1-48),4/g(1-4),
+                       5/e(1-48),5/g(1-4),
+                       6/e(1-48),6/g(1-4),ch(1-8)
+10           10                                     permanent   Required
+
+    """]})
+    dut.add_cmd({'cmd':'show running-config',             'state':2, 'action':'PRINT','args':["""
+vlan database
+vlan 10
+exit
+interface vlan 1
+ip address 10.17.39.252 255.255.255.0
+name default_vlan
+exit
+hostname nac_dev
+ip ssh server
+    """]})
+    dut.add_cmd({'cmd': 'interface vlan 10',             'state':2, 'action':'SET_PROMPT','args':['(config-if)#']})
+    dut.add_cmd({'cmd': 'interface vlan 10',             'state':2, 'action':'SET_STATE','args':[3]})
+    dut.add_cmd({'cmd': 'name new_vlan',                 'state':3, 'action':'SET_STATE','args':[4]})
+    dut.add_cmd({'cmd': 'show vlan',                     'state':4, 'action':'PRINT','args':["""
+
+Vlan       Name                   Ports                Type     Authorization
+---- ----------------- --------------------------- ------------ -------------
+ 1           1         1/e(1-48),1/g(1-4),          other       Required
+                       2/e(1-48),2/g(1-4),
+                       3/e(1-48),3/g(1-4),
+                       4/e(1-48),4/g(1-4),
+                       5/e(1-48),5/g(1-4),
+                       6/e(1-48),6/g(1-4),ch(1-8)
+10           new_vlan                                permanent   Required
+
+    """]})
+    dut.add_cmd({'cmd':'show running-config', 'state':4, 'action':'PRINT','args':["""
+vlan database
+vlan 10
+exit
+interface vlan 10
+name new_vlan
+exit
+interface vlan 1
+ip address 10.17.39.252 255.255.255.0
+name default_vlan
+exit
+hostname nac_dev
+ip ssh server
+    """]})
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d.open()
+    d.vlan.create(10, name='new_vlan')
+    assert '10' in d.vlan
+    assert d.vlan[10]['name'] == 'new_vlan'
+    with pytest.raises(KeyError) as excinfo:
+        d.vlan.update(30,name='does not exists')
+        assert '30 vlans do not exist' in excinfo.value
+    d.close()
+
+
 def test_get_interface_config(dut, log_level):
     if dut.mode != 'emulated':
         pytest.skip("only on emulated")
@@ -369,9 +461,14 @@ switchport mode trunk
 exit
 interface range ethernet 1/e(11-12)
 switchport mode trunk
+switchport trunk allowed vlan add 10
+switchport trunk allowed vlan add 11
 exit
 interface range ethernet 1/e(18-19),1/g1
 switchport mode trunk
+exit
+interface ethernet 1/e10
+switchport trunk allowed vlan add 10
 exit
 interface vlan 1
 ip address 10.17.39.252 255.255.255.0
@@ -383,8 +480,10 @@ ip ssh server
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert d.vlan._interface_config['1.0.10']['switchport mode'] == 'trunk'
+    assert d.vlan._interface_config['1.0.10']['switchport trunk allowed'] == '10'
     assert d.vlan._interface_config['1.0.25']['switchport mode'] == 'trunk'
     assert d.vlan._interface_config['1.0.12']['switchport mode'] == 'trunk'
+    assert d.vlan._interface_config['1.0.12']['switchport trunk allowed'] == ['10','11']
     assert d.vlan._interface_config['1.0.18']['switchport mode'] == 'trunk'
     assert d.vlan._interface_config['1.0.19']['switchport mode'] == 'trunk'
     d.close()
@@ -466,6 +565,9 @@ ip ssh server
     d.vlan.add_interface(10,'1.0.20')
     assert '1.0.20' in d.vlan[10]['untagged']
     assert '1.0.20' not in d.vlan[1]['untagged']
+    with pytest.raises(ValueError) as excinfo:
+        d.vlan.add_interface(11,'1.0.20')
+        assert '{0} is not a valid vlan id' in excinfo.value
     d.close()
 
 
@@ -544,6 +646,12 @@ ip ssh server
     d.vlan.delete_interface(10,'1.0.20')
     assert '1.0.20' not in d.vlan[10]['untagged']
     assert '1.0.20' in d.vlan[1]['untagged']
+    with pytest.raises(ValueError) as excinfo:
+        d.vlan.delete_interface(11,'1.0.20')
+        assert '11 is not a valid vlan id' in excinfo.value
+    with pytest.raises(ValueError) as excinfo:
+        d.vlan.delete_interface(10,'1.0.19')
+        assert 'interface 1.0.19 does not belong to vlan 10' in excinfo.value
     d.close()
 
 
@@ -946,6 +1054,81 @@ ip ssh server
     assert '1.0.20' in d.vlan[10]['tagged']
     d.close()
 
+
+def test_delete(dut, log_level):
+    setup_dut(dut)
+    dut.add_cmd({'cmd': 'show vlan',                     'state':0, 'action':'PRINT','args':["""
+
+Vlan       Name                   Ports                Type     Authorization
+---- ----------------- --------------------------- ------------ -------------
+ 1           1         1/e(1-48),1/g(1-4),          other       Required
+                       2/e(1-48),2/g(1-4),
+                       3/e(1-48),3/g(1-4),
+                       4/e(1-48),4/g(1-4),
+                       5/e(1-48),5/g(1-4),
+                       6/e(1-48),6/g(1-4),ch(1-8)
+10           new vlan                                permanent   Required
+
+    """]})
+    dut.add_cmd({'cmd':'show running-config', 'state':0, 'action':'PRINT','args':["""
+vlan database
+vlan 10
+exit
+interface vlan 10
+name "new vlan"
+exit
+interface vlan 1
+ip address 10.17.39.252 255.255.255.0
+name default_vlan
+exit
+hostname nac_dev
+ip ssh server
+    """]})
+    dut.add_cmd({'cmd': 'vlan database',                 'state':0, 'action':'SET_PROMPT','args':['(config-vlan)#']})
+    dut.add_cmd({'cmd': 'vlan database',                 'state':0, 'action':'SET_STATE','args':[1]})
+    dut.add_cmd({'cmd': 'no vlan 10',                    'state':1, 'action':'SET_STATE','args':[2]})
+    dut.add_cmd({'cmd': 'show vlan',                     'state':2, 'action':'PRINT','args':["""
+
+Vlan       Name                   Ports                Type     Authorization
+---- ----------------- --------------------------- ------------ -------------
+ 1           1         1/e(1-48),1/g(1-4),          other       Required
+                       2/e(1-48),2/g(1-4),
+                       3/e(1-48),3/g(1-4),
+                       4/e(1-48),4/g(1-4),
+                       5/e(1-48),5/g(1-4),
+                       6/e(1-48),6/g(1-4),ch(1-8)
+10           10                                     permanent   Required
+
+    """]})
+    dut.add_cmd({'cmd':'show vlan',                  'state':2, 'action':'PRINT','args':["""
+
+Vlan       Name                   Ports                Type     Authorization
+---- ----------------- --------------------------- ------------ -------------
+ 1           1         1/e(1-48),1/g(1-4),          other       Required
+                       2/e(1-48),2/g(1-4),
+                       3/e(1-48),3/g(1-4),
+                       4/e(1-48),4/g(1-4),
+                       5/e(1-48),5/g(1-4),
+                       6/e(1-48),6/g(1-4),ch(1-8)
+
+    """]})
+    dut.add_cmd({'cmd':'show running-config', 'state':2, 'action':'PRINT','args':["""
+interface vlan 1
+ip address 10.17.39.252 255.255.255.0
+name default_vlan
+exit
+hostname nac_dev
+ip ssh server
+    """]})
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d.open()
+    assert '10' in d.vlan
+    assert d.vlan[10]['name'] == 'new vlan'
+    d.vlan.delete(10)
+    assert '10' not in d.vlan
+    d.close()
+
+
 def test_get_vlan_ids(dut, log_level):
     if dut.mode != 'emulated':
         pytest.skip("only on emulated")
@@ -955,5 +1138,8 @@ def test_get_vlan_ids(dut, log_level):
     assert d.vlan._get_vlan_ids('10,20,30,40,50') == [10,20,30,40,50]
     assert d.vlan._get_vlan_ids('10-15') == [10,11,12,13,14,15]
     assert d.vlan._get_vlan_ids('10-11,60,1000-1001') == [10,11,60,1000,1001]
-    d.close()
+    with pytest.raises(ValueError) as excinfo:
+        d.vlan._get_vlan_ids('not_valid_range')
+        assert 'not_valid_range is not a valid vlan id, range or list' in excinfo.value
+
 

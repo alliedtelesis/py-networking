@@ -70,12 +70,14 @@ def test_config(dut, log_level):
     show_interface = ''
     max_if = 51
     for interface in range(1,max_if):
-        env = { 
+        env = {
                 'interface': 'port0.0.{0}'.format(interface),
                 'link' : 'UP',
                 'state': 'DOWN',
                 'hardware' : 'Ethernet',
-              } 
+              }
+        if interface == 10:
+            env['link'] = 'DOWN'
         show_interface += show_interface_template.render(env).encode('ascii','ignore')
     env = { 
                 'interface': 'lo',
@@ -99,20 +101,19 @@ def test_config(dut, log_level):
 
     assert d.facts['os'] == 'awp'
 
-#   interface checks (try just one or a few to solicitate the whole software)
-    interface = 15
-    tern = '0.0.{0}'.format(interface)
 #   configuration check
-    assert d.interface[tern]['configured duplex'] == 'auto'
-    assert d.interface[tern]['configured speed'] == 'auto'
-    assert d.interface[tern]['configured polarity'] == 'auto'
+    assert d.interface['0.0.15']['configured duplex'] == 'auto'
+    assert d.interface['0.0.15']['configured speed'] == 'auto'
+    assert d.interface['0.0.15']['configured polarity'] == 'auto'
 
 #   status check
-    assert d.interface[tern]['link'] == True
-    assert d.interface[tern]['current polarity'] == 'mdix'
-    assert d.interface[tern]['enable'] == False
-    assert d.interface[tern]['current duplex'] == 'full'
-    assert d.interface[tern]['current speed'] == '1000'
+    assert d.interface['0.0.15']['link'] == True
+    assert d.interface['0.0.15']['current polarity'] == 'mdix'
+    assert d.interface['0.0.15']['enable'] == False
+    assert d.interface['0.0.15']['current duplex'] == 'full'
+    assert d.interface['0.0.15']['current speed'] == '1000'
+
+    assert d.interface['0.0.10']['link'] == False
 
 #   description check
     assert d.interface['0.0.1']['description'] == 'test1'

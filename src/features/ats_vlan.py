@@ -27,10 +27,7 @@ class ats_vlan(Feature):
         self._interface_config = {}
         for ifr, ifc in l.run(config).items():
             for ifn in self._expand_interface_list(ifr):
-                if ifn in self._interface_config:
-                    self._interface_config[ifn] = dict(self._interface_config[ifn].items() + ifc.items())
-                else:
-                    self._interface_config[ifn] = ifc
+                self._interface_config[ifn] = ifc
         self._d.log_info("vlan interface configuration {0}".format(self._interface_config))
 
     def create(self, vlan_id, **kwargs):
@@ -114,8 +111,6 @@ class ats_vlan(Feature):
             cmds['cmds'].append({'cmd': 'switchport trunk native vlan {0}'.format(vid) ,'prompt':'\(config-if\)\#'})
         elif mode == 'trunk' and tagged == True:
             cmds['cmds'].append({'cmd': 'switchport trunk allowed vlan add {0}'.format(vid) ,'prompt':'\(config-if\)\#'})
-        else:
-            raise ValueError('interface {0} cannot be added to vlan {1}'.format(ifn,vid))
 
         cmds['cmds'].append({'cmd': chr(26),                               'prompt':'\#'})
         self._device.cmd(cmds)
@@ -312,12 +307,4 @@ class ats_vlan(Feature):
                         ret.append('{0}.0.{1}'.format(self._d.facts['unit_number'],r))
 
         self._d.log_debug("_expand_interface_list return {0}".format(ret))
-        return ret
-
-    def _get_interface_config(self, ifn):
-        self._d.log_info("_get_interface_config {0}".format(ifn))
-        ret = {}
-        for ifr,ifi in self._interface_config.items():
-            if ifn in self._expand_interface_list(ifr):
-                ret = dict(ret.items() + ifi.items())
         return ret

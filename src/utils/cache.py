@@ -11,17 +11,19 @@ class CacheMissException(Exception):
     pass
 
 class Cache(object):
-    def __init__(self, default_timeout=30):
+    def __init__(self, enable=True, default_timeout=30):
         self.cache = {}
         self.default_timeout = default_timeout
+        self.enable = enable
 
     def get(self, cmd):
-        k = md5(json.dumps(cmd)).hexdigest()
-        if k in self.cache:
-            if self.cache[k][0] > time():
-                return self.cache[k][1]
-            else:
-                self.cache.pop(k)
+        if self.enable:
+            k = md5(json.dumps(cmd)).hexdigest()
+            if k in self.cache:
+                if self.cache[k][0] > time():
+                    return self.cache[k][1]
+                else:
+                    self.cache.pop(k)
 
         raise CacheMissException()
 

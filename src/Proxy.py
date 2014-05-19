@@ -12,6 +12,7 @@ from multiprocessing import Process
 from time import sleep
 import zmq
 import json
+from pynetworking.utils import Cache, CacheMissException
 
 class ProxyException(Exception):
     pass
@@ -23,6 +24,7 @@ def SSHProxy(device):
     zmq_s.bind(device._proxy_url)
     zmq_p = zmq.Poller()
     zmq_p.register(zmq_s, zmq.POLLIN)
+    cache = Cache()
     if device._port=='auto':
         port = 22
     else:
@@ -124,8 +126,24 @@ def SSHProxy(device):
                 ret={'status':'Error','output':'Unknown Error'}
                 for c in cmd['cmds']:
                     device.log_info("sending command '{0}' to device".format(c['cmd']))
-                    chan.send(c['cmd']+'\n')
-                    out += _get_reply(device, chan, c['prompt'])
+                    try:
+                        if device.system.enter_config(c['cmd']):
+                            cache.invalidate()
+                            device.log_debug("cache invalidated")
+                    except AttributeError:
+                        device.log_warn("device configuration without system object")
+
+                    try:
+                        if not cmd['cache']:
+                            device.log_debug("cache disabled")
+                            raise CacheMissException
+                        co = cache.get(c['cmd'])
+                        device.log_debug("cache hit")
+                    except CacheMissException:
+                        device.log_debug("cache miss")
+                        chan.send(c['cmd']+'\n')
+                        co = _get_reply(device, chan, c['prompt'])
+                    out += co
                 ret = {'status':'Success','output':out}
             except ProxyException:
                 device.log_warn("ProxyException")

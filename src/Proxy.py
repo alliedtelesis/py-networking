@@ -127,23 +127,22 @@ def SSHProxy(device):
             try:
                 out=''
                 ret={'status':'Error','output':'Unknown Error'}
-                for c in cmd['cmds']:
-                    device.log_info("sending command '{0}' to device".format(c['cmd']))
-                    try:
-                        if not cmd['cache']:
-                            device.log_info("cache disabled")
-                            raise CacheMissException
-                        co = cache.get(c['cmd'])
-                        device.log_info("cache hit")
-                    except CacheMissException:
-                        device.log_info("cache miss")
+                try:
+                    if cmd['cache']:
+                        out = cache.get(cmd['cmds'])
+                    else:
+                        device.log_info("cache disabled")
+                        raise CacheMissException
+                except CacheMissException:
+                    for c in cmd['cmds']:
+                        device.log_info("sending command '{0}' to device".format(c['cmd']))
                         chan.send(c['cmd']+'\n')
-                        co = _get_reply(device, chan, c['prompt'])
-                        cache.set(c['cmd'],co)
-                    out += co
+                        out += _get_reply(device, chan, c['prompt'])
                 if cmd['flush_cache']:
                     device.log_info("flush cache")
                     cache.flush()
+                if cmd['cache']:
+                    cache.set(cmd['cmds'],out)
                 ret = {'status':'Success','output':out}
             except ProxyException:
                 device.log_warn("ProxyException")

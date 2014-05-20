@@ -35,5 +35,7 @@ class ats_system(object):
 
     def ping(self):
         self._d.log_info('ping')
-        self._d.cmd('show version')
+        self._d.cmd('show version', use_cache=False)
+
+
         

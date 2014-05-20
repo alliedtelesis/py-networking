@@ -12,6 +12,7 @@ from multiprocessing import Process
 from time import sleep
 import zmq
 import json
+from pynetworking.utils import Cache, CacheMissException
 
 class ProxyException(Exception):
     pass
@@ -23,6 +24,7 @@ def SSHProxy(device):
     zmq_s.bind(device._proxy_url)
     zmq_p = zmq.Poller()
     zmq_p.register(zmq_s, zmq.POLLIN)
+    cache = Cache()
     if device._port=='auto':
         port = 22
     else:
@@ -115,6 +117,9 @@ def SSHProxy(device):
             elif pcmd == '_ping':
                 device.log_info("ping proxy")
                 ret = {'status':'Success','output':'pong'}
+            elif pcmd == '__flush_cache':
+                device.log_info("flush cache")
+                cache.flush()
             else:
                 device.log_warn("unknown internal command {0}".format(pcmd))
                 ret = {'status':'Error','output':'unknown command {0}'.format(pcmd)}
@@ -122,10 +127,22 @@ def SSHProxy(device):
             try:
                 out=''
                 ret={'status':'Error','output':'Unknown Error'}
-                for c in cmd['cmds']:
-                    device.log_info("sending command '{0}' to device".format(c['cmd']))
-                    chan.send(c['cmd']+'\n')
-                    out += _get_reply(device, chan, c['prompt'])
+                try:
+                    if cmd['cache']:
+                        out = cache.get(cmd['cmds'])
+                    else:
+                        device.log_info("cache disabled")
+                        raise CacheMissException
+                except CacheMissException:
+                    for c in cmd['cmds']:
+                        device.log_info("sending command '{0}' to device".format(c['cmd']))
+                        chan.send(c['cmd']+'\n')
+                        out += _get_reply(device, chan, c['prompt'])
+                if cmd['flush_cache']:
+                    device.log_info("flush cache")
+                    cache.flush()
+                if cmd['cache']:
+                    cache.set(cmd['cmds'],out)
                 ret = {'status':'Success','output':out}
             except ProxyException:
                 device.log_warn("ProxyException")

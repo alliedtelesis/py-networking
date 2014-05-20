@@ -54,7 +54,7 @@ class awp_interface(Feature):
 
         if run_cmd:
             cmds['cmds'].append({'cmd': chr(26),                               'prompt':'\#'})
-            self._device.cmd(cmds)
+            self._device.cmd(cmds, cache=False, flush_cache=True)
             self._device.load_system()
 
     def items(self):

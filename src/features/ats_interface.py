@@ -60,7 +60,7 @@ class ats_interface(Feature):
         for line in self._device.cmd("show interfaces description").split('\n'):
             m = ifre.match(line)
             if m and m.group('description') != '':
-                self._d.log_debug("description for {0} is '{1}'".format(ifn, m.group('description')))
+#                self._d.log_debug("description for {0} is '{1}'".format(ifn, m.group('description')))
                 ifn = int(m.group('ifn'))
                 if self._d.facts['model'] == 'AT-8000S/24' and m.group('ifp') == 'g':
                     ifn += 24
@@ -93,7 +93,7 @@ class ats_interface(Feature):
 
         if run_cmd:
             cmds['cmds'].append({'cmd': chr(26),                               'prompt':'\#'})
-            self._device.cmd(cmds)
+            self._device.cmd(cmds, cache=False, flush_cache=True)
             self._device.load_system()
 
     def items(self):

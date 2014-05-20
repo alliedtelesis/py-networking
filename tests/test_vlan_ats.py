@@ -1123,7 +1123,6 @@ ip ssh server
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert '10' in d.vlan
-    assert d.vlan[10]['name'] == 'new vlan'
     d.vlan.delete(10)
     assert '10' not in d.vlan
     d.close()

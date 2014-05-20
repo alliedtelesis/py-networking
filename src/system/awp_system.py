@@ -38,9 +38,4 @@ class awp_system(object):
 
     def ping(self):
         self._d.log_info('ping')
-        self._d.cmd('show version', cache=False)
-
-    def enter_config(self, cmd):
-        if cmd.startswith('conf'):
-            return True
-        return False
+        self._d.cmd('show version', use_cache=False)

@@ -40,7 +40,7 @@ class ats_vlan(Feature):
 
         cmds['cmds'].append({'cmd': vlan_cmd,            'prompt':'\(config-vlan\)\#'})
         cmds['cmds'].append({'cmd': chr(26),             'prompt':'\#'})
-        self._device.cmd(cmds)
+        self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()
 
         if len(self._get_vlan_ids(vlan_id)) == 1:
@@ -56,7 +56,7 @@ class ats_vlan(Feature):
                         {'cmd': 'no vlan {0}'.format(vlan_id),'prompt':'\(config-vlan\)\#'},
                         {'cmd': chr(26),                      'prompt':'\#'},
                        ]}
-        self._device.cmd(cmds)
+        self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()
 
     def update(self, vlan_id, **kwargs):
@@ -80,7 +80,7 @@ class ats_vlan(Feature):
                     vlan_cmd = "name {0}".format(kwargs['name'])
                 cmds['cmds'].append({'cmd': vlan_cmd,            'prompt':'\(config-if\)\#'})
                 cmds['cmds'].append({'cmd': chr(26),             'prompt':'\#'})
-                self._device.cmd(cmds)
+                self._device.cmd(cmds, cache=False, flush_cache=True)
                 self._device.load_system()
         else:
             raise KeyError('{0} vlans do not exist'.format(non_existing_ids))
@@ -113,7 +113,7 @@ class ats_vlan(Feature):
             cmds['cmds'].append({'cmd': 'switchport trunk allowed vlan add {0}'.format(vid) ,'prompt':'\(config-if\)\#'})
 
         cmds['cmds'].append({'cmd': chr(26),                               'prompt':'\#'})
-        self._device.cmd(cmds)
+        self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()
 
     def delete_interface(self, vid, ifn):
@@ -151,7 +151,7 @@ class ats_vlan(Feature):
             raise ValueError('interface {0} cannot be delete from vlan {1}'.format(ifn,vid))
 
         cmds['cmds'].append({'cmd': chr(26),                               'prompt':'\#'})
-        self._device.cmd(cmds)
+        self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()
 
     def items(self):

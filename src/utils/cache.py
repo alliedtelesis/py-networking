@@ -34,6 +34,6 @@ class Cache(object):
         k = md5(json.dumps(cmd)).hexdigest()
         self.cache[k] = (time()+timeout, value)
 
-    def invalidate(self):
+    def flush(self):
         self.cache = {}
 

@@ -117,6 +117,9 @@ def SSHProxy(device):
             elif pcmd == '_ping':
                 device.log_info("ping proxy")
                 ret = {'status':'Success','output':'pong'}
+            elif pcmd == '__flush_cache':
+                device.log_info("flush cache")
+                cache.flush()
             else:
                 device.log_warn("unknown internal command {0}".format(pcmd))
                 ret = {'status':'Error','output':'unknown command {0}'.format(pcmd)}
@@ -127,23 +130,20 @@ def SSHProxy(device):
                 for c in cmd['cmds']:
                     device.log_info("sending command '{0}' to device".format(c['cmd']))
                     try:
-                        if device.system.enter_config(c['cmd']):
-                            cache.invalidate()
-                            device.log_debug("cache invalidated")
-                    except AttributeError:
-                        device.log_warn("device configuration without system object")
-
-                    try:
                         if not cmd['cache']:
-                            device.log_debug("cache disabled")
+                            device.log_info("cache disabled")
                             raise CacheMissException
                         co = cache.get(c['cmd'])
-                        device.log_debug("cache hit")
+                        device.log_info("cache hit")
                     except CacheMissException:
-                        device.log_debug("cache miss")
+                        device.log_info("cache miss")
                         chan.send(c['cmd']+'\n')
                         co = _get_reply(device, chan, c['prompt'])
+                        cache.set(c['cmd'],co)
                     out += co
+                if cmd['flush_cache']:
+                    device.log_info("flush cache")
+                    cache.flush()
                 ret = {'status':'Success','output':out}
             except ProxyException:
                 device.log_warn("ProxyException")

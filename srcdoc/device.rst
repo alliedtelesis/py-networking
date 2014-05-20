@@ -81,6 +81,10 @@ cmd
 
 **Parameters**:
     - *cmds*: string or dictionary
+    - *use_cache=True* boolean
+        Use cache for this/these commands
+    - *flush_cache=False* boolean
+        Flush all cache entries at the end of the execution of the commands
 
 **Return**
     The output of the command(s)

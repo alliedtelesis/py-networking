@@ -25,7 +25,7 @@ def test_cache2():
     cmd_output = 'this is a test output'
     c.set(cmds, cmd_output)
     sleep(1)
-    c.invalidate()
+    c.flush()
     with pytest.raises(CacheMissException):
         c.get(cmds)
 

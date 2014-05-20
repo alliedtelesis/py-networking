@@ -120,7 +120,7 @@ class Device(object):
         self.log_info("close")
         self.cmd({'cmds':[{'cmd':'_exit', 'prompt': ''}]})
 
-    def cmd(self, cmd, cache=True):
+    def cmd(self, cmd, use_cache=True, cache=False, flush_cache=False):
         if type(cmd) is str:
              self.log_info("executing command '{0}'".format(cmd))
              cmd = {'cmds':[{'cmd':cmd,'prompt': self.system.shell_prompt()}]}
@@ -135,7 +135,8 @@ class Device(object):
             except:
                 self.log_info("no shell init {0}".format(sys.exc_info()[0]))
 
-        cmd['cache'] = cache
+        cmd['cache'] = use_cache
+        cmd['flush_cache'] = flush_cache
 
         i = 0
         self._start_proxy()

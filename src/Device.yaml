@@ -5,9 +5,7 @@ system: ats_system
 {% endif %}
 
 features:
-{% if os == 'cisco' %}
-  vlan: cisco_vlan
-{% elif os == 'awp' %}
+{% if os == 'awp' %}
   vlan: awp_vlan
   interface: awp_interface
 {% elif os == 'ats' %}

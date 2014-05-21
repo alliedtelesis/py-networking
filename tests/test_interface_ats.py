@@ -68,6 +68,14 @@ def test_show_version(dut, log_level):
     d.close()
 
 
+def test_ping1(dut, log_level):
+    setup_dut(dut)
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    d.open()
+    assert d.ping()
+    d.close()
+
+
 def test_get_interface(dut, log_level):
     if dut.mode != 'emulated':
         pytest.skip("only on emulated")

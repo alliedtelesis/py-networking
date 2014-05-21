@@ -40,8 +40,6 @@ class awp_vlan(Feature):
                     vlan_cmd += ' name "{0}"'.format(kwargs['name'])
                 else:
                     vlan_cmd += " name {0}".format(kwargs['name'])
-        if 'mtu' in kwargs:
-            vlan_cmd += " mtu {0}".format(int(kwargs['mtu']))
         if 'state' in kwargs:
             if kwargs['state'] == 'enable' or kwargs['state'] == 'disable':
                 vlan_cmd += " state {0}".format(kwargs['state'])
@@ -49,6 +47,8 @@ class awp_vlan(Feature):
                 raise ValueError("{0} is and invalid vlan state".format(kwargs['state'])) 
         
         cmds['cmds'].append({'cmd': vlan_cmd,             'prompt':'\(config-vlan\)\#'})
+        if 'mtu' in kwargs:
+            cmds['cmds'].append({'cmd': "mtu {0}".format(int(kwargs['mtu'])), 'prompt':'\(config-vlan\)\#'})
         cmds['cmds'].append({'cmd': chr(26),              'prompt':'\#'})
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()

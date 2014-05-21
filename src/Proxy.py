@@ -136,7 +136,10 @@ def SSHProxy(device):
                 except CacheMissException:
                     for c in cmd['cmds']:
                         device.log_info("sending command '{0}' to device".format(c['cmd']))
-                        chan.send(c['cmd']+'\n')
+                        if c['cmd'] == chr(26):
+                            chan.send(c['cmd'])
+                        else:
+                            chan.send(c['cmd']+'\n')
                         out += _get_reply(device, chan, c['prompt'])
                 if cmd['flush_cache']:
                     device.log_info("flush cache")

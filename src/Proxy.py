@@ -9,7 +9,7 @@ import socket
 from os import listdir
 from os.path import dirname, isfile, join
 from multiprocessing import Process
-from time import sleep
+from time import sleep, time
 import zmq
 import json
 from pynetworking.utils import Cache, CacheMissException
@@ -154,13 +154,19 @@ def _get_reply(device, chan, prompt=''):
         return
     prompt = '[\n\r]\w*' + prompt
     try:
-         device.log_debug("waiting for {0}".format(repr(prompt)))
-         buff = ''
-         while True:
-             buff += chan.recv(999)
-             if re.search(prompt,buff):
-                 device.log_debug("got prompt")
-                 break
+        device.log_debug("waiting for {0}".format(repr(prompt)))
+        buff = ''
+        deadline = time() + 5
+        while True:
+            ret = chan.recv(999)
+            if ret == '' and deadline < time():
+                raise socket.timeout
+            elif ret != '':
+                buff += ret
+                deadline = time() + 5
+            if re.search(prompt,buff):
+                device.log_debug("got prompt")
+                break
     except socket.timeout:
         device.log_debug("received >{0}<".format(buff))
         device.log_warn("timeout waiting a reply or a prompt")

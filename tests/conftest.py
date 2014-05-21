@@ -246,6 +246,11 @@ class DUTd(Process):
             while True:
                 sleep(1)
 
+    def stop(self):
+        self.terminate()
+        self.join()
+
+
 @pytest.fixture(scope="module")
 def dut(request):
     host = request.config.getoption("--dut-host")

@@ -20,8 +20,6 @@ class ats_system(object):
         config = ''
         for line in self._d.cmd('show running-config').replace('\r','').split('\n'):
             config += line+'\n'
-            if line.startswith("end"):
-               break
         self._d.log_debug('got device configuration \n{0}'.format(config))
         return config
 

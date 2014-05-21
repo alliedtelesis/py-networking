@@ -5,7 +5,6 @@ import re
 def core_awp(dev):
     ret = {}
     cmds = {'cmds':[{'cmd': 'terminal length 0', 'prompt':'\>'},
-                    {'cmd': 'terminal length 0', 'prompt':'\>'},
                     {'cmd': 'show version',      'prompt':'\>'},
                    ]}
     try:

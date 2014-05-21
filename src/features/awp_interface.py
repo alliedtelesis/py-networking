@@ -65,7 +65,7 @@ class awp_interface(Feature):
         self._update_interface()
         return json.dumps(self._interface)
 
-    __repr__ = __str__
+    __repr__ = __str__  #pragma: no cover
 
     def __getitem__(self, ifn):
         self._update_interface()

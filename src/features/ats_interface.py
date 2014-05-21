@@ -5,7 +5,7 @@ from pprint import pformat
 from pynetworking import Feature
 try:
     from collections import OrderedDict
-except ImportError:
+except ImportError: #pragma: no cover
     from ordereddict import OrderedDict
 
 class ats_interface(Feature):
@@ -108,9 +108,7 @@ class ats_interface(Feature):
         self._update_interface()
         return json.dumps(self._interface)
 
-    def __repr__(self):
-        self._update_interface()
-        return self._interface
+    __repr__ = __str__  #pragma: no cover
 
     def __getitem__(self, ifn):
         self._update_interface()

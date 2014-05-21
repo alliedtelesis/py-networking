@@ -166,7 +166,7 @@ class ats_vlan(Feature):
         self._update_vlan()
         return json.dumps(self._vlan)
 
-    __repr__ = __str__
+    __repr__ = __str__  #pragma: no cover
 
     def __getitem__(self, vid):
         if isinstance(vid, str) or isinstance(vid, int) or isinstance(vid, unicode):

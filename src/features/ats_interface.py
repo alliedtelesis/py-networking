@@ -116,15 +116,6 @@ class ats_interface(Feature):
             return self._interface[ifn]
         raise IndexError
 
-    def _get_interface_ns(self, ifn):
-        ifn = str(ifn)
-        m  = re.match('^(?P<prefix>\d+\.\d+\.)(?P<start_no>\d+)\-\d+\.\d+\.(?P<end_no>\d+)$', ifn)
-        if m:
-            ret = ['{0}{1}'.format(m.group('prefix'),n) for n in range(int(m.group('start_no')),1+int(m.group('end_no')))]
-            return ret 
-        else:
-            return [ifn]
-
     def _update_interface(self):
         self._d.log_info("_update_interface")
         self._interface = OrderedDict()

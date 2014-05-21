@@ -234,7 +234,8 @@ class DUTd(Process):
         self.cmds[md5(str(cmd)).hexdigest()]=cmd
 
     def exit(self):
-        reactor.stop()
+        if reactor.running:
+            reactor.stop()
 
     def _run(self):
         if self.host == '127.0.0.1':
@@ -247,8 +248,9 @@ class DUTd(Process):
                 sleep(1)
 
     def stop(self):
+        self.exit()
         self.terminate()
-        self.join()
+        sleep(0.1)
 
 
 @pytest.fixture(scope="module")

@@ -22,7 +22,7 @@ from tempfile import NamedTemporaryFile
 class DeviceException(Exception):
     pass
 
-class DeviceNotDetected(Exception):
+class DeviceNotDetectedException(Exception):
     pass
 
 class DeviceOfflineException(Exception):
@@ -118,7 +118,8 @@ class Device(object):
 
     def close(self):
         self.log_info("close")
-        self.cmd({'cmds':[{'cmd':'_exit', 'prompt': ''}]})
+        if isinstance(self._proxy,Process) and (isinstance(self._proxy,Process) and self._proxy.is_alive()):
+            self.cmd({'cmds':[{'cmd':'_exit', 'prompt': ''}]})
 
     def cmd(self, cmd, use_cache=True, cache=False, flush_cache=False):
         if type(cmd) is str:
@@ -184,14 +185,17 @@ class Device(object):
                     f = getattr(f, comp)
                 self._facts =  dict(self._facts.items() + f(self).items())
                 self.log_info("core facts loaded \n{0}".format(pformat(self._facts)))
+                if 'os' in self._facts:
+                    break
             except:
                 self.log_info("error executing core fact {0} ({1})".format(cf, sys.exc_info()[0]))
                 self.log_debug(traceback.format_exc())
                 self.close()
                 self._start_proxy()
-        if 'os' not in self._facts:
-            self.close()
-            raise DeviceNotDetected
+        else:
+            if 'os' not in self._facts:
+                self.close()
+                raise DeviceNotDetectedException
 
     def _load_features(self):
         self.log_info("loading features")
@@ -273,4 +277,4 @@ class Device(object):
                             )
             self._proxy.start()
             self.log_debug("proxy process started")
-            #sleep(5)
+

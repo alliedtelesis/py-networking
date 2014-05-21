@@ -1,6 +1,6 @@
 import pytest
 import logging
-from pynetworking import Device
+from pynetworking import Device, DeviceNotDetectedException
 from time import sleep
 from paramiko.rsakey import RSAKey
 from pprint import pprint
@@ -50,11 +50,27 @@ Build type : RELEASE
  (c) 2001-2003, Cambridge Broadband Ltd. All rights reserved;
  """]})
 
-def test_open_close(dut, log_level):
+
+def test_open_close1(dut, log_level):
     setup_dut(dut)
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
     d.close()
+
+
+def test_open_close2(dut, log_level):
+    setup_dut(dut)
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level, connection_timeout=3)
+    d.open()
+    sleep(4)
+    d.close()
+
+
+def test_open_close3(dut, log_level):
+    dut.reset()
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level, connection_timeout=3)
+    with pytest.raises(DeviceNotDetectedException):
+        d.open()
 
 def test_ping(dut, log_level):
     setup_dut(dut)
@@ -62,6 +78,7 @@ def test_ping(dut, log_level):
     d.open()
     assert d.ping()
     d.close()
+
 
 def test_facts(dut, log_level):
     if dut.mode != 'emulated':
@@ -74,6 +91,7 @@ def test_facts(dut, log_level):
     assert d.facts['build_type'] == 'RELEASE'
     assert d.facts['version'] == '5.4.2'
     d.close()
+
 
 def test_config(dut, log_level):
     if dut.mode != 'emulated':
@@ -132,6 +150,7 @@ end
     d.open()
     assert d.config == config
     d.close()
+
 
 def test_system(dut, log_level):
     if dut.mode != 'emulated':

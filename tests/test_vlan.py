@@ -67,8 +67,9 @@ def test_create(dut, log_level):
     setup_dut(dut)
     dut.add_cmd({'cmd': 'vlan database'              , 'state':0, 'action':'SET_PROMPT','args':['(config-vlan)#']})
     dut.add_cmd({'cmd': 'vlan database'              , 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'vlan 20 name admin mtu 1300', 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'show running-config',         'state':2, 'action':'PRINT'    ,'args':["""
+    dut.add_cmd({'cmd': 'vlan 20 name admin'         , 'state':1, 'action':'SET_STATE','args':[2]})
+    dut.add_cmd({'cmd': 'vlan 20 mtu 1300'           , 'state':2, 'action':'SET_STATE','args':[3]})
+    dut.add_cmd({'cmd': 'show running-config',         'state':3, 'action':'PRINT'    ,'args':["""
 !
 vlan database
  vlan 20 name admin state enable mtu 1300
@@ -99,17 +100,19 @@ def test_update(dut, log_level):
     setup_dut(dut)
     dut.add_cmd({'cmd': 'vlan database'                  , 'state':0, 'action':'SET_PROMPT','args':['(config-vlan)#']})
     dut.add_cmd({'cmd': 'vlan database'                  , 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'vlan 20 name vlan_name mtu 1400', 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'show running-config',             'state':2, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd': 'vlan 20 name vlan_name'         , 'state':1, 'action':'SET_STATE','args':[2]})
+    dut.add_cmd({'cmd': 'vlan 20 mtu 1400',                'state':2, 'action':'SET_STATE','args':[3]})
+    dut.add_cmd({'cmd': 'show running-config',             'state':3, 'action':'PRINT','args':["""
 !
 vlan database
  vlan 20 name vlan_name state enable mtu 1400
 ! 
     """]})
-    dut.add_cmd({'cmd': 'vlan database'                    , 'state':2, 'action':'SET_PROMPT','args':['(config-vlan)#']})
-    dut.add_cmd({'cmd': 'vlan database'                    , 'state':2, 'action':'SET_STATE','args':[3]})
-    dut.add_cmd({'cmd': 'vlan 20 name "vlan name" mtu 1400', 'state':3, 'action':'SET_STATE','args':[4]})
-    dut.add_cmd({'cmd': 'show running-config',               'state':4, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd': 'vlan database'                    , 'state':3, 'action':'SET_PROMPT','args':['(config-vlan)#']})
+    dut.add_cmd({'cmd': 'vlan database'                    , 'state':3, 'action':'SET_STATE','args':[4]})
+    dut.add_cmd({'cmd': 'vlan 20 name "vlan name"'         , 'state':4, 'action':'SET_STATE','args':[5]})
+    dut.add_cmd({'cmd': 'vlan 20 mtu 1400'                 , 'state':5, 'action':'SET_STATE','args':[6]})
+    dut.add_cmd({'cmd': 'show running-config',               'state':6, 'action':'PRINT','args':["""
 !
 vlan database
  vlan 20 name "vlan name" state enable mtu 1400

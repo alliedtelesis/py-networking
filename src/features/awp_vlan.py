@@ -48,7 +48,7 @@ class awp_vlan(Feature):
         
         cmds['cmds'].append({'cmd': vlan_cmd,             'prompt':'\(config-vlan\)\#'})
         if 'mtu' in kwargs:
-            cmds['cmds'].append({'cmd': "mtu {0}".format(int(kwargs['mtu'])), 'prompt':'\(config-vlan\)\#'})
+            cmds['cmds'].append({'cmd': "vlan {0} mtu {1}".format(vlan_id, int(kwargs['mtu'])), 'prompt':'\(config-vlan\)\#'})
         cmds['cmds'].append({'cmd': chr(26),              'prompt':'\#'})
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()

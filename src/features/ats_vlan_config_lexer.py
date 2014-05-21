@@ -51,7 +51,7 @@ class VlanConfigLexer(object):
         r'\n+'
         t.lexer.lineno += len(t.value)
 
-    def t_ANY_error(self, t):
+    def t_ANY_error(self, t): #pragma: no cover
         t.lexer.skip(1)
 
     def __init__(self, debug=0):

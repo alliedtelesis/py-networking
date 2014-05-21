@@ -4,7 +4,7 @@ import ply.lex as lex
 from pprint import pprint
 try:
     from collections import OrderedDict
-except ImportError:
+except ImportError: #pragma: no cover
     from ordereddict import OrderedDict
 
 class InterfaceStatusLexer(object):
@@ -97,7 +97,7 @@ class InterfaceStatusLexer(object):
         t.lexer.pop_state()
         t.lexer.lineno += len(t.value)
 
-    def t_ANY_error(self, t):
+    def t_ANY_error(self, t): #pragma: no cover
         t.lexer.skip(1)
 
     def __init__(self,debug=0):

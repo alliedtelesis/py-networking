@@ -268,6 +268,9 @@ ip ssh server
         assert 'untagged' in d.vlan[1]
         assert d.vlan[1]['name'] == '1'
         str(d.vlan)
+    with pytest.raises(KeyError) as excinfo:
+        d.vlan[1111]
+        assert 'vlan id 1111 does not exist' in excinfo.value
     d.close()
 
 
@@ -969,6 +972,30 @@ ip ssh server
     d.vlan.delete_interface(10,'1.0.20')
     assert '1.0.20' not in d.vlan[10]['untagged']
     assert '1.0.20' in d.vlan[1]['untagged']
+    d.close()
+
+
+def test_delete_interface4(dut, log_level):
+    setup_dut(dut)
+    dut.add_cmd({'cmd':'show running-config', 'state':0, 'action':'PRINT','args':["""
+    """]})
+    dut.add_cmd({'cmd': 'show vlan',      'state':0, 'action':'PRINT','args':["""
+
+Vlan       Name                   Ports                Type     Authorization
+---- ----------------- --------------------------- ------------ -------------
+ 1           1         1/e(1-48),1/g(1-4),          other       Required
+                       2/e(1-48),2/g(1-4),
+                       3/e(1-48),3/g(1-4),
+                       4/e(1-48),4/g(1-4),
+                       5/e(1-48),5/g(1-4),
+                       6/e(1-48),6/g(1-4),ch(1-8)
+    """]})
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d.open()
+    assert '1.0.20' in d.vlan[1]['untagged']
+    with pytest.raises(ValueError) as excinfo:
+        d.vlan.delete_interface(1,'1.0.20')
+        assert 'interface 1.0.20 cannot be delete from vlan 1' in excinfo.value
     d.close()
 
 

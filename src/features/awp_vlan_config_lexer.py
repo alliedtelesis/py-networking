@@ -84,11 +84,7 @@ class VlanConfigLexer(object):
         r'!.*'
         pass
 
-    def t_INITIAL_END(self, t):
-        r'end'
-        pass
-
-    def t_ANY_error(self, t):
+    def t_ANY_error(self, t): #pragma: no cover
         t.lexer.skip(1)
 
     def __init__(self):

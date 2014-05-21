@@ -78,7 +78,7 @@ class VlanInterfaceConfigLexer(object):
         r'[a-z].*'
         pass
 
-    def t_ANY_error(self, t):
+    def t_ANY_error(self, t): #pragma: no cover
         print "Illegal character '%s'" % t.value[0]
         t.lexer.skip(1)
 

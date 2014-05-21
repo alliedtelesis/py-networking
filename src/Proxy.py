@@ -152,9 +152,7 @@ def SSHProxy(device):
                 ret = {'status':'Error','output':'ProxyException'}
         zmq_s.send_string(json.dumps(ret))
 
-def _get_reply(device, chan, prompt=''):
-    if prompt == '':
-        return
+def _get_reply(device, chan, prompt):
     prompt = '[\n\r]\w*' + prompt
     try:
         device.log_debug("waiting for {0}".format(repr(prompt)))

@@ -7,10 +7,8 @@ def core_awp(dev):
     cmds = {'cmds':[{'cmd': 'terminal length 0', 'prompt':'\>'},
                     {'cmd': 'show version',      'prompt':'\>'},
                    ]}
-    try:
-        out = dev.cmd(cmds)
-    except DeviceException:
-        return ret
+
+    out = dev.cmd(cmds)
 
     # AlliedWare Plus (TM) 5.4.2 09/25/13 12:57:26
     m = re.search('\s+AlliedWare Plus \(TM\)\s+([\d\.]+)\s+',out) 

@@ -6,10 +6,7 @@ def core_ats(dev):
     dev.log_info("core_ats")
     ret = {}
 
-    try:
-        out = dev.cmd({'cmds':[{'cmd': 'show version', 'prompt':'\#'}]})
-    except DeviceException:
-        return ret
+    out = dev.cmd({'cmds':[{'cmd': 'show version', 'prompt':'\#'}]})
 
     dev.log_debug("show version\n{0}".format(out))
 

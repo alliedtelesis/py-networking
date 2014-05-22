@@ -71,7 +71,7 @@ def test_open_close3(dut, log_level):
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level, connection_timeout=3)
     with pytest.raises(DeviceException) as excinfo:
         d.open()
-        assert excinfo.value.startswith("cannot connect to")
+    assert str(excinfo.value).startswith("device not supported")
 
 
 def test_open_close4(dut, log_level):
@@ -79,17 +79,17 @@ def test_open_close4(dut, log_level):
     d=Device(host='www.google.com',port=80,protocol=dut.protocol,log_level=log_level)
     with pytest.raises(DeviceException) as excinfo:
         d.open()
-        assert excinfo.value.startswith("cannot connect to")
+    assert str(excinfo.value).startswith("cannot open a ssh transport to") == True
 
     d=Device(host=dut.host,port=2323 ,protocol=dut.protocol,log_level=log_level)
     with pytest.raises(DeviceException) as excinfo:
         d.open()
-        assert excinfo.value.startswith("cannot open a ssh transport to")
+    assert str(excinfo.value).startswith("cannot connect to") == True
 
     d=Device(host=dut.host,port=dut.port ,username='wronguser', protocol=dut.protocol,log_level=log_level)
     with pytest.raises(DeviceException) as excinfo:
         d.open()
-        assert excinfo.value.startswith("authentication failed")
+    assert str(excinfo.value).startswith("authentication failed") == True
 
 
 def test_ping1(dut, log_level):

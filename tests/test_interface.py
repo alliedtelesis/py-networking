@@ -38,11 +38,11 @@ Build type : RELEASE
     """]})
     dut.add_cmd({'cmd':'show running-config', 'state':0, 'action':'PRINT','args':["""
 !
-interface port0.0.1-0.0.10
+interface port1.0.1-1.0.10
  description test1
  switchport mode access
 !
-interface port0.0.11-0.0.50
+interface port1.0.11-1.0.50
  description "this is a test description"
  switchport mode trunk
  this is an unknown command
@@ -71,7 +71,7 @@ def test_config(dut, log_level):
     max_if = 51
     for interface in range(1,max_if):
         env = {
-                'interface': 'port0.0.{0}'.format(interface),
+                'interface': 'port1.0.{0}'.format(interface),
                 'link' : 'UP',
                 'state': 'DOWN',
                 'hardware' : 'Ethernet',
@@ -102,25 +102,25 @@ def test_config(dut, log_level):
     assert d.facts['os'] == 'awp'
 
 #   configuration check
-    assert d.interface['0.0.15']['configured duplex'] == 'auto'
-    assert d.interface['0.0.15']['configured speed'] == 'auto'
-    assert d.interface['0.0.15']['configured polarity'] == 'auto'
+    assert d.interface['1.0.15']['configured duplex'] == 'auto'
+    assert d.interface['1.0.15']['configured speed'] == 'auto'
+    assert d.interface['1.0.15']['configured polarity'] == 'auto'
 
 #   status check
-    assert d.interface['0.0.15']['link'] == True
-    assert d.interface['0.0.15']['current polarity'] == 'mdix'
-    assert d.interface['0.0.15']['enable'] == False
-    assert d.interface['0.0.15']['current duplex'] == 'full'
-    assert d.interface['0.0.15']['current speed'] == '1000'
+    assert d.interface['1.0.15']['link'] == True
+    assert d.interface['1.0.15']['current polarity'] == 'mdix'
+    assert d.interface['1.0.15']['enable'] == False
+    assert d.interface['1.0.15']['current duplex'] == 'full'
+    assert d.interface['1.0.15']['current speed'] == '1000'
 
-    assert d.interface['0.0.10']['link'] == False
+    assert d.interface['1.0.10']['link'] == False
 
 #   description check
-    assert d.interface['0.0.1']['description'] == 'test1'
-    assert d.interface['0.0.5']['description'] == 'test1'
-    assert d.interface['0.0.8']['description'] == 'test1'
-    assert d.interface['0.0.31']['description'] == 'this is a test description'
-    assert d.interface['0.0.50']['description'] == 'this is a test description'
+    assert d.interface['1.0.1']['description'] == 'test1'
+    assert d.interface['1.0.5']['description'] == 'test1'
+    assert d.interface['1.0.8']['description'] == 'test1'
+    assert d.interface['1.0.31']['description'] == 'this is a test description'
+    assert d.interface['1.0.50']['description'] == 'this is a test description'
     assert d.interface['vlan1']['description'] == 'testvlan'
     assert d.interface['vlan10']['description'] == 'testvlan'
 
@@ -128,58 +128,50 @@ def test_config(dut, log_level):
 
 
 def test_enable(dut, log_level):
-    if dut.mode != 'emulated':
-        pytest.skip("only on emulated")
     setup_dut(dut)
     show_interface = ''
     for interface in range(1,51):
         env = { 
-                'interface': 'port0.0.{0}'.format(interface),
+                'interface': 'port1.0.{0}'.format(interface),
                 'link' : 'UP',
-                'state': 'DOWN',
+                'state': 'UP',
                 'hardware' : 'Ethernet',
               } 
         show_interface += show_interface_template.render(env).encode('ascii','ignore')
     dut.add_cmd({'cmd': 'show interface',       'state':0, 'action':'PRINT','args':[show_interface]})
-    dut.add_cmd({'cmd': 'interface port0.0.10', 'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': 'interface port0.0.10', 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'no shutdown',          'state':1, 'action':'SET_STATE','args':[2]})
+    dut.add_cmd({'cmd': 'interface port1.0.10', 'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
+    dut.add_cmd({'cmd': 'interface port1.0.10', 'state':0, 'action':'SET_STATE','args':[1]})
+    dut.add_cmd({'cmd': 'shutdown',             'state':1, 'action':'SET_STATE','args':[2]})
     show_interface = ''
     for interface in range(1,51):
-        if (interface == 10):
-            state = 'UP'
-        else:
-            state = 'DOWN'
         env = {
-                'interface': 'port0.0.{0}'.format(interface),
+                'interface': 'port1.0.{0}'.format(interface),
                 'link' : 'UP',
-                'state': '{0}'.format(state),
+                'state': 'DOWN',
                 'hardware' : 'Ethernet',
               } 
         show_interface += show_interface_template.render(env).encode('ascii','ignore')
     dut.add_cmd({'cmd': 'show interface',       'state':2, 'action':'PRINT','args':[show_interface]})
-    dut.add_cmd({'cmd': 'interface port0.0.10', 'state':2, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': 'interface port0.0.10', 'state':2, 'action':'SET_STATE','args':[3]})
-    dut.add_cmd({'cmd': 'shutdown',             'state':3, 'action':'SET_STATE','args':[4]})
+    dut.add_cmd({'cmd': 'interface port1.0.10', 'state':2, 'action':'SET_PROMPT','args':['(config-if)#']})
+    dut.add_cmd({'cmd': 'interface port1.0.10', 'state':2, 'action':'SET_STATE','args':[3]})
+    dut.add_cmd({'cmd': 'no shutdown',          'state':3, 'action':'SET_STATE','args':[4]})
     show_interface = ''
     for interface in range(1,51):
         env = { 
-                'interface': 'port0.0.{0}'.format(interface),
+                'interface': 'port1.0.{0}'.format(interface),
                 'link' : 'UP',
-                'state': 'DOWN',
+                'state': 'UP',
                 'hardware' : 'Ethernet',
               } 
         show_interface += show_interface_template.render(env).encode('ascii','ignore')
     dut.add_cmd({'cmd': 'show interface',       'state':4, 'action':'PRINT','args':[show_interface]})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
-    assert d.interface['0.0.10']['enable'] == False
-    d.interface.update('0.0.10',enable=True)
-    assert d.interface['0.0.10']['enable'] == True
-    d.interface.update('0.0.10',enable=True)
-    assert d.interface['0.0.10']['enable'] == True
-    d.interface.update('0.0.10',enable=False)
-    assert d.interface['0.0.10']['enable'] == False
+    assert d.interface['1.0.10']['enable'] == True
+    d.interface.update('1.0.10',enable=False)
+    assert d.interface['1.0.10']['enable'] == False
+    d.interface.update('1.0.10',enable=True)
+    assert d.interface['1.0.10']['enable'] == True
     d.close()
 
 def test_description(dut, log_level):

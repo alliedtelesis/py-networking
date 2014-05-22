@@ -10,7 +10,7 @@ install:
   - pip install pytest
   - pip install pytest-cov
 script: 
-  - py.test --cov pynetworking tests/
+  - py.test -x -v --cov pynetworking tests/
 after_success:
   - coveralls -v
 

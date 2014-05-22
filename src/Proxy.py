@@ -14,6 +14,7 @@ import zmq
 import json
 from pynetworking.utils import Cache, CacheMissException
 
+# suppress logging from paramiko module
 import logging
 log=logging.getLogger('paramiko').setLevel(logging.CRITICAL)
 
@@ -38,6 +39,7 @@ def SSHProxy(device):
     try:
         device.log_info("connecting to {0}:{1}".format(device.host, port))
         device_s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        device_s.settimeout(6)
         device_s.connect((device.host, port))
     except:
         device.log_warn("cannot connect to {0}:{1} ({2})".format(device.host, port, sys.exc_info()[0]))
@@ -124,6 +126,7 @@ def SSHProxy(device):
                 device.log_info("proxy status")
                 if ret['status'] == 'Error':
                     zmq_s.send_string(json.dumps(ret))
+                    sleep(0.5)
                     exit(1)
                 ret = {'status':'Success','output':''}
             elif pcmd == '__flush_cache':

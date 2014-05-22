@@ -22,12 +22,6 @@ from tempfile import NamedTemporaryFile
 class DeviceException(Exception):
     pass
 
-class DeviceNotDetectedException(Exception):
-    pass
-
-class DeviceOfflineException(Exception):
-    pass
-
 class Device(object):
     """ test doc
     """
@@ -111,7 +105,7 @@ class Device(object):
 
     def open(self):
         self.log_info("open")
-        self._start_proxy()
+        self.cmd({'cmds':[{'cmd': '_status', 'prompt':''}]})
         self._load_core_facts()
         self._load_features()
         self.load_system()
@@ -141,36 +135,29 @@ class Device(object):
 
         i = 0
         self._start_proxy()
-        while True:
-            try:
-                context = zmq.Context()
-                socket = context.socket(zmq.REQ)
-                socket.connect(self._proxy_url)
-                socket.send_string(json.dumps(cmd),zmq.NOBLOCK)
+        try:
+            context = zmq.Context()
+            skt = context.socket(zmq.REQ)
+            skt.connect(self._proxy_url)
+            skt.send_string(json.dumps(cmd),zmq.NOBLOCK)
 
-                poller = zmq.Poller()
-                poller.register(socket, zmq.POLLIN)
-                if len(poller.poll(12000)) == 0:
-                    self._start_proxy()
-                    i += 1
-                    if i > 1:
-                        return False
-                    sleep(1)
-                    continue
+            poller = zmq.Poller()
+            poller.register(skt, zmq.POLLIN)
+            if len(poller.poll(12000)) == 0:
+                self.log_warn("timeout on cmd ({0})".format(self._proxy.exitcode))
+                raise DeviceException('proxy exited with error ({0})'.format(self._proxy.exitcode))
 
-                ret = json.loads(socket.recv(zmq.NOBLOCK))
-                if ret['status'] == 'Success':
-                    self.log_debug("command execution success")
-                    self.log_debug("command execution output \n{0}".format(ret['output']))
-                    return ret['output']
-                else:
-                    self.log_warn("command execution '{0}' 'error {1}".format(cmd, ret))
-                    raise DeviceException(ret['output'])
-            except zmq.error.ZMQError, e:
-                 self.log_warn("ZMQError {0}".format(repr(e)))
-                 raise DeviceOfflineException
-            except:
-                 raise DeviceException(sys.exc_info()[0])
+            ret = json.loads(skt.recv(zmq.NOBLOCK))
+            if ret['status'] == 'Success':
+                self.log_debug("command execution success")
+                self.log_debug("command execution output \n{0}".format(ret['output']))
+                return ret['output']
+            else:
+                self.log_warn("command execution '{0}' 'error {1}".format(cmd, ret))
+                raise DeviceException(ret['output'])
+        except zmq.error.ZMQError, e:
+            self.log_warn("ZMQError {0}".format(repr(e)))
+            raise DeviceException("ZMQError {0}".format(repr(e)))
 
     def _load_core_facts(self):
         self.log_info("loading core facts")
@@ -195,7 +182,7 @@ class Device(object):
         else:
             if 'os' not in self._facts:
                 self.close()
-                raise DeviceNotDetectedException
+                raise DeviceException("device not supported")
 
     def _load_features(self):
         self.log_info("loading features")

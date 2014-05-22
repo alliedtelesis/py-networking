@@ -14,6 +14,9 @@ import zmq
 import json
 from pynetworking.utils import Cache, CacheMissException
 
+import logging
+log=logging.getLogger('paramiko').setLevel(logging.CRITICAL)
+
 class ProxyException(Exception):
     pass
 
@@ -31,62 +34,62 @@ def SSHProxy(device):
         port = device._port
 
     # connect to host
+    ret = {'status':'Success','output':""}
     try:
         device.log_info("connecting to {0}:{1}".format(device.host, port))
         device_s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         device_s.connect((device.host, port))
     except:
-        device.log_warn("cannot connecting to {0}:{1} ({2})".format(device.host, port, sys.exc_info()[0]))
-        ret = {'status': 'Error', 'output': 'Cannot connect to host'}
-        exit(1)
+        device.log_warn("cannot connect to {0}:{1} ({2})".format(device.host, port, sys.exc_info()[0]))
+        ret = {'status':'Error','output':"cannot connect to {0}:{1} ({2})".format(device.host, port, sys.exc_info()[0])}
 
     # open a transport
-    try:
-        device.log_debug("opening transport to {0}:{1}".format(device.host, port))
-        t = Transport(device_s)
-        t.start_client()
-    except SSHException:
-        device.log_warn("cannot open an ssh  trasport to {0}:{1}".format(device.host, port))
-        ret = {'status': 'Error', 'output': 'Cannot connect ssh to host'}
-        exit(1)
-
-        # try to authenticate with username and password
-    try:
-        t.auth_password(device.username, device.password)
-    except:
-        device.log_debug("username/password authentication failed...trying in session auth")
-
-    # try in session authentication
-    if not t.is_authenticated():
+    if ret['status'] == 'Success':
         try:
-            t.auth_none(device.username)
-            device.log_debug("none authentication succeed")
-        except:
-            device.log_warn("authentication failed")
-            ret = {'status': 'Error', 'output': 'Cannot authenticate to the device'}
-            exit(1)
+            device.log_debug("opening transport to {0}:{1}".format(device.host, port))
+            t = Transport(device_s)
+            t.start_client()
+        except SSHException:
+            device.log_warn("cannot open a ssh transport to {0}:{1}".format(device.host, port))
+            ret = {'status':'Error','output':"cannot open a ssh transport to {0}:{1}".format(device.host, port)}
 
-    try:
-        device.log_debug("getting a shell to the device")
-        chan = t.open_session()
-        chan.get_pty()
-        chan.invoke_shell()
-        chan.settimeout(5)
-        sleep(1)
-        if 'User Name:' in chan.recv(999):
-            chan.send(device.username + '\n')
+    # try to authenticate with username and password
+    if ret['status'] == 'Success':
+        try:
+            t.auth_password(device.username, device.password)
+        except:
+            device.log_debug("username/password authentication failed...trying in session auth")
+
+        # try in session authentication
+        if not t.is_authenticated():
+            try:
+                t.auth_none(device.username)
+                device.log_debug("none authentication succeed")
+            except:
+                device.log_warn("authentication failed")
+                ret = {'status':'Error','output':"authentication failed"}
+
+    # getting shell to device
+    if ret['status'] == 'Success':
+        try:
+            device.log_debug("getting a shell to the device")
+            chan = t.open_session()
+            chan.get_pty()
+            chan.invoke_shell()
+            chan.settimeout(5)
             sleep(1)
-            if 'Password:' in chan.recv(999):
-                chan.send(device.password + '\n')
-            _get_reply(device, chan,r'\n[\w\_]+\#')
-    except SSHException:
-        device.log_warn("SSHException")
-        ret = {'status':'Error','output':'SSHException'}
-        exit(1)
-    except ProxyException:
-        device.log_warn("ProxyException")
-        ret = {'status':'Error','output':'ProxyException'}
-        exit(1)
+            if 'User Name:' in chan.recv(999):
+                chan.send(device.username + '\n')
+                sleep(1)
+                if 'Password:' in chan.recv(999):
+                    chan.send(device.password + '\n')
+                _get_reply(device, chan,r'\n[\w\_]+\#')
+        except SSHException:
+            device.log_warn("SSHException {0}", sys.exc_info()[0])
+            ret = {'status':'Error','output':"SSHException {0}".format(sys.exc_info()[0])}
+        except ProxyException:
+            device.log_warn("ProxyException ({0})", sys.exc_info()[0])
+            ret = {'status':'Error','output':"ProxyException ({0})".format(sys.exc_info()[0])}
 
     device.log_info("ready to accept commands")
     while True:
@@ -94,7 +97,7 @@ def SSHProxy(device):
         if len(zmq_p.poll(device._proxy_connection_timeout)) == 0:
              device.log_info("shutting down proxy")
              chan.close()
-             exit(0)
+             sys.exit(0)
 
         cmd = json.loads(zmq_s.recv(zmq.NOBLOCK))
         device.log_debug("execute commands {0}".format(cmd))
@@ -117,9 +120,16 @@ def SSHProxy(device):
             elif pcmd == '_ping':
                 device.log_info("ping proxy")
                 ret = {'status':'Success','output':'pong'}
+            elif pcmd == '_status':
+                device.log_info("proxy status")
+                if ret['status'] == 'Error':
+                    zmq_s.send_string(json.dumps(ret))
+                    exit(1)
+                ret = {'status':'Success','output':''}
             elif pcmd == '__flush_cache':
                 device.log_info("flush cache")
                 cache.flush()
+                ret = {'status':'Success','output':''}
             else:
                 device.log_warn("unknown internal command {0}".format(pcmd))
                 ret = {'status':'Error','output':'unknown command {0}'.format(pcmd)}

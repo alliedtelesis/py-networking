@@ -1,4 +1,4 @@
-from pynetworking import Device, DeviceOfflineException
+from pynetworking import Device, DeviceException
 from pprint import pprint
 import re
 
@@ -9,7 +9,7 @@ def core_awp(dev):
                    ]}
     try:
         out = dev.cmd(cmds)
-    except DeviceOfflineException:
+    except DeviceException:
         return ret
 
     # AlliedWare Plus (TM) 5.4.2 09/25/13 12:57:26

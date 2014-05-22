@@ -135,6 +135,7 @@ class Device(object):
 
         i = 0
         self._start_proxy()
+        sleep(1)
         try:
             context = zmq.Context()
             skt = context.socket(zmq.REQ)

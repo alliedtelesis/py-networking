@@ -133,12 +133,12 @@ class Device(object):
         cmd['cache'] = use_cache
         cmd['flush_cache'] = flush_cache
 
-        i = 0
         self._start_proxy()
         sleep(1)
         try:
             context = zmq.Context()
             skt = context.socket(zmq.REQ)
+            skt.setsockopt(zmq.LINGER, 1000)
             skt.connect(self._proxy_url)
             skt.send_string(json.dumps(cmd),zmq.NOBLOCK)
 

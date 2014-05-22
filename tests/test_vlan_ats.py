@@ -270,7 +270,7 @@ ip ssh server
         str(d.vlan)
     with pytest.raises(KeyError) as excinfo:
         d.vlan[1111]
-        assert 'vlan id 1111 does not exist' in excinfo.value
+    assert 'vlan id 1111 does not exist' in excinfo.value
     d.close()
 
 
@@ -447,7 +447,7 @@ ip ssh server
     assert d.vlan[10]['name'] == 'new_vlan'
     with pytest.raises(KeyError) as excinfo:
         d.vlan.update(30,name='does not exists')
-        assert '30 vlans do not exist' in excinfo.value
+    assert '[30] vlans do not exist' in excinfo.value
     d.close()
 
 
@@ -570,7 +570,7 @@ ip ssh server
     assert '1.0.20' not in d.vlan[1]['untagged']
     with pytest.raises(ValueError) as excinfo:
         d.vlan.add_interface(11,'1.0.20')
-        assert '{0} is not a valid vlan id' in excinfo.value
+    assert '11 is not a valid vlan id' in excinfo.value
     d.close()
 
 
@@ -651,10 +651,10 @@ ip ssh server
     assert '1.0.20' in d.vlan[1]['untagged']
     with pytest.raises(ValueError) as excinfo:
         d.vlan.delete_interface(11,'1.0.20')
-        assert '11 is not a valid vlan id' in excinfo.value
+    assert '11 is not a valid vlan id' in excinfo.value
     with pytest.raises(ValueError) as excinfo:
         d.vlan.delete_interface(10,'1.0.19')
-        assert 'interface 1.0.19 does not belong to vlan 10' in excinfo.value
+    assert 'interface 1.0.19 does not belong to vlan 10' in excinfo.value
     d.close()
 
 
@@ -995,7 +995,7 @@ Vlan       Name                   Ports                Type     Authorization
     assert '1.0.20' in d.vlan[1]['untagged']
     with pytest.raises(ValueError) as excinfo:
         d.vlan.delete_interface(1,'1.0.20')
-        assert 'interface 1.0.20 cannot be delete from vlan 1' in excinfo.value
+    assert 'interface 1.0.20 cannot be delete from vlan 1' in excinfo.value
     d.close()
 
 
@@ -1166,6 +1166,6 @@ def test_get_vlan_ids(dut, log_level):
     assert d.vlan._get_vlan_ids('10-11,60,1000-1001') == [10,11,60,1000,1001]
     with pytest.raises(ValueError) as excinfo:
         d.vlan._get_vlan_ids('not_valid_range')
-        assert 'not_valid_range is not a valid vlan id, range or list' in excinfo.value
+    assert 'not_valid_range is not a valid vlan id, range or list' in excinfo.value
 
 

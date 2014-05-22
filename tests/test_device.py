@@ -1,6 +1,6 @@
 import pytest
 import logging
-from pynetworking import Device, DeviceNotDetectedException
+from pynetworking import Device, DeviceException
 from time import sleep
 from paramiko.rsakey import RSAKey
 from pprint import pprint
@@ -69,8 +69,28 @@ def test_open_close2(dut, log_level):
 def test_open_close3(dut, log_level):
     dut.reset()
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level, connection_timeout=3)
-    with pytest.raises(DeviceNotDetectedException):
+    with pytest.raises(DeviceException) as excinfo:
         d.open()
+    assert str(excinfo.value).startswith("device not supported")
+
+
+def test_open_close4(dut, log_level):
+    dut.reset()
+    # d=Device(host='www.google.com',port=80,protocol=dut.protocol,log_level=log_level)
+    # with pytest.raises(DeviceException) as excinfo:
+    #     d.open()
+    # assert str(excinfo.value).startswith("cannot open a ssh transport to") == True
+
+    d=Device(host=dut.host,port=2323 ,protocol=dut.protocol,log_level=log_level)
+    with pytest.raises(DeviceException) as excinfo:
+        d.open()
+    assert str(excinfo.value).startswith("cannot connect to") == True
+
+    d=Device(host=dut.host,port=dut.port ,username='wronguser', protocol=dut.protocol,log_level=log_level)
+    with pytest.raises(DeviceException) as excinfo:
+        d.open()
+    assert str(excinfo.value).startswith("authentication failed") == True
+
 
 def test_ping1(dut, log_level):
     setup_dut(dut)

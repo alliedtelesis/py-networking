@@ -177,8 +177,7 @@ class Device(object):
             except:
                 self.log_info("error executing core fact {0} ({1})".format(cf, sys.exc_info()[0]))
                 self.log_debug(traceback.format_exc())
-                self.close()
-                self._start_proxy()
+            self.close()
         else:
             if 'os' not in self._facts:
                 self.close()

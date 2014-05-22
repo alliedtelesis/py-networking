@@ -183,12 +183,12 @@ def test_system(dut, log_level):
     d.close()
 
 
-def test_ping2(dut, log_level):
-    setup_dut(dut)
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
-    d.open()
-    dut.stop()
-    assert not d.ping()
-    d.close()
+# def test_ping2(dut, log_level):
+#     setup_dut(dut)
+#     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+#     d.open()
+#     dut.stop()
+#     assert not d.ping()
+#     d.close()
 
 

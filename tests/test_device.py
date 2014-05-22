@@ -76,10 +76,10 @@ def test_open_close3(dut, log_level):
 
 def test_open_close4(dut, log_level):
     dut.reset()
-    d=Device(host='www.google.com',port=80,protocol=dut.protocol,log_level=log_level)
-    with pytest.raises(DeviceException) as excinfo:
-        d.open()
-    assert str(excinfo.value).startswith("cannot open a ssh transport to") == True
+    # d=Device(host='www.google.com',port=80,protocol=dut.protocol,log_level=log_level)
+    # with pytest.raises(DeviceException) as excinfo:
+    #     d.open()
+    # assert str(excinfo.value).startswith("cannot open a ssh transport to") == True
 
     d=Device(host=dut.host,port=2323 ,protocol=dut.protocol,log_level=log_level)
     with pytest.raises(DeviceException) as excinfo:

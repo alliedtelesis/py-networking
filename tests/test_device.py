@@ -68,7 +68,7 @@ def test_open_close2(dut, log_level):
 
 def test_open_close3(dut, log_level):
     dut.reset()
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level, connection_timeout=3)
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     with pytest.raises(DeviceException) as excinfo:
         d.open()
     assert str(excinfo.value).startswith("device not supported")

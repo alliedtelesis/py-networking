@@ -7,7 +7,7 @@ from setuptools import setup, find_packages, Command
 from setuptools.command.test import test as TestCommand
 import versioneer
 
-versioneer.versionfile_source = 'src/_version.py'
+versioneer.versionfile_source = 'pynetworking/_version.py'
 versioneer.versionfile_build = 'pynetworking/_version.py'
 versioneer.tag_prefix = 'v' # tags are like v1.2.0
 versioneer.parentdir_prefix = 'py-networking-' 
@@ -31,7 +31,7 @@ class CleanCommand(Command):
         self.cwd = os.getcwd()
     def run(self):
         assert os.getcwd() == self.cwd, 'Must be in package root: %s' % self.cwd
-        os.system ('rm -rf ./.coverage* ./coverage-* ./MANIFEST ./.tox ./build ./dist ./*.pyc ./*.tgz ./*.egg ./*.egg-info ./py-networking-* ./doc')
+        os.system ('rm -rf ./.coverage ./coverage.* ./coverage-* ./MANIFEST ./.tox ./build ./dist ./*.pyc ./*.tgz ./*.egg ./*.egg-info ./py-networking-* ./doc')
 
 class DocCommand(Command):
     user_options = []
@@ -91,7 +91,7 @@ if os.path.exists('README.rst'):
     with open('README.rst') as file:
         long_description = file.read()
 else:
-    long_description = 'Library for network programmability and automation'
+    long_description = 'Library for network programming and automation'
 
 setup(name             = 'py-networking',
       version          = versioneer.get_version(),
@@ -101,18 +101,11 @@ setup(name             = 'py-networking',
                             'clean': CleanCommand,
                             'doc': DocCommand
                           }.items()),
-      description      = 'Library for network programmability and automation',
+      description      = 'Library for network programming and automation',
       long_description = long_description,
       author           = 'Allied Telesis',
-      author_email     = 'francesco_salamida@gmail.com',
+      author_email     = 'francesco_salamida@alliedtelesis.com',
       license          = 'Apache License 2.0',
-      package_dir      = {
-                            'pynetworking': 'src',
-                            'pynetworking.features': 'src/features',
-                            'pynetworking.facts': 'src/facts',
-                            'pynetworking.system': 'src/system',
-                            'pynetworking.utils': 'src/utils',
-                         },
       packages         = [
                             'pynetworking',
                             'pynetworking.features',
@@ -139,7 +132,7 @@ setup(name             = 'py-networking',
                             'twisted',
                             'tox'
                          ],
-      url              = 'https://github.com/alliedtelesis/py-networking/',
+      url              = 'http://www.py-networking.com',
       classifiers      = [
          'Development Status :: 1 - Planning',
          'Intended Audience :: System Administrators',

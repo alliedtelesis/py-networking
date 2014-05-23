@@ -1,0 +1,9 @@
+[run]
+omit =
+    *_version*
+    pynetworking/*
+
+
+[html]
+directory = coverage-html-report
+

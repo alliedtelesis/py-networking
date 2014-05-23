@@ -125,17 +125,18 @@ class awp_vlan(Feature):
         if vid not in self._vlan:
             raise ValueError('{0} is not a valid vlan id'.format(vid))
 
-        if 'tagged' in self._vlan[vid] and ifn in self._vlan[vid]['tagged']:
-                tagged = True
-        if 'untagged' in self._vlan[vid] and ifn in self._vlan[vid]['untagged']:
-                tagged = False
-        else:
-            raise ValueError('interface {0} does not belong to vlan {1}'.format(ifn,vid))
-
         ifi = self._get_interface_config(ifn)
-        if not ifi:    
+        if not ifi:
             raise ValueError('{0} is not a valid interface'.format(ifn))
-    
+
+        if 'tagged' in self._vlan[vid] and ifn in self._vlan[vid]['tagged']:
+            tagged = True
+        else:
+            if 'untagged' in self._vlan[vid] and ifn in self._vlan[vid]['untagged']:
+                tagged = False
+            else:
+                raise ValueError('interface {0} does not belong to vlan {1}'.format(ifn,vid))
+
         cmds = {'cmds':[{'cmd': 'enable',                    'prompt':'\#'},
                         {'cmd': 'conf t',                    'prompt':'\(config\)\#'},
                         {'cmd': 'interface port{0}'.format(ifn), 'prompt':'\(config-if\)\#'},
@@ -143,13 +144,14 @@ class awp_vlan(Feature):
 
         if ifi['switchport mode'] == 'access':
             # this actually move port back to vlan 1
-            cmds['cmds'].append({'cmd': 'no switchport access vlan {0}'.format(vid) ,'prompt':'\(config-if\)\#'})
+            # VLAN id is implicit, being untagged
+            cmds['cmds'].append({'cmd': 'no switchport access vlan' ,'prompt':'\(config-if\)\#'})
         elif ifi['switchport mode'] == 'trunk' and tagged == False:
             cmds['cmds'].append({'cmd': 'switchport trunk native vlan none' ,'prompt':'\(config-if\)\#'})
         elif ifi['switchport mode'] == 'trunk' and tagged == True:
             cmds['cmds'].append({'cmd': 'switchport trunk allowed vlan remove {0}'.format(vid) ,'prompt':'\(config-if\)\#'})
         else:
-            raise ValueError('interface {0} cannot be delete from vlan {1}'.format(ifn,vid))
+            raise ValueError('interface {0} cannot be deleted from vlan {1}'.format(ifn,vid))
 
         cmds['cmds'].append({'cmd': chr(26),                               'prompt':'\#'})
         self._device.cmd(cmds, cache=False, flush_cache=True)

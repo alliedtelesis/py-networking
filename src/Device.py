@@ -114,6 +114,7 @@ class Device(object):
         self.log_info("close")
         if isinstance(self._proxy,Process) and (isinstance(self._proxy,Process) and self._proxy.is_alive()):
             self.cmd({'cmds':[{'cmd':'_exit', 'prompt': ''}]})
+            self._proxy.join(10)
 
     def cmd(self, cmd, use_cache=True, cache=False, flush_cache=False):
         if type(cmd) is str:

@@ -82,8 +82,7 @@ requires the following steps:
 
 * Add in *pynetworking/system* directory a file with a name associated with the section system (in our example
   awp_system.py). PN expects to find a class with same name of the file (awp_system) that implements a number of methods
-  as described in system section (TBD). An instance of this class will be created at runtime in the device open method
-  and will be accessible under system device attribute.
+  as described in system section (TBD). An instance of this class will be created at runtime in the device open method.
 
 * Add in *pynetworking/features* directory one source file for each feature that the device has. The filename is
   the value of the keyword associated with the feature. For example for awp the filename will be awp_interface

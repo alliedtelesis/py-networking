@@ -1,7 +1,6 @@
 [run]
 omit =
     *_version*
-    pynetworking/*
 
 
 [html]

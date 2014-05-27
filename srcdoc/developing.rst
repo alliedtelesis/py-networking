@@ -12,7 +12,7 @@ to verify that your environment is correctly setup and all the requirements are 
 execute the tests that comes with PN::
 
     cd py-networking
-    ./setup tests
+    ./setup.py tests
 
 Create a branch for your changes
 --------------------------------
@@ -110,7 +110,7 @@ Dut has a number of methods that allow customizing its behaviour. The most impor
 new CLI command::
 
     # add a command that emulate 'show version'
-    dut.add({
+    dut.add_cmd({
             'cmd':'show version', # the command string
             'state':-1,           # the state in which the command is applicable
             'action':  'PRINT',   # the action that will be taken
@@ -130,7 +130,7 @@ In addition to the action **PRINT** of the example above the other currently sup
 **SET_PROMPT** allows changing the prompt so to simulate entering in the interface configuration::
 
     # add a command that emulate 'show version'
-    dut.add({
+    dut.add_cmd({
             'cmd':'interface port1.0.10',        # the command string
             'state': 0,                          # the state in which the command is applicable
             'action': 'SET_PROMPT',              # the action that will be taken

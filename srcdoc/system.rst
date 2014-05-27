@@ -1,7 +1,7 @@
 .. _system-section:
 
 System
-######
+******
 System class implements device dependent functions and it's used by the Device class to do device specific
 operations. This chapter is not intended for the library user but for developer that want to add support for new devices.
 

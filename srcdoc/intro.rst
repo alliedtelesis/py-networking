@@ -36,6 +36,8 @@ For further information on how to develop and contribute to py-networking refer 
 
     On Mac OS X follow the following steps before invoking pip
 
+    **Homebrew**
+
     Check if gcc is already installed.
     If trying to run gcc on the terminal you get the following output::
 
@@ -55,6 +57,11 @@ For further information on how to develop and contribute to py-networking refer 
         brew install python
         brew install zmq
 
+    **Macport**
+
+    Install `Macport <http://www.macports.org/install.php>`_ and then::
+
+         sudo port install py27-zmq py27-yaml py27-jinja2 py27-ply
 
 Run
 ---

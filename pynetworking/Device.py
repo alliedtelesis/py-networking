@@ -247,6 +247,10 @@ class Device(object):
     def log_critical(self, msg):
         self._logger(msg,'critical')
 
+    def update_password(self, new_password):
+        self.log_info("_update_password")
+        self._password = new_password
+
     def _logger(self, msg, level):
         (frame, filename, lineno, function_name, lines, index) = inspect.getouterframes(inspect.currentframe())[2]
         filename = filename.split('pynetworking/')[1]
@@ -265,4 +269,5 @@ class Device(object):
                             )
             self._proxy.start()
             self.log_debug("proxy process started")
+
 

@@ -40,10 +40,9 @@ class ats_system(object):
         self._d.update_password(new_password)
         change_pwd_cmd = 'username {0} password {1}'.format(self._d._username, new_password)
         print(change_pwd_cmd)
-        cmds = {'cmds':[{'cmd': 'enable'      , 'prompt':'\#'},
-                        {'cmd': 'conf t'      , 'prompt':'\#'},
-                        {'cmd': change_pwd_cmd, 'prompt':'\#'},
-                        {'cmd': chr(26)       , 'prompt':'\#'},
+        cmds = {'cmds':[{'cmd': 'conf'        , 'prompt':'\(config\)\#'},
+                        {'cmd': change_pwd_cmd, 'prompt':'\(config\)\#'},
+                        {'cmd': chr(26)       , 'prompt':'\#'}
                        ]}
         self._d.cmd(cmds)
         self._d.load_system()

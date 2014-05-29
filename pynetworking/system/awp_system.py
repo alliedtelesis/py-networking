@@ -44,7 +44,6 @@ class awp_system(object):
         self._d.log_info('changing password')
         self._d.update_password(new_password)
         change_pwd_cmd = 'username {0} password {1}'.format(self._d._username, new_password)
-        print(change_pwd_cmd)
         cmds = {'cmds':[{'cmd': 'enable'      , 'prompt':'\#'},
                         {'cmd': 'conf t'      , 'prompt':'\(config\)\#'},
                         {'cmd': change_pwd_cmd, 'prompt':'\(config\)\#'},

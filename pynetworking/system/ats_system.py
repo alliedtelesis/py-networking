@@ -35,5 +35,16 @@ class ats_system(object):
         self._d.log_info('ping')
         self._d.cmd('show version', use_cache=False)
 
+    def change_password(self, new_password):
+        self._d.log_info('changing password')
+        self._d.update_password(new_password)
+        change_pwd_cmd = 'username {0} password {1}'.format(self._d._username, new_password)
+        print(change_pwd_cmd)
+        cmds = {'cmds':[{'cmd': 'conf'        , 'prompt':'\(config\)\#'},
+                        {'cmd': change_pwd_cmd, 'prompt':'\(config\)\#'},
+                        {'cmd': chr(26)       , 'prompt':'\#'}
+                       ]}
+        self._d.cmd(cmds)
+        self._d.load_system()
 
         

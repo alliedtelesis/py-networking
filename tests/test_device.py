@@ -183,6 +183,164 @@ def test_system(dut, log_level):
     d.close()
 
 
+def test_change_password(dut, log_level):
+    setup_dut(dut)
+    dut.add_cmd({'cmd': 'show running-config'    , 'state':0, 'action':'PRINT','args':["""
+!
+service password-encryption
+!
+no banner motd
+!
+username manager privilege 15 password 8 $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0
+!
+ssh server allow-users manager
+service ssh
+!
+service telnet
+!
+service http
+!
+no clock timezone
+!
+snmp-server
+!
+aaa authentication enable default local
+aaa authentication login default local
+!
+!
+stack virtual-chassis-id 1726
+!
+ip domain-lookup
+!
+no service dhcp-server
+!
+no ip multicast-routing
+!
+spanning-tree mode rstp
+!
+switch 1 provision x600-48
+!
+interface port1.0.1-1.0.50
+ switchport
+ switchport mode access
+!
+interface vlan1
+ ip address 10.17.39.254/24
+!
+!
+line con 0
+line vty 0 4
+!
+end
+"""]})
+    dut.add_cmd({'cmd': 'username manager password enemy'  , 'state':0, 'action':'SET_STATE','args':[1]})
+    dut.add_cmd({'cmd': 'show running-config'              , 'state':1, 'action':'PRINT','args':["""
+!
+service password-encryption
+!
+no banner motd
+!
+username manager privilege 15 password 8 $1$PObVIEou$N.dQG4mrILsJXEnna41Qm.
+!
+ssh server allow-users manager
+service ssh
+!
+service telnet
+!
+service http
+!
+no clock timezone
+!
+snmp-server
+!
+aaa authentication enable default local
+aaa authentication login default local
+!
+!
+stack virtual-chassis-id 1726
+!
+ip domain-lookup
+!
+no service dhcp-server
+!
+no ip multicast-routing
+!
+spanning-tree mode rstp
+!
+switch 1 provision x600-48
+!
+interface port1.0.1-1.0.50
+ switchport
+ switchport mode access
+!
+interface vlan1
+ ip address 10.17.39.254/24
+!
+!
+line con 0
+line vty 0 4
+!
+end
+"""]})
+    dut.add_cmd({'cmd': 'username manager password friend' , 'state':1, 'action':'SET_STATE','args':[2]})
+    dut.add_cmd({'cmd': 'show running-config'              , 'state':2, 'action':'PRINT','args':["""
+!
+service password-encryption
+!
+no banner motd
+!
+username manager privilege 15 password 8 $1$CEgGZi0q$3JfHL/fM2F5YS47c/54ZQ.
+!
+ssh server allow-users manager
+service ssh
+!
+service telnet
+!
+service http
+!
+no clock timezone
+!
+snmp-server
+!
+aaa authentication enable default local
+aaa authentication login default local
+!
+!
+stack virtual-chassis-id 1726
+!
+ip domain-lookup
+!
+no service dhcp-server
+!
+no ip multicast-routing
+!
+spanning-tree mode rstp
+!
+switch 1 provision x600-48
+!
+interface port1.0.1-1.0.50
+ switchport
+ switchport mode access
+!
+interface vlan1
+ ip address 10.17.39.254/24
+!
+!
+line con 0
+line vty 0 4
+!
+end
+"""]})
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    d.open()
+    assert d._password == "friend"
+    d.system.change_password("enemy")
+    assert d._password == "enemy"
+    d.system.change_password("friend")
+    assert d._password == "friend"
+    d.close()
+
+
 def test_ping2(dut, log_level):
     setup_dut(dut)
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
@@ -190,5 +348,4 @@ def test_ping2(dut, log_level):
     dut.stop()
     assert not d.ping()
     d.close()
-
 

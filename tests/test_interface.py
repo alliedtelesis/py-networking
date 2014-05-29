@@ -178,4 +178,98 @@ def test_description(dut, log_level):
     if dut.mode != 'emulated':
         pytest.skip("only on emulated")
     setup_dut(dut)
+    show_interface = ''
+    for interface in range(1,11):
+        env = {
+                'interface': 'port1.0.{0}'.format(interface),
+                'link' : 'UP',
+                'state': 'UP',
+                'hardware' : 'Ethernet',
+              }
+        show_interface += show_interface_template.render(env).encode('ascii','ignore')
+    dut.add_cmd({'cmd':'show running-config', 'state':0, 'action':'PRINT','args':["""
+!
+interface port1.0.1-1.0.10
+ description test1
+!
+end
+    """]})
+    dut.add_cmd({'cmd': 'show interface'      , 'state':0, 'action':'PRINT','args':[show_interface]})
+    dut.add_cmd({'cmd': 'interface port1.0.10', 'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
+    dut.add_cmd({'cmd': 'interface port1.0.10', 'state':0, 'action':'SET_STATE','args':[1]})
+    dut.add_cmd({'cmd': 'description camera_1', 'state':1, 'action':'SET_STATE','args':[2]})
+    dut.add_cmd({'cmd': 'show running-config' , 'state':2, 'action':'PRINT','args':["""
+!
+interface port1.0.1-1.0.9
+ description test1
+!
+interface port1.0.10
+ description camera_1
+!
+end
+    """]})
+    dut.add_cmd({'cmd': 'show interface'      , 'state':2, 'action':'PRINT','args':[show_interface]})
+    dut.add_cmd({'cmd': 'interface port1.0.10', 'state':2, 'action':'SET_PROMPT','args':['(config-if)#']})
+    dut.add_cmd({'cmd': 'interface port1.0.10', 'state':2, 'action':'SET_STATE','args':[3]})
+    dut.add_cmd({'cmd': 'description camera_1', 'state':3, 'action':'SET_STATE','args':[4]})
+    dut.add_cmd({'cmd': 'show running-config' , 'state':4, 'action':'PRINT','args':["""
+!
+interface port1.0.1-1.0.9
+ description test1
+!
+interface port1.0.10
+ description camera_1
+!
+end
+    """]})
+    dut.add_cmd({'cmd': 'show interface'       , 'state':4, 'action':'PRINT','args':[show_interface]})
+    dut.add_cmd({'cmd': 'interface port1.0.10' , 'state':4, 'action':'SET_PROMPT','args':['(config-if)#']})
+    dut.add_cmd({'cmd': 'interface port1.0.10' , 'state':4, 'action':'SET_STATE','args':[5]})
+    dut.add_cmd({'cmd': 'description "cam one"', 'state':5, 'action':'SET_STATE','args':[6]})
+    dut.add_cmd({'cmd': 'show running-config'  , 'state':6, 'action':'PRINT','args':["""
+!
+interface port1.0.1-1.0.9
+ description test1
+!
+interface port1.0.10
+ description "cam one"
+!
+end
+    """]})
+    dut.add_cmd({'cmd': 'show interface'       , 'state':6, 'action':'PRINT','args':[show_interface]})
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d.open()
+    assert d.interface['1.0.10']['description'] == 'test1'
+    d.interface.update('1.0.10',description='camera_1')
+    assert d.interface['1.0.10']['description'] == 'camera_1'
+    d.interface.update('1.0.10',description='camera_1')
+    assert d.interface['1.0.10']['description'] == 'camera_1'
+    d.interface.update('1.0.10',description='cam one')
+    # assert d.interface['1.0.10']['description'] == 'cam one'
+    d.close()
 
+def test_unexisting_interface(dut, log_level):
+    setup_dut(dut)
+    show_interface = ''
+    max_if_id = 24
+    max_if_cmd = 'interface port1.0.{0}'.format(max_if_id+1)
+    max_if_name = '1.0.{0}'.format(max_if_id+1)
+    max_if_str = 'interface 1.0.{0} does not exist'.format(max_if_id+1)
+    for interface in range(1,max_if_id):
+        env = {
+                'interface': 'port1.0.{0}'.format(interface),
+                'link' : 'UP',
+                'state': 'DOWN',
+                'hardware' : 'Ethernet',
+              }
+        show_interface += show_interface_template.render(env).encode('ascii','ignore')
+    dut.add_cmd({'cmd': 'show interface', 'state':0, 'action':'PRINT','args':[show_interface]})
+    dut.add_cmd({'cmd': max_if_cmd      , 'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
+    dut.add_cmd({'cmd': max_if_cmd      , 'state':0, 'action':'SET_STATE','args':[1]})
+    dut.add_cmd({'cmd': 'show interface', 'state':1, 'action':'PRINT','args':[show_interface]})
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d.open()
+    with pytest.raises(ValueError) as excinfo:
+        d.interface.update(max_if_name,enable=False)
+    assert max_if_str in excinfo.value
+    d.close()

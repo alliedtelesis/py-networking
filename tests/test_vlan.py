@@ -392,19 +392,15 @@ def test_get_interface_config(dut, log_level):
     setup_dut(dut)
     dut.add_cmd({'cmd':'show running-config', 'state':0, 'action':'PRINT','args':["""
 vlan database
-vlan 10
-vlan 1000
-exit
+vlan 10, 1000
 !
 interface port1.0.14
 switchport mode trunk
 switchport trunk allowed vlan add 10
-exit
 !
 interface port1.0.15
 switchport mode access
 switchport access vlan 1000
-exit
 !
     """]})
 
@@ -903,13 +899,17 @@ def test_delete_interface_2(dut, log_level):
     setup_dut(dut)
     dut.add_cmd({'cmd':'show running-config', 'state':0, 'action': 'PRINT','args':["""
 !
-interface port1.0.1-1.0.50
+interface port1.0.1-1.0.14
 switchport
 switchport mode access
 !
 interface port1.0.15
  switchport
  switchport mode trunk
+!
+interface port1.0.16-1.0.50
+switchport
+switchport mode access
 !
 vlan database
  vlan 7 name admin state enable
@@ -956,13 +956,17 @@ VLAN ID  Name            Type    State   Member ports
     dut.add_cmd({'cmd': 'switchport trunk allowed vlan remove 10', 'state':1, 'action':'SET_STATE','args':[2]})
     dut.add_cmd({'cmd': 'show running-config'                    , 'state':2, 'action':'PRINT','args':["""
 !
-interface port1.0.1-1.0.50
+interface port1.0.1-1.0.14
 switchport
 switchport mode access
 !
 interface port1.0.15
  switchport
  switchport mode trunk
+!
+interface port1.0.16-1.0.50
+switchport
+switchport mode access
 !
 vlan database
  vlan 7 name admin state enable
@@ -1009,9 +1013,8 @@ VLAN ID  Name            Type    State   Member ports
     assert '1.0.15' in d.vlan[1]['untagged']
     assert '1.0.15' in d.vlan[10]['tagged']
     d.vlan.delete_interface(10,'1.0.15')
-    if dut.mode != 'emulated':
-        assert '1.0.15' in d.vlan[1]['untagged']
-        assert '1.0.15' not in d.vlan[10]['tagged']
+    assert '1.0.15' in d.vlan[1]['untagged']
+    assert '1.0.15' not in d.vlan[10]['tagged']
     d.close()
 
 
@@ -1081,9 +1084,8 @@ VLAN ID  Name            Type    State   Member ports
 """]})
     dut.add_cmd({'cmd': 'interface port1.0.16'           , 'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
     dut.add_cmd({'cmd': 'interface port1.0.16'           , 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'switchport mode trunk'          , 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'switchport trunk native vlan 10', 'state':2, 'action':'SET_STATE','args':[3]})
-    dut.add_cmd({'cmd': 'show running-config'            , 'state':3, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd': 'switchport trunk native vlan 10', 'state':1, 'action':'SET_STATE','args':[2]})
+    dut.add_cmd({'cmd': 'show running-config'            , 'state':2, 'action':'PRINT','args':["""
 !
 interface port1.0.1-1.0.15
 switchport
@@ -1113,7 +1115,7 @@ exit
 !
 end
     """]})
-    dut.add_cmd({'cmd': 'show vlan all'                   , 'state':3, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd': 'show vlan all'                   , 'state':2, 'action':'PRINT','args':["""
 VLAN ID  Name            Type    State   Member ports
                                          (u)-Untagged, (t)-Tagged
 ======= ================ ======= ======= ====================================
@@ -1151,9 +1153,8 @@ VLAN ID  Name            Type    State   Member ports
     assert '1.0.16' in d.vlan[1]['untagged']
     assert '1.0.16' not in d.vlan[10]['untagged']
     d.vlan.add_interface(10,'1.0.16')
-    if dut.mode != 'emulated':
-        assert '1.0.16' not in d.vlan[1]['untagged']
-        assert '1.0.16' in d.vlan[10]['untagged']
+    assert '1.0.16' not in d.vlan[1]['untagged']
+    assert '1.0.16' in d.vlan[10]['untagged']
     d.close()
 
 
@@ -1275,9 +1276,8 @@ VLAN ID  Name            Type    State   Member ports
     assert '1.0.16' not in d.vlan[1]['untagged']
     assert '1.0.16' in d.vlan[10]['untagged']
     d.vlan.delete_interface(10,'1.0.16')
-    if dut.mode != 'emulated':
-        assert '1.0.16' in d.vlan[1]['untagged']
-        assert '1.0.16' not in d.vlan[10]['untagged']
+    assert '1.0.16' in d.vlan[1]['untagged']
+    assert '1.0.16' not in d.vlan[10]['untagged']
     d.close()
 
 
@@ -1448,7 +1448,7 @@ VLAN ID  Name            Type    State   Member ports
 """]})
     dut.add_cmd({'cmd': 'interface port1.0.17'                   , 'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
     dut.add_cmd({'cmd': 'interface port1.0.17'                   , 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'no switchport trunk allowed vlan 10'    , 'state':1, 'action':'SET_STATE','args':[2]})
+    dut.add_cmd({'cmd': 'switchport trunk allowed vlan remove 10', 'state':1, 'action':'SET_STATE','args':[2]})
     dut.add_cmd({'cmd': 'show running-config'                    , 'state':2, 'action':'PRINT','args':["""
 !
 interface port1.0.1-1.0.16
@@ -1509,9 +1509,8 @@ VLAN ID  Name            Type    State   Member ports
     assert '1.0.17' in d.vlan[1]['untagged']
     assert '1.0.17' in d.vlan[10]['tagged']
     d.vlan.delete_interface(10,'1.0.17')
-    if dut.mode != 'emulated':
-       assert '1.0.17' in d.vlan[1]['untagged']
-       assert '1.0.17' not in d.vlan[10]['tagged']
+    assert '1.0.17' in d.vlan[1]['untagged']
+    assert '1.0.17' not in d.vlan[10]['tagged']
     d.close()
 
 

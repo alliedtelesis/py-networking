@@ -42,7 +42,7 @@ service password-encryption
 no banner motd
 !
 username manager privilege 15 password 8 $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0
-username testuser privilege 5 password enemy
+username testuser privilege 5 password 8 $1$uWpWUKfS$l0FbezBRUBllEpc8.9kIF/
 !
 ssh server allow-users manager
 service ssh
@@ -62,9 +62,15 @@ end
     dut.add_cmd({'cmd': 'show running-config'                         , 'state':1, 'action':'PRINT','args': config_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
-    print("add user")
-# add here library function invokations and asserts
+    print("add user 1")
+    print(d.user['manager']['privilege_level'])
+    print("add user 2")
     d.user.create("testuser", password="enemy", privilege_level=5)
+    print("add user 3")
+    print(d.user['manager'])
+    print("add user 4")
+    print(d.user['testuser'])
+    print("add user 5")
     d.close()
 
 

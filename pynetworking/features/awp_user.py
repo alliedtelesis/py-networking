@@ -37,29 +37,13 @@ class awp_user(Feature):
                                                            'encryption': True,
                                                            'password': m.group('password')
                                                           }
-
-        # username testuser privilege 5 password enemy
-        ifre = re.compile('username\s+'
-                          '(?P<user_name>[^\s]+)\s+'
-                          'privilege\s+'
-                          '(?P<privilege_level>\d+)\s+'
-                          'password\s+'
-                          '(?P<password>[^\s]+)\s+')
-        for line in self._device.cmd("show running-config").split('\n'):
-            m = ifre.match(line)
-            if m:
-                if m.group('password') != '8':
-                    self._user_config[m.group('user_name')] = {'privilege_level': m.group('privilege_level'),
-                                                               'encryption': False,
-                                                               'password': m.group('password')
-                                                              }
         self._d.log_info(self._user_config)
 
 
-    def create(self, user_name, password, privilege_level):
+    def create(self, user_name, password, privilege_level, enc_pwd=False):
         self._d.log_info("add {0} {1} {2}".format(user_name, password, privilege_level))
+        self._update_user()
 
-        enc_pwd = False
         cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
                         {'cmd': 'conf t', 'prompt':'\(config\)\#'}
                        ]}
@@ -68,28 +52,31 @@ class awp_user(Feature):
             create_cmd = 'username {0} privilege {1} password {2}'.format(user_name, privilege_level, password)
         else:
             create_cmd = 'username {0} privilege {1} password 8 {2}'.format(user_name, privilege_level, password)
-        cmds['cmds'].append({'cmd': create_cmd, 'prompt':'\#'})
+        cmds['cmds'].append({'cmd': create_cmd, 'prompt':'\(config\)\#'})
         cmds['cmds'].append({'cmd': chr(26)   , 'prompt':'\#'})
 
-        # self._device.cmd(cmds, cache=False, flush_cache=True)
-        # self._device.load_system()
+        self._device.cmd(cmds, cache=False, flush_cache=True)
+        self._device.load_system()
 
 
     def delete(self, user_name):
         self._d.log_info("remove {0}".format(user_name))
+        self._update_user()
+
         cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
                         {'cmd': 'conf t', 'prompt':'\(config\)\#'}
                        ]}
         delete_cmd = 'no username {0}'.format(user_name)
-        cmds['cmds'].append({'cmd': delete_cmd, 'prompt':'\#'})
+        cmds['cmds'].append({'cmd': delete_cmd, 'prompt':'\(config\)\#'})
         cmds['cmds'].append({'cmd': chr(26)   , 'prompt':'\#'})
 
-        # self._device.cmd(cmds, cache=False, flush_cache=True)
-        # self._device.load_system()
+        self._device.cmd(cmds, cache=False, flush_cache=True)
+        self._device.load_system()
 
 
     def update(self, user_name, **kwargs):
         self._d.log_info("update {0} {1}".format(user_name,pformat(kwargs)))
+        self._update_user()
 
         enc_pwd = False
         run_cmd = False
@@ -103,16 +90,57 @@ class awp_user(Feature):
                 pwd_cmd = 'username {0} password {1}'.format(user_name, pwd)
             else:
                 pwd_cmd = 'username {0} password 8 {1}'.format(user_name, pwd)
-            cmds['cmds'].append({'cmd': pwd_cmd, 'prompt':'\#'})
+            cmds['cmds'].append({'cmd': pwd_cmd, 'prompt':'\(config\)\#'})
             run_cmd=True
 
         if 'privilege_level' in kwargs:
             level = kwargs['privilege_level']
             priv_cmd = 'username {0} privilege {1}'.format(user_name, level)
-            cmds['cmds'].append({'cmd': priv_cmd, 'prompt':'\#'})
+            cmds['cmds'].append({'cmd': priv_cmd, 'prompt':'\(config\)\#'})
             run_cmd=True
 
         if run_cmd:
             cmds['cmds'].append({'cmd': chr(26)   , 'prompt':'\#'})
-            # self._device.cmd(cmds, cache=False, flush_cache=True)
-            # self._device.load_system()
+            self._device.cmd(cmds, cache=False, flush_cache=True)
+            self._device.load_system()
+
+
+    def items(self):
+        self._update_user()
+        return self._user.items()
+
+
+    def keys(self):
+        self._update_user()
+        return self._user.keys()
+
+
+    def __getitem__(self, username):
+        self._update_user()
+        if username in self._user_config:
+            return self._user_config[username]
+        raise KeyError('user {0} does not exist'.format(username))
+
+
+    def _update_user(self):
+        self._d.log_info("_update_user")
+        self._user = OrderedDict()
+
+        # username manager privilege 15 password 8 $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0
+        ifre = re.compile('username\s+'
+                          '(?P<user_name>[^\s]+)\s+'
+                          'privilege\s+'
+                          '(?P<privilege_level>\d+)\s+'
+                          'password\s+8\s+'
+                          '(?P<password>[^\s]+)\s+')
+        for line in self._device.cmd("show running-config").split('\n'):
+            m = ifre.match(line)
+            if m:
+                key = m.group('user_name')
+                self._user[key] = {'privilege_level': m.group('privilege_level'),
+                                   'encryption': True,
+                                   'password': m.group('password')
+                                  }
+                self._user[key] = dict(self._user[key].items() + self._user_config[key].items())
+
+        self._d.log_debug("User {0}".format(pformat(json.dumps(self._user))))

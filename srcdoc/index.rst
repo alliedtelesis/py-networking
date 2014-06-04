@@ -8,6 +8,7 @@ Contents
     device
     facts
     interface
+    user
     vlan
     cookbook
     developing

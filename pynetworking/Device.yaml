@@ -8,8 +8,10 @@ features:
 {% if os == 'awp' %}
   vlan: awp_vlan
   interface: awp_interface
+  user: awp_user
 {% elif os == 'ats' %}
   interface: ats_interface
   vlan: ats_vlan
+  user: ats_user
 {% endif %}
 

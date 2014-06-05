@@ -117,8 +117,8 @@ class awp_user(Feature):
 
     def __getitem__(self, username):
         self._update_user()
-        if username in self._user_config:
-            return self._user_config[username]
+        if username in self._user.keys():
+            return self._user[username]
         raise KeyError('user {0} does not exist'.format(username))
 
 
@@ -137,6 +137,7 @@ class awp_user(Feature):
             m = ifre.match(line)
             if m:
                 key = m.group('user_name')
+                self._d.log_info("matching key is {0} ".format(key))
                 self._user[key] = {'privilege_level': m.group('privilege_level'),
                                    'encryption': True,
                                    'password': m.group('password')

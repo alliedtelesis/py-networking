@@ -62,15 +62,10 @@ end
     dut.add_cmd({'cmd': 'show running-config'                         , 'state':1, 'action':'PRINT','args': config_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
-    print("add user 1")
-    print(d.user['manager']['privilege_level'])
-    print("add user 2")
+    assert d.user['manager']['privilege_level'] == '15'
     d.user.create("testuser", password="enemy", privilege_level=5)
-    print("add user 3")
-    print(d.user['manager'])
-    print("add user 4")
-    print(d.user['testuser'])
-    print("add user 5")
+    assert d.user['manager']['privilege_level'] == '15'
+    # assert d.user['testuser']['privilege_level'] == '5'
     d.close()
 
 
@@ -82,7 +77,7 @@ service password-encryption
 no banner motd
 !
 username manager privilege 15 password 8 $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0
-username testuser privilege 5 password enemy
+username testuser privilege 5 password 8 $1$uWpWUKfS$l0FbezBRUBllEpc8.9kIF/
 !
 ssh server allow-users manager
 service ssh
@@ -103,7 +98,7 @@ service password-encryption
 no banner motd
 !
 username manager privilege 15 password 8 $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0
-username testuser privilege 5 password newpwd
+username testuser privilege 5 password 8 $1$CEgGZi0q$3JfHL/fM2F5YS47c/54ZQ.
 !
 ssh server allow-users manager
 service ssh
@@ -124,7 +119,7 @@ service password-encryption
 no banner motd
 !
 username manager privilege 15 password 8 $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0
-username testuser privilege 5 password enemy
+username testuser privilege 5 password 8 $1$uWpWUKfS$l0FbezBRUBllEpc8.9kIF/
 !
 ssh server allow-users manager
 service ssh
@@ -161,7 +156,7 @@ service password-encryption
 no banner motd
 !
 username manager privilege 15 password 8 $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0
-username testuser privilege 5 password enemy
+username testuser privilege 5 password 8 $1$uWpWUKfS$l0FbezBRUBllEpc8.9kIF/
 !
 ssh server allow-users manager
 service ssh
@@ -182,7 +177,7 @@ service password-encryption
 no banner motd
 !
 username manager privilege 15 password 8 $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0
-username testuser privilege 4 password enemy
+username testuser privilege 4 password 8 $1$uWpWUKfS$l0FbezBRUBllEpc8.9kIF/
 !
 ssh server allow-users manager
 service ssh
@@ -203,7 +198,7 @@ service password-encryption
 no banner motd
 !
 username manager privilege 15 password 8 $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0
-username testuser privilege 5 password enemy
+username testuser privilege 5 password 8 $1$uWpWUKfS$l0FbezBRUBllEpc8.9kIF/
 !
 ssh server allow-users manager
 service ssh
@@ -225,10 +220,11 @@ end
     dut.add_cmd({'cmd': 'show running-config'          , 'state':2, 'action':'PRINT','args': config_2})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
-    print("change user privilege")
-# add here library function invokations and asserts
+    assert d.user['testuser']['privilege_level'] == '5'
     d.user.update("testuser", privilege_level=4)
+    assert d.user['testuser']['privilege_level'] == '4'
     d.user.update("testuser", privilege_level=5)
+    assert d.user['testuser']['privilege_level'] == '5'
     d.close()
 
 
@@ -240,7 +236,7 @@ service password-encryption
 no banner motd
 !
 username manager privilege 15 password 8 $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0
-username testuser privilege 5 password enemy
+username testuser privilege 5 password 8 $1$uWpWUKfS$l0FbezBRUBllEpc8.9kIF/
 !
 ssh server allow-users manager
 service ssh
@@ -280,9 +276,9 @@ end
     dut.add_cmd({'cmd': 'show running-config' , 'state':1, 'action':'PRINT','args': config_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
-    print("remove user")
-# add here library function invokations and asserts
     d.user.delete("testuser")
+    with pytest.raises(KeyError):
+        d.user['testuser']
     d.close()
 
 ###

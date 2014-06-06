@@ -34,13 +34,12 @@ class awp_user(Feature):
             m = ifre.match(line)
             if m:
                 self._user_config[m.group('user_name')] = {'privilege_level': m.group('privilege_level'),
-                                                           'encryption': True,
                                                            'password': m.group('password')
                                                           }
         self._d.log_info(self._user_config)
 
 
-    def create(self, user_name, password, privilege_level, enc_pwd=False):
+    def create(self, user_name, password, privilege_level, encrypted=False):
         self._d.log_info("add {0} {1} {2}".format(user_name, password, privilege_level))
         self._update_user()
 
@@ -48,7 +47,7 @@ class awp_user(Feature):
                         {'cmd': 'conf t', 'prompt':'\(config\)\#'}
                        ]}
 
-        if enc_pwd == False:
+        if encrypted == False:
             create_cmd = 'username {0} privilege {1} password {2}'.format(user_name, privilege_level, password)
         else:
             create_cmd = 'username {0} privilege {1} password 8 {2}'.format(user_name, privilege_level, password)
@@ -83,6 +82,9 @@ class awp_user(Feature):
         cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
                         {'cmd': 'conf t', 'prompt':'\(config\)\#'}
                        ]}
+
+        if 'encrypted' in kwargs:
+            enc_pwd = kwargs['encrypted']
 
         if 'password' in kwargs:
             pwd = kwargs['password']
@@ -139,7 +141,6 @@ class awp_user(Feature):
                 key = m.group('user_name')
                 self._d.log_info("matching key is {0} ".format(key))
                 self._user[key] = {'privilege_level': m.group('privilege_level'),
-                                   'encryption': True,
                                    'password': m.group('password')
                                   }
                 self._user[key] = dict(self._user[key].items() + self._user_config[key].items())

@@ -8,6 +8,7 @@ try:
 except ImportError: #pragma: no cover
     from ordereddict import OrderedDict
 
+
 class ats_user(Feature):
     """
     User account feature implementation for ATS
@@ -23,25 +24,24 @@ class ats_user(Feature):
         self._d.log_info("loading config")
         self._user_config = OrderedDict()
 
-        # username manager password 8 $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0 privilege 15 encrypted
+        # username manager password $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0 level 15 encrypted
         ifre = re.compile('username\s+'
                           '(?P<user_name>[^\s]+)\s+'
-                          'level\s+'
-                          '(?P<privilege_level>\d+)\s+'
                           'password\s+'
                           '(?P<password>[^\s]+)\s+'
-                          'encrypted\s+')
+                          'level\s+'
+                          '(?P<privilege_level>\d+)\s+'
+                          'encrypted')
         for line in self._device.cmd("show running-config").split('\n'):
             m = ifre.match(line)
             if m:
                 self._user_config[m.group('user_name')] = {'privilege_level': m.group('privilege_level'),
-                                                           'encryption': True,
                                                            'password': m.group('password')
                                                           }
         self._d.log_info(self._user_config)
 
 
-    def create(self, user_name, password, privilege_level, enc_pwd=False):
+    def create(self, user_name, password, privilege_level, encrypted=False):
         self._d.log_info("add {0} {1} {2}".format(user_name, password, privilege_level))
         self._update_user()
 
@@ -49,7 +49,7 @@ class ats_user(Feature):
                         {'cmd': 'conf t', 'prompt':'\(config\)\#'}
                        ]}
 
-        if enc_pwd == False:
+        if encrypted == False:
             create_cmd = 'username {0} password {1} level {2}'.format(user_name, password, privilege_level)
         else:
             create_cmd = 'username {0} password {1} level {2} encrypted'.format(user_name, password, privilege_level)
@@ -84,6 +84,9 @@ class ats_user(Feature):
         cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
                         {'cmd': 'conf t', 'prompt':'\(config\)\#'}
                        ]}
+
+        if 'encrypted' in kwargs:
+            enc_pwd = kwargs['encrypted']
 
         if 'password' in kwargs:
             pwd = kwargs['password']
@@ -127,21 +130,20 @@ class ats_user(Feature):
         self._d.log_info("_update_user")
         self._user = OrderedDict()
 
-        # username manager password $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0 privilege 15 encrypted
+        # username manager password $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0 level 15 encrypted
         ifre = re.compile('username\s+'
                           '(?P<user_name>[^\s]+)\s+'
-                          'privilege\s+'
-                          '(?P<privilege_level>\d+)\s+'
                           'password\s+'
                           '(?P<password>[^\s]+)\s+'
-                          'encrypted\s+')
+                          'level\s+'
+                          '(?P<privilege_level>\d+)\s+'
+                          'encrypted')
         for line in self._device.cmd("show running-config").split('\n'):
             m = ifre.match(line)
             if m:
                 key = m.group('user_name')
                 self._d.log_info("matching key is {0} ".format(key))
                 self._user[key] = {'privilege_level': m.group('privilege_level'),
-                                   'encryption': True,
                                    'password': m.group('password')
                                   }
                 self._user[key] = dict(self._user[key].items() + self._user_config[key].items())

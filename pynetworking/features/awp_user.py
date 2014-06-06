@@ -8,6 +8,7 @@ try:
 except ImportError: #pragma: no cover
     from ordereddict import OrderedDict
 
+
 class awp_user(Feature):
     """
     User account feature implementation for AWP

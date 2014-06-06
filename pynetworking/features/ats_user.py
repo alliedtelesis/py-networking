@@ -38,6 +38,19 @@ class ats_user(Feature):
                 self._user_config[m.group('user_name')] = {'privilege_level': m.group('privilege_level'),
                                                            'password': m.group('password')
                                                           }
+
+        # username operator password $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0  encrypted
+        ifre = re.compile('username\s+'
+                          '(?P<user_name>[^\s]+)\s+'
+                          'password\s+'
+                          '(?P<password>[^\s]+)\s+\s+'
+                          'encrypted')
+        for line in self._device.cmd("show running-config").split('\n'):
+            m = ifre.match(line)
+            if m:
+                self._user_config[m.group('user_name')] = {'privilege_level': '1',
+                                                           'password': m.group('password')
+                                                          }
         self._d.log_info(self._user_config)
 
 
@@ -45,9 +58,7 @@ class ats_user(Feature):
         self._d.log_info("add {0} {1} {2}".format(user_name, password, privilege_level))
         self._update_user()
 
-        cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
-                        {'cmd': 'conf t', 'prompt':'\(config\)\#'}
-                       ]}
+        cmds = {'cmds':[{'cmd': 'conf', 'prompt':'\(config\)\#'}]}
 
         if encrypted == False:
             create_cmd = 'username {0} password {1} level {2}'.format(user_name, password, privilege_level)
@@ -64,9 +75,8 @@ class ats_user(Feature):
         self._d.log_info("remove {0}".format(user_name))
         self._update_user()
 
-        cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
-                        {'cmd': 'conf t', 'prompt':'\(config\)\#'}
-                       ]}
+        cmds = {'cmds':[{'cmd': 'conf', 'prompt':'\(config\)\#'}]}
+
         delete_cmd = 'no username {0}'.format(user_name)
         cmds['cmds'].append({'cmd': delete_cmd, 'prompt':'\(config\)\#'})
         cmds['cmds'].append({'cmd': chr(26)   , 'prompt':'\#'})
@@ -81,9 +91,8 @@ class ats_user(Feature):
 
         enc_pwd = False
         run_cmd = False
-        cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
-                        {'cmd': 'conf t', 'prompt':'\(config\)\#'}
-                       ]}
+        cmds = {'cmds':[{'cmd': 'conf', 'prompt':'\(config\)\#'}]}
+
 
         if 'encrypted' in kwargs:
             enc_pwd = kwargs['encrypted']
@@ -144,6 +153,22 @@ class ats_user(Feature):
                 key = m.group('user_name')
                 self._d.log_info("matching key is {0} ".format(key))
                 self._user[key] = {'privilege_level': m.group('privilege_level'),
+                                   'password': m.group('password')
+                                  }
+                self._user[key] = dict(self._user[key].items() + self._user_config[key].items())
+
+        # username operator password $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0  encrypted
+        ifre = re.compile('username\s+'
+                          '(?P<user_name>[^\s]+)\s+'
+                          'password\s+'
+                          '(?P<password>[^\s]+)\s+\s+'
+                          'encrypted')
+        for line in self._device.cmd("show running-config").split('\n'):
+            m = ifre.match(line)
+            if m:
+                key = m.group('user_name')
+                self._d.log_info("matching key is {0} ".format(key))
+                self._user[key] = {'privilege_level': '1',
                                    'password': m.group('password')
                                   }
                 self._user[key] = dict(self._user[key].items() + self._user_config[key].items())

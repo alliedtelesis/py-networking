@@ -41,7 +41,7 @@ name default_vlan
 exit
 hostname nac_dev
 ip ssh server
-username manager password $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0 level 15 encrypted
+username manager password 3af00c6cad11f7ab5db4467b66ce503e level 15 encrypted
 """]
     config_1 = ["""
 interface range ethernet 1/e(1-16)
@@ -53,8 +53,8 @@ name default_vlan
 exit
 hostname nac_dev
 ip ssh server
-username manager password $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0 level 15 encrypted
-username operator password $1$uWpWUKfS$l0FbezBRUBllEpc8.9kIF/ level 1 encrypted
+username manager password 3af00c6cad11f7ab5db4467b66ce503e level 15 encrypted
+username operator password cde2fde1fa1551a704d775ce2315915d  encrypted
 """]
     setup_dut(dut)
     dut.add_cmd({'cmd': 'show running-config'                     , 'state':0, 'action':'PRINT','args': config_0})
@@ -76,8 +76,8 @@ service password-encryption
 !
 no banner motd
 !
-username manager password $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0 level 15 encrypted
-username operator password $1$uWpWUKfS$l0FbezBRUBllEpc8.9kIF/ level 1 encrypted
+username manager password 3af00c6cad11f7ab5db4467b66ce503e level 15 encrypted
+username operator password cde2fde1fa1551a704d775ce2315915d  encrypted
 !
 ssh server allow-users manager
 service ssh
@@ -87,7 +87,7 @@ interface port1.0.1-1.0.50
  switchport mode access
 !
 interface vlan1
- ip address 10.17.39.253/24
+ ip address 10.17.39.252/24
 !
 end
 """]
@@ -97,8 +97,8 @@ service password-encryption
 !
 no banner motd
 !
-username manager password $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0 level 15 encrypted
-username operator password $1$CEgGZi0q$3JfHL/fM2F5YS47c/54ZQ. level 1 encrypted
+username manager password 3af00c6cad11f7ab5db4467b66ce503e level 15 encrypted
+username operator password a5e3094ce553e08de5ba237525b106d5  encrypted
 !
 ssh server allow-users manager
 service ssh
@@ -108,7 +108,7 @@ interface port1.0.1-1.0.50
  switchport mode access
 !
 interface vlan1
- ip address 10.17.39.253/24
+ ip address 10.17.39.252/24
 !
 end
 """]
@@ -118,8 +118,8 @@ service password-encryption
 !
 no banner motd
 !
-username manager password $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0 level 15 encrypted
-username operator password $1$uWpWUKfS$l0FbezBRUBllEpc8.9kIF/ level 1 encrypted
+username manager password 3af00c6cad11f7ab5db4467b66ce503e level 15 encrypted
+username operator password cde2fde1fa1551a704d775ce2315915d  encrypted
 !
 ssh server allow-users manager
 service ssh
@@ -129,7 +129,7 @@ interface port1.0.1-1.0.50
  switchport mode access
 !
 interface vlan1
- ip address 10.17.39.253/24
+ ip address 10.17.39.252/24
 !
 end
 """]
@@ -158,8 +158,8 @@ service password-encryption
 !
 no banner motd
 !
-username manager password $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0 level 15 encrypted
-username operator password $1$uWpWUKfS$l0FbezBRUBllEpc8.9kIF/ level 1 encrypted
+username manager password 3af00c6cad11f7ab5db4467b66ce503e level 15 encrypted
+username operator password cde2fde1fa1551a704d775ce2315915d  encrypted
 !
 ssh server allow-users manager
 service ssh
@@ -169,7 +169,7 @@ interface port1.0.1-1.0.50
  switchport mode access
 !
 interface vlan1
- ip address 10.17.39.253/24
+ ip address 10.17.39.252/24
 !
 end
 """]
@@ -179,8 +179,8 @@ service password-encryption
 !
 no banner motd
 !
-username manager password $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0 level 15 encrypted
-username operator password $1$uWpWUKfS$l0FbezBRUBllEpc8.9kIF/ level 2 encrypted
+username manager password 3af00c6cad11f7ab5db4467b66ce503e level 15 encrypted
+username operator password cde2fde1fa1551a704d775ce2315915d level 2 encrypted
 !
 ssh server allow-users manager
 service ssh
@@ -190,7 +190,7 @@ interface port1.0.1-1.0.50
  switchport mode access
 !
 interface vlan1
- ip address 10.17.39.253/24
+ ip address 10.17.39.252/24
 !
 end
 """]
@@ -200,8 +200,8 @@ service password-encryption
 !
 no banner motd
 !
-username manager password $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0 level 15 encrypted
-username operator password $1$uWpWUKfS$l0FbezBRUBllEpc8.9kIF/ level 1 encrypted
+username manager password 3af00c6cad11f7ab5db4467b66ce503e level 15 encrypted
+username operator password cde2fde1fa1551a704d775ce2315915d  encrypted
 !
 ssh server allow-users manager
 service ssh
@@ -211,7 +211,7 @@ interface port1.0.1-1.0.50
  switchport mode access
 !
 interface vlan1
- ip address 10.17.39.253/24
+ ip address 10.17.39.252/24
 !
 end
 """]
@@ -238,8 +238,8 @@ service password-encryption
 !
 no banner motd
 !
-username manager password $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0 level 15 encrypted
-username operator password $1$uWpWUKfS$l0FbezBRUBllEpc8.9kIF/ level 1 encrypted
+username manager password 3af00c6cad11f7ab5db4467b66ce503e level 15 encrypted
+username operator password cde2fde1fa1551a704d775ce2315915d  encrypted
 !
 ssh server allow-users manager
 service ssh
@@ -249,7 +249,7 @@ interface port1.0.1-1.0.50
  switchport mode access
 !
 interface vlan1
- ip address 10.17.39.253/24
+ ip address 10.17.39.252/24
 !
 end
 """]
@@ -259,7 +259,7 @@ service password-encryption
 !
 no banner motd
 !
-username manager password $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0 level 15 encrypted
+username manager password 3af00c6cad11f7ab5db4467b66ce503e level 15 encrypted
 !
 ssh server allow-users manager
 service ssh
@@ -269,7 +269,7 @@ interface port1.0.1-1.0.50
  switchport mode access
 !
 interface vlan1
- ip address 10.17.39.253/24
+ ip address 10.17.39.252/24
 !
 end
 """]
@@ -292,7 +292,7 @@ service password-encryption
 !
 no banner motd
 !
-username manager password $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0 level 15 encrypted
+username manager password 3af00c6cad11f7ab5db4467b66ce503e level 15 encrypted
 !
 ssh server allow-users manager
 service ssh
@@ -302,7 +302,7 @@ interface port1.0.1-1.0.50
  switchport mode access
 !
 interface vlan1
- ip address 10.17.39.253/24
+ ip address 10.17.39.252/24
 !
 end
 """]
@@ -312,8 +312,8 @@ service password-encryption
 !
 no banner motd
 !
-username manager password $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0 level 15 encrypted
-username encuser password $1$uWpWUKfS$l0FbezBRUBllEpc8.9kIF/ level 10 encrypted
+username manager password 3af00c6cad11f7ab5db4467b66ce503e level 15 encrypted
+username encuser password 0c88028bf3aa6a6a143ed846f2be1ea4 level 10 encrypted
 !
 ssh server allow-users manager
 service ssh
@@ -323,7 +323,7 @@ interface port1.0.1-1.0.50
  switchport mode access
 !
 interface vlan1
- ip address 10.17.39.253/24
+ ip address 10.17.39.252/24
 !
 end
 """]
@@ -333,8 +333,8 @@ service password-encryption
 !
 no banner motd
 !
-username manager password $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0 level 15 encrypted
-username encuser password $1$CEgGZi0q$3JfHL/fM2F5YS47c/54ZQ. level 10 encrypted
+username manager password 3af00c6cad11f7ab5db4467b66ce503e level 15 encrypted
+username encuser password c6009f08fc5fc6385f1ea1f5840e179f level 10 encrypted
 !
 ssh server allow-users manager
 service ssh
@@ -344,7 +344,7 @@ interface port1.0.1-1.0.50
  switchport mode access
 !
 interface vlan1
- ip address 10.17.39.253/24
+ ip address 10.17.39.252/24
 !
 end
 """]
@@ -354,7 +354,7 @@ service password-encryption
 !
 no banner motd
 !
-username manager password $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0 level 15 encrypted
+username manager password 3af00c6cad11f7ab5db4467b66ce503e level 15 encrypted
 !
 ssh server allow-users manager
 service ssh
@@ -364,13 +364,13 @@ interface port1.0.1-1.0.50
  switchport mode access
 !
 interface vlan1
- ip address 10.17.39.253/24
+ ip address 10.17.39.252/24
 !
 end
 """]
 
-    enc_pwd_1 = '$1$uWpWUKfS$l0FbezBRUBllEpc8.9kIF/'
-    enc_pwd_2 = '$1$CEgGZi0q$3JfHL/fM2F5YS47c/54ZQ.'
+    enc_pwd_1 = '0c88028bf3aa6a6a143ed846f2be1ea4'
+    enc_pwd_2 = 'c6009f08fc5fc6385f1ea1f5840e179f'
     setup_dut(dut)
     dut.add_cmd({'cmd': 'show running-config'                                           , 'state':0, 'action':'PRINT','args': config_0})
     dut.add_cmd({'cmd': 'username encuser password ' + enc_pwd_1 + ' level 10 encrypted', 'state':0, 'action':'SET_STATE','args':[1]})
@@ -390,5 +390,3 @@ end
     with pytest.raises(KeyError):
         d.user['encuser']
     d.close()
-
-

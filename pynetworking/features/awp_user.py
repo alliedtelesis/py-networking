@@ -37,6 +37,18 @@ class awp_user(Feature):
                 self._user_config[m.group('user_name')] = {'privilege_level': m.group('privilege_level'),
                                                            'password': m.group('password')
                                                           }
+
+        # username operator password 8 $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0
+        ifre = re.compile('username\s+'
+                          '(?P<user_name>[^\s]+)\s+'
+                          'password\s+8\s+'
+                          '(?P<password>[^\s]+)\s+')
+        for line in self._device.cmd("show running-config").split('\n'):
+            m = ifre.match(line)
+            if m:
+                self._user_config[m.group('user_name')] = {'privilege_level': '1',
+                                                           'password': m.group('password')
+                                                          }
         self._d.log_info(self._user_config)
 
 
@@ -142,6 +154,21 @@ class awp_user(Feature):
                 key = m.group('user_name')
                 self._d.log_info("matching key is {0} ".format(key))
                 self._user[key] = {'privilege_level': m.group('privilege_level'),
+                                   'password': m.group('password')
+                                  }
+                self._user[key] = dict(self._user[key].items() + self._user_config[key].items())
+
+        # username operator password 8 $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0
+        ifre = re.compile('username\s+'
+                          '(?P<user_name>[^\s]+)\s+'
+                          'password\s+8\s+'
+                          '(?P<password>[^\s]+)\s+')
+        for line in self._device.cmd("show running-config").split('\n'):
+            m = ifre.match(line)
+            if m:
+                key = m.group('user_name')
+                self._d.log_info("matching key is {0} ".format(key))
+                self._user[key] = {'privilege_level': '1',
                                    'password': m.group('password')
                                   }
                 self._user[key] = dict(self._user[key].items() + self._user_config[key].items())

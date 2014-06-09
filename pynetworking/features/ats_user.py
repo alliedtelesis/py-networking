@@ -62,16 +62,15 @@ class ats_user(Feature):
 
         if encrypted == False:
             create_cmd = 'username {0} password {1} level {2}'.format(user_name, password, privilege_level)
-            cmds['cmds'].append({'cmd': create_cmd, 'prompt':'\(config\)\#'})
-            cmds['cmds'].append({'cmd': chr(26)   , 'prompt':'\#'})
         else:
             # ATS CLI can work properly with commands not exceeding 64 characters.
             # Longer commands are accepted but let the prompt dirty.
             # This leads the proxy to fail, in spite the command sent is correct.
             # In order to overcome this inconvenience, keyword abbreviations are used.
             create_cmd = 'us {0} p {1} l {2} e'.format(user_name, password, privilege_level)
-            cmds['cmds'].append({'cmd': create_cmd, 'prompt':'\(config\)\#'})
-            cmds['cmds'].append({'cmd': chr(26)   , 'prompt':'\#'})
+
+        cmds['cmds'].append({'cmd': create_cmd, 'prompt':'\(config\)\#'})
+        cmds['cmds'].append({'cmd': chr(26)   , 'prompt':'\#'})
 
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()
@@ -108,7 +107,7 @@ class ats_user(Feature):
             if enc_pwd == False:
                 pwd_cmd = 'username {0} password {1}'.format(user_name, pwd)
             else:
-                # Read the comment in the create function.
+                # Read the comment in the create() function.
                 pwd_cmd = 'us {0} p {1} encrypted'.format(user_name, pwd)
             cmds['cmds'].append({'cmd': pwd_cmd, 'prompt':'\(config\)\#'})
             run_cmd=True

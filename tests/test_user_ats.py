@@ -369,25 +369,29 @@ interface vlan1
 end
 """]
 
+    usr = 'encuser'
     enc_pwd_1 = '0c88028bf3aa6a6a143ed846f2be1ea4'
     enc_pwd_2 = 'c6009f08fc5fc6385f1ea1f5840e179f'
+
+    cmd_create = 'us ' + usr + ' p ' + enc_pwd_1 + ' l 10 e'
+    cmd_update = 'us ' + usr + ' p ' + enc_pwd_2 + ' encrypted'
+
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'show running-config'                     , 'state':0, 'action':'PRINT','args': config_0})
-    # dut.add_cmd({'cmd': 'username encuser password ' + enc_pwd_1 + ' level 10 encrypted', 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'us encuser p ' + enc_pwd_1 + ' l 10 e'   , 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'show running-config'                     , 'state':1, 'action':'PRINT','args': config_1})
-    dut.add_cmd({'cmd': 'us encuser p ' + enc_pwd_2 + ' encrypted', 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'show running-config'                     , 'state':2, 'action':'PRINT','args': config_2})
-    dut.add_cmd({'cmd': 'no username encuser'                     , 'state':2, 'action':'SET_STATE','args':[3]})
-    dut.add_cmd({'cmd': 'show running-config'                     , 'state':3, 'action':'PRINT','args': config_3})
+    dut.add_cmd({'cmd': 'show running-config', 'state':0, 'action':'PRINT','args': config_0})
+    dut.add_cmd({'cmd': cmd_create           , 'state':0, 'action':'SET_STATE','args':[1]})
+    dut.add_cmd({'cmd': 'show running-config', 'state':1, 'action':'PRINT','args': config_1})
+    dut.add_cmd({'cmd': cmd_update           , 'state':1, 'action':'SET_STATE','args':[2]})
+    dut.add_cmd({'cmd': 'show running-config', 'state':2, 'action':'PRINT','args': config_2})
+    dut.add_cmd({'cmd': 'no username encuser', 'state':2, 'action':'SET_STATE','args':[3]})
+    dut.add_cmd({'cmd': 'show running-config', 'state':3, 'action':'PRINT','args': config_3})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
-    assert 'encuser' not in d.user.keys()
-    d.user.create("encuser", password=enc_pwd_1, privilege_level=10, encrypted=True)
-    assert ('encuser', {'password': enc_pwd_1, 'privilege_level': '10'}) in d.user.items()
-    d.user.update("encuser", password=enc_pwd_2, encrypted=True)
-    assert ('encuser', {'password': enc_pwd_2, 'privilege_level': '10'}) in d.user.items()
-    d.user.delete("encuser")
+    assert usr not in d.user.keys()
+    d.user.create(usr, password=enc_pwd_1, privilege_level=10, encrypted=True)
+    assert (usr, {'password': enc_pwd_1, 'privilege_level': '10'}) in d.user.items()
+    d.user.update(usr, password=enc_pwd_2, encrypted=True)
+    assert (usr, {'password': enc_pwd_2, 'privilege_level': '10'}) in d.user.items()
+    d.user.delete(usr)
     with pytest.raises(KeyError):
-        d.user['encuser']
+        d.user[usr]
     d.close()

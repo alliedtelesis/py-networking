@@ -183,15 +183,6 @@ def test_system(dut, log_level):
     d.close()
 
 
-def test_ping2(dut, log_level):
-    setup_dut(dut)
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
-    d.open()
-    dut.stop()
-    assert not d.ping()
-    d.close()
-
-
 def test_save_config(dut, log_level):
     setup_dut(dut)
     config_before = """
@@ -265,7 +256,7 @@ aaa authentication enable default local
 aaa authentication login default local
 !
 !
-stack virtual-chassis-id 1726
+stack virtual-chassis-id 1726186
 !
 ip domain-lookup
 !
@@ -299,4 +290,13 @@ end
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
     d.system.save_config()
+    d.close()
+
+
+def test_ping2(dut, log_level):
+    setup_dut(dut)
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    d.open()
+    dut.stop()
+    assert not d.ping()
     d.close()

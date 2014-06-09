@@ -23,6 +23,15 @@ class ats_system(object):
         self._d.log_debug('got device configuration \n{0}'.format(config))
         return config
 
+    def save_config(self):
+         self._d.log_info('save running configuration')
+         cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
+                         {'cmd': 'write' , 'prompt':'\#'},
+                         {'cmd': chr(26) , 'prompt':'\#'}
+                        ]}
+         self._d.cmd(cmds, cache=False, flush_cache=True)
+         self._d.load_system()
+
     def shell_init(self):
         self._d.log_info('shell_init')
         return [{'cmd': 'terminal datadump', 'prompt':'\#'},]

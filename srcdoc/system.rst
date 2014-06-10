@@ -12,13 +12,19 @@ Methods
 """"""""""""""
 **Mandatory**
 
-**Description**: Returns a string representing the full device configuration
+**Description**: Returns a string representing the full device configuration.
 
 **ping**
 """"""""""""""
 **Mandatory**
 
-**Description**: Returns True if the device is online
+**Description**: Returns True if the device is online.
+
+**save_config**
+"""""""""""""""
+**Mandatory**
+
+**Description**: Permits to save the running configuration in the flash memory, so to survive in case of reboot.
 
 **shell_init**
 """"""""""""""
@@ -26,12 +32,12 @@ Methods
 
 **Description**: Returns a list of dictionaries representing the commands that need to be executed on the device when a
 shell is opened. For example the command output pagination should be disable to avoid that commands that generate long
-output stop waiting user input
+output stop waiting user input.
 
 **shell_prompt**
 """"""""""""""""
 **Optional**
 
-**Description**: Returns a regular expression for the default prompt of the device
+**Description**: Returns a regular expression for the default prompt of the device.
 
 

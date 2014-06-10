@@ -74,7 +74,7 @@ ip ssh server
     dut.add_cmd({'cmd': 'vlan 3999'          , 'state':1, 'action':'SET_STATE','args':[2]})
     dut.add_cmd({'cmd': 'show running-config', 'state':2, 'action':'PRINT','args':[config_with_vlan]})
     dut.add_cmd({'cmd': 'show startup-config', 'state':2, 'action':'PRINT','args':[config_no_vlan]})
-    dut.add_cmd({'cmd': 'write'              , 'state':2, 'action':'SET_STATE','args':[3]})
+    dut.add_cmd({'cmd': 'copy r s'           , 'state':2, 'action':'SET_STATE','args':[3]})
     dut.add_cmd({'cmd': 'show running-config', 'state':3, 'action':'PRINT','args':[config_with_vlan]})
     dut.add_cmd({'cmd': 'show startup-config', 'state':3, 'action':'PRINT','args':[config_with_vlan]})
     dut.add_cmd({'cmd': 'vlan database'      , 'state':3, 'action':'SET_PROMPT','args':['(config-vlan)#']})
@@ -82,7 +82,7 @@ ip ssh server
     dut.add_cmd({'cmd': 'no vlan 3999'       , 'state':4, 'action':'SET_STATE','args':[5]})
     dut.add_cmd({'cmd': 'show running-config', 'state':5, 'action':'PRINT','args':[config_no_vlan]})
     dut.add_cmd({'cmd': 'show startup-config', 'state':5, 'action':'PRINT','args':[config_with_vlan]})
-    dut.add_cmd({'cmd': 'write'              , 'state':5, 'action':'SET_STATE','args':[6]})
+    dut.add_cmd({'cmd': 'copy r s'           , 'state':5, 'action':'SET_STATE','args':[6]})
     dut.add_cmd({'cmd': 'show running-config', 'state':6, 'action':'PRINT','args':[config_no_vlan]})
     dut.add_cmd({'cmd': 'show startup-config', 'state':6, 'action':'PRINT','args':[config_no_vlan]})
 

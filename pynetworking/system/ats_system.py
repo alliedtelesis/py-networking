@@ -33,10 +33,7 @@ class ats_system(object):
 
     def save_config(self):
         self._d.log_info('save running configuration')
-        cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
-                        {'cmd': 'write' , 'prompt':'\#'},
-                        {'cmd': chr(26) , 'prompt':'\#'}
-                       ]}
+        cmds = {'cmds':[{'cmd': 'copy r s\ny' , 'prompt':'\#'}]}
         self._d.cmd(cmds, cache=False, flush_cache=True)
         self._d.load_system()
 

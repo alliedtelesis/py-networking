@@ -28,14 +28,27 @@ class awp_system(object):
         self._d.log_debug('got device configuration \n{0}'.format(config))
         return config
 
+    def get_startup_config(self):
+        self._d.log_info('getting device startup configuration')
+        config = ''
+        cmds = {'cmds':[{'cmd': 'enable',                    'prompt':'\#'},
+                        {'cmd': 'show startup-config',       'prompt':'\#'},
+                       ]}
+        for line in self._d.cmd(cmds).replace('\r','').split('\n'):
+            config += line+'\n'
+            if line.startswith("end"):
+               break
+        self._d.log_debug('got device startup configuration \n{0}'.format(config))
+        return config
+
     def save_config(self):
-         self._d.log_info('save running configuration')
-         cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
-                         {'cmd': 'write' , 'prompt':'\#'},
-                         {'cmd': chr(26) , 'prompt':'\#'}
-                        ]}
-         self._d.cmd(cmds, cache=False, flush_cache=True)
-         self._d.load_system()
+        self._d.log_info('save running configuration')
+        cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
+                        {'cmd': 'write' , 'prompt':'\#'},
+                        {'cmd': chr(26) , 'prompt':'\#'}
+                       ]}
+        self._d.cmd(cmds, cache=False, flush_cache=True)
+        self._d.load_system()
  
     def shell_init(self):
         self._d.log_info('shell_init')

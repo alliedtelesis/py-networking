@@ -185,7 +185,7 @@ def test_system(dut, log_level):
 
 def test_save_config(dut, log_level):
     setup_dut(dut)
-    config_before = """
+    config_running = """
 !
 service password-encryption
 !
@@ -206,7 +206,6 @@ snmp-server
 !
 aaa authentication enable default local
 aaa authentication login default local
-!
 !
 stack virtual-chassis-id 1726
 !
@@ -227,13 +226,12 @@ interface port1.0.1-1.0.50
 interface vlan1
  ip address 10.17.39.254/24
 !
-!
 line con 0
 line vty 0 4
 !
 end
 """
-    config_after="""
+    config_startup="""
 !
 service password-encryption
 !
@@ -255,8 +253,7 @@ snmp-server
 aaa authentication enable default local
 aaa authentication login default local
 !
-!
-stack virtual-chassis-id 1726186
+stack virtual-chassis-id 1726
 !
 ip domain-lookup
 !
@@ -275,21 +272,19 @@ interface port1.0.1-1.0.50
 interface vlan1
  ip address 10.17.39.254/24
 !
-vlan database
- vlan 3999 state enable
-!
 line con 0
 line vty 0 4
 !
 end
 """
-    dut.add_cmd({'cmd': 'show running-config', 'state':0, 'action':'PRINT','args':[config_before]})
     dut.add_cmd({'cmd': 'write'              , 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'show running-config', 'state':1, 'action':'PRINT','args':[config_after]})
+    dut.add_cmd({'cmd': 'show running-config', 'state':1, 'action':'PRINT','args':[config_running]})
+    dut.add_cmd({'cmd': 'show startup-config', 'state':1, 'action':'PRINT','args':[config_startup]})
 
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
     d.system.save_config()
+    assert d.config == d.system.get_startup_config()
     d.close()
 
 

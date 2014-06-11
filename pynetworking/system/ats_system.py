@@ -23,6 +23,20 @@ class ats_system(object):
         self._d.log_debug('got device configuration \n{0}'.format(config))
         return config
 
+    def get_startup_config(self):
+        self._d.log_info('getting device configuration')
+        config = ''
+        for line in self._d.cmd('show startup-config').replace('\r','').split('\n'):
+            config += line+'\n'
+        self._d.log_debug('got device configuration \n{0}'.format(config))
+        return config
+
+    def save_config(self):
+        self._d.log_info('save running configuration')
+        cmds = {'cmds':[{'cmd': 'copy r s\ny' , 'prompt':'\#'}]}
+        self._d.cmd(cmds, cache=False, flush_cache=True)
+        self._d.load_system()
+
     def shell_init(self):
         self._d.log_info('shell_init')
         return [{'cmd': 'terminal datadump', 'prompt':'\#'},]

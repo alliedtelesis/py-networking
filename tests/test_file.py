@@ -51,9 +51,9 @@ def test_remove_file(dut, log_level):
       588 -rw- Jun 10 2014 12:38:10  video.cfg
       633 -rw- May 29 2014 12:34:00  voice.cfg
       588 -rw- Apr 10 2014 08:10:02  default.cfg
-16654715 -rw- Jan 20 2014 15:28:41  x210-5.4.3-3.9.rel
+ 16654715 -rw- Jan 20 2014 15:28:41  x210-5.4.3-3.9.rel
      4647 -rw- Nov 18 2013 11:14:46  x210.cfg
-16629994 -rw- Oct  3 2013 09:56:13  x210-5.4.3-2.6.rel
+ 16629994 -rw- Oct  3 2013 09:56:13  x210-5.4.3-2.6.rel
   3936572 -rw- Oct  3 2013 09:48:43  x210-gui_543_04.jar
       735 -rw- Aug 23 2013 08:48:35  exception.log
 """]

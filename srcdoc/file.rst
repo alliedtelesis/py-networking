@@ -1,6 +1,8 @@
 File Feature
 ************
 File feature permits to copy and delete files.
+Files can be copied from the host on which PN is running to the device and vice versa.
+Instead only files on the device can be deleted.
 
 
 Operations
@@ -22,26 +24,20 @@ Operations
 Methods
 -------
 
-**copy**
-""""""""
+**upload**
+""""""""""
 **Mandatory**
 
 **Description**:
-Copy a file:
+Copy a file from the host to the device.
+If the file on device is already existing it can be overwritten.
 
-- from a remote host source to the device.
-
-- from the device to a remote host destination.
-
-In the first case, if the file on device is already existing it will be overwritten.
-The protocol used for file transfer must be specified.
-In case the protocol is not supported the file won't be copied.
-
-**dir**
-"""""""
+**download**
+""""""""""""
 **Mandatory**
 
-**Description**: List the current available files.
+**Description**:
+Copy a file from the device to the host.
 
 **delete**
 """"""""""
@@ -65,27 +61,17 @@ In case the protocol is not supported the file won't be copied.
 Parameters
 ----------
 
-source IP address
-"""""""""""""""""
+host_path
+"""""""""
 **Mandatory**
 
 **ReadWrite**
 
 **Type:** String
 
-**Description**: IP address where the source file is stored. If the file is on the device the IP address is 'localhost'.
+**Description**: File path on the host.
 
-destination IP address
-""""""""""""""""""""""
-**Mandatory**
-
-**ReadWrite**
-
-**Type:** String
-
-**Description**: IP address where the source file will be copied. If the file is on the device the IP address is 'localhost'.
-
-source path
+device_path
 """""""""""
 **Mandatory**
 
@@ -93,24 +79,14 @@ source path
 
 **Type:** String
 
-**Description**: Path of the file to be copied.
+**Description**: File path on the device.
 
-destination path
-""""""""""""""""
+overwrite
+"""""""""
 **Mandatory**
 
 **ReadWrite**
 
-**Type:** String
+**Type:** Boolean
 
-**Description**: Path where the file will be copied.
-
-protocol
-""""""""
-**Mandatory**
-
-**ReadWrite**
-
-**Type:** String
-
-**Description**: Protocol used for file transfer.
+**Description**: If true, when uploading, the file on device is overwritten if already present.

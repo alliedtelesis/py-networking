@@ -38,8 +38,8 @@ class ats_file(Feature):
                 self._file_config[m.group('file_name')] = {'permission': m.group('permission'),
                                                            'flash_size': m.group('flash_size'),
                                                            'data_size': m.group('data_size'),
-                                                           'date': m.group('date'),
-                                                           'time': m.group('time')
+                                                           'mdate': m.group('date'),
+                                                           'mtime': m.group('time')
                                                           }
         self._d.log_info(self._file_config)
 
@@ -117,8 +117,8 @@ class ats_file(Feature):
                 self._file[key] = {'permission': m.group('permission'),
                                    'flash_size': m.group('flash_size'),
                                    'data_size': m.group('data_size'),
-                                   'date': m.group('date'),
-                                   'time': m.group('time')
+                                   'mdate': m.group('date'),
+                                   'mtime': m.group('time')
                                   }
                 self._file[key] = dict(self._file[key].items() + self._file_config[key].items())
         self._d.log_debug("File {0}".format(pformat(json.dumps(self._file))))

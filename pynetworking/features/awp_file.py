@@ -39,10 +39,8 @@ class awp_file(Feature):
             if m:
                 self._file_config[m.group('file_name')] = {'size': m.group('size'),
                                                            'permission': m.group('permission'),
-                                                           'month': m.group('month'),
-                                                           'day': m.group('day'),
-                                                           'year': m.group('year'),
-                                                           'hhmmss': m.group('hhmmss')
+                                                           'mdate': m.group('month') + '/' +  m.group('day') + '/' + m.group('year'),
+                                                           'mtime': m.group('hhmmss')
                                                           }
         self._d.log_info(self._file_config)
 
@@ -149,10 +147,8 @@ class awp_file(Feature):
                 key = m.group('file_name')
                 self._file[key] = {'size': m.group('size'),
                                    'permission': m.group('permission'),
-                                   'month': m.group('month'),
-                                   'day': m.group('day'),
-                                   'year': m.group('year'),
-                                   'hhmmss': m.group('hhmmss')
+                                   'mdate': m.group('month') + '/' + m.group('day') + '/' + m.group('year'),
+                                   'mtime': m.group('hhmmss')
                                   }
                 self._file[key] = dict(self._file[key].items() + self._file_config[key].items())
         self._d.log_debug("File {0}".format(pformat(json.dumps(self._file))))

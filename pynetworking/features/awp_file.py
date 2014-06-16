@@ -3,6 +3,7 @@ from pynetworking import Feature
 from pprint import pformat
 import re
 import json
+import socket
 try:
     from collections import OrderedDict
 except ImportError: #pragma: no cover
@@ -46,25 +47,53 @@ class awp_file(Feature):
         self._d.log_info(self._file_config)
 
 
-    def copy(self, source_file, dest_file, source_ip_address, dest_ip_address, protocol='tftp'):
-        if (source_ip_address == 'localhost'):
-            self._d.log_info("copying {0} to {1}://{2}/{3}".format(source_file, protocol, dest_ip_address, dest_file))
-        else:
-            if (dest_ip_address == 'localhost'):
-                self._d.log_info("copying {0}://{1}/{2} to {3}".format(protocol, source_ip_address, source_file, dest_file))
-            else:
-                self._d.log_info("no localhost file specified")
-                return
-
+    def download(self, device_path):
+        self._d.log_info("copying {0} from device to host".format(device_path))
         self._update_file()
 
-        copy_cmd = ''
-        # copy_cmd = 'copy {0}'.format(file_name) ...... to be defined
-        cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
-                        {'cmd': 'conf t', 'prompt':'\(config\)\#'},
-                        {'cmd': copy_cmd, 'prompt':'\(config\)\#'},
-                        {'cmd': chr(26) , 'prompt':'\#'},
+        # host HTTP server thread
+
+        # device commands
+        host_ip_address = socket.gethostbyname(socket.getfqdn())
+        device_ip_address = self._d._host
+        download_cmd = 'copy ' + device_path + ' http://' + device_ip_address + '/' + device_path
+        cmds = {'cmds':[{'cmd': 'enable'    , 'prompt':'\#'},
+                        {'cmd': 'conf t'    , 'prompt':'\(config\)\#'},
+                        {'cmd': download_cmd, 'prompt':'\(config\)\#'},
+                        {'cmd': chr(26)     , 'prompt':'\#'},
                        ]}
+
+        self._device.cmd(cmds, cache=False, flush_cache=True)
+        self._device.load_system()
+
+
+    def upload(self, host_path, overwrite=False):
+        self._d.log_info("copying {0} from host to device".format(host_path))
+        self._update_file()
+
+        add_confirmation = False
+        dir_names = host_path.split('/')
+        dev_file_name = dir_names[-1]
+        if dev_file_name in self._d.file.keys():
+            if overwrite == False:
+                raise KeyError('file {0} cannot be overwritten'.format(dev_file_name))
+            else:
+                add_confirmation = True
+
+        # host HTTP server thread
+
+        # device commands
+        host_ip_address = socket.gethostbyname(socket.getfqdn())
+        device_ip_address = self._d._host
+        upload_cmd = 'copy http://' + host_ip_address + host_path + ' ' + dev_file_name
+        cmds = {'cmds':[{'cmd': 'enable'  , 'prompt':'\#'},
+                        {'cmd': 'conf t'  , 'prompt':'\(config\)\#'},
+                        {'cmd': upload_cmd, 'prompt':'\(config\)\#'}
+                       ]}
+
+        if add_confirmation == True:
+            cmds['cmds'].append({'cmd': 'y', 'prompt':''})
+        cmds['cmds'].append({'cmd': chr(26), 'prompt':'\#'})
 
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()

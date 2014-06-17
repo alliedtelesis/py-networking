@@ -4,10 +4,38 @@ from pprint import pformat
 import re
 import json
 import socket
+import BaseHTTPServer
 try:
     from collections import OrderedDict
 except ImportError: #pragma: no cover
     from ordereddict import OrderedDict
+
+
+HOST_NAME = 'mmensuali.net' # !!!REMEMBER TO CHANGE THIS!!!
+PORT_NUMBER = 80 # Maybe set this to 9000.
+
+
+class FileHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+    def __init__(self, text='',filename=''):
+        self._text = text
+        self._filename = filename
+
+    def do_HEAD(s):
+        s.send_response(200)
+        s.send_header("Content-type", "text/html")
+        s.end_headers()
+
+    def do_GET(s):
+        """Respond to a GET request."""
+        s.send_response(200)
+        s.send_header("Content-type", "text/html")
+        s.end_headers()
+        s.wfile.write("<html><head><title>Title goes here.</title></head>")
+        s.wfile.write("<body><p>This is a test.</p>")
+        # If someone went to "http://something.somewhere.net/foo/bar/",
+        # then s.path equals "/foo/bar/".
+        s.wfile.write("<p>You accessed path: %s</p>" % s.path)
+        s.wfile.write("</body></html>")
 
 
 class awp_file(Feature):
@@ -58,16 +86,24 @@ class awp_file(Feature):
 
         if (filename == ''):
             # host HTTP server thread
+            # fileCreator = FileHandler()
             # TO BE ADDED
+        # server_class = BaseHTTPServer.HTTPServer
+        # httpd = server_class((HOST_NAME, PORT_NUMBER), FileHandler)
+        # print time.asctime(), "Server Starts - %s:%s" % (HOST_NAME, PORT_NUMBER)
+        # try:
+        #     httpd.serve_forever()
+        # except KeyboardInterrupt:
+        #     pass
+        # httpd.server_close()
+        # print time.asctime(), "Server Stops - %s:%s" % (HOST_NAME, PORT_NUMBER)
 
             # device commands
             host_ip_address = socket.gethostbyname(socket.getfqdn())
 
             create_cmd = 'copy http://' + host_ip_address + '/' + name + ' ' + name
             cmds = {'cmds':[{'cmd': 'enable'    , 'prompt':'\#'},
-                            {'cmd': 'conf t'    , 'prompt':'\(config\)\#'},
-                            {'cmd': create_cmd  , 'prompt':'\(config\)\#'},
-                            {'cmd': chr(26)     , 'prompt':'\#'}
+                            {'cmd': create_cmd  , 'prompt':'\#'}
                            ]}
             self._device.cmd(cmds, cache=False, flush_cache=True)
             self._device.load_system()
@@ -75,9 +111,7 @@ class awp_file(Feature):
             # device commands
             create_cmd = 'copy ' + filename + ' ' + name
             cmds = {'cmds':[{'cmd': 'enable'    , 'prompt':'\#'},
-                            {'cmd': 'conf t'    , 'prompt':'\(config\)\#'},
-                            {'cmd': create_cmd  , 'prompt':'\(config\)\#'},
-                            {'cmd': chr(26)     , 'prompt':'\#'}
+                            {'cmd': create_cmd  , 'prompt':'\#'}
                            ]}
             self._device.cmd(cmds, cache=False, flush_cache=True)
             self._device.load_system()
@@ -238,3 +272,15 @@ class awp_file(Feature):
                                   }
                 self._file[key] = dict(self._file[key].items() + self._file_config[key].items())
         self._d.log_debug("File {0}".format(pformat(json.dumps(self._file))))
+
+
+# if __name__ == '__main__':
+#     server_class = BaseHTTPServer.HTTPServer
+#     httpd = server_class((HOST_NAME, PORT_NUMBER), FileHandler)
+#     print time.asctime(), "Server Starts - %s:%s" % (HOST_NAME, PORT_NUMBER)
+#     try:
+#         httpd.serve_forever()
+#     except KeyboardInterrupt:
+#         pass
+#     httpd.server_close()
+#     print time.asctime(), "Server Stops - %s:%s" % (HOST_NAME, PORT_NUMBER)

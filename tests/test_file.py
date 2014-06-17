@@ -63,28 +63,43 @@ end
     d.close()
 
 
-# def test_create_empty_file(dut, log_level):
-#     dir_0 = ["""
-#       588 -rw- Jun 10 2014 12:38:10  video-2.cfg
-#       588 -rw- Jun 10 2014 12:38:10  video.cfg
-#       633 -rw- May 29 2014 12:34:00  voice.cfg
-#       588 -rw- Apr 10 2014 08:10:02  default.cfg
-#  16654715 -rw- Jan 20 2014 15:28:41  x210-5.4.3-3.9.rel
-#      4647 -rw- Nov 18 2013 11:14:46  x210.cfg
-#  16629994 -rw- Oct  3 2013 09:56:13  x210-5.4.3-2.6.rel
-#   3936572 -rw- Oct  3 2013 09:48:43  x210-gui_543_04.jar
-#       735 -rw- Aug 23 2013 08:48:35  exception.log
-# """]
-#     setup_dut(dut)
-#     copy_cmd = 'copy default.cfg http://' + socket.gethostbyname(socket.getfqdn()) + os.getcwd() + '/default.cfg'
-#     dut.add_cmd({'cmd': 'dir'   , 'state':0, 'action':'PRINT','args': dir_0})
-#     dut.add_cmd({'cmd': copy_cmd, 'state':0, 'action':'SET_STATE','args':[1]})
-#     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
-#     d.open()
-#     assert 'default.cfg' in d.file.keys()
-#     d.file.download("default.cfg")
-#     # assert 'default.cfg' in os.listdir(os.getcwd())
-#     d.close()
+def test_create_empty_file(dut, log_level):
+    dir_0 = ["""
+      588 -rw- Jun 10 2014 12:38:10  video-2.cfg
+      588 -rw- Jun 10 2014 12:38:10  video.cfg
+      633 -rw- May 29 2014 12:34:00  voice.cfg
+      588 -rw- Apr 10 2014 08:10:02  default.cfg
+ 16654715 -rw- Jan 20 2014 15:28:41  x210-5.4.3-3.9.rel
+     4647 -rw- Nov 18 2013 11:14:46  x210.cfg
+ 16629994 -rw- Oct  3 2013 09:56:13  x210-5.4.3-2.6.rel
+  3936572 -rw- Oct  3 2013 09:48:43  x210-gui_543_04.jar
+      735 -rw- Aug 23 2013 08:48:35  exception.log
+"""]
+    dir_1 = ["""
+        0 -rw- Jun 16 2014 15:15:15  test_file_0.cfg
+      588 -rw- Jun 10 2014 12:38:10  video-2.cfg
+      588 -rw- Jun 10 2014 12:38:10  video.cfg
+      633 -rw- May 29 2014 12:34:00  voice.cfg
+      588 -rw- Apr 10 2014 08:10:02  default.cfg
+ 16654715 -rw- Jan 20 2014 15:28:41  x210-5.4.3-3.9.rel
+     4647 -rw- Nov 18 2013 11:14:46  x210.cfg
+ 16629994 -rw- Oct  3 2013 09:56:13  x210-5.4.3-2.6.rel
+  3936572 -rw- Oct  3 2013 09:48:43  x210-gui_543_04.jar
+      735 -rw- Aug 23 2013 08:48:35  exception.log
+"""]
+    setup_dut(dut)
+    host_file_name = 'test_file_0.cfg'
+    create_cmd = 'copy http://' + socket.gethostbyname(socket.getfqdn()) + '/' + host_file_name + ' ' + host_file_name
+    dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
+    dut.add_cmd({'cmd': create_cmd, 'state':0, 'action':'SET_STATE','args':[1]})
+    dut.add_cmd({'cmd': 'dir'     , 'state':1, 'action':'PRINT','args': dir_1})
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d.open()
+    assert host_file_name not in d.file.keys()
+    d.file.create(name=host_file_name)
+    assert host_file_name in d.file.keys()
+    assert d.file[host_file_name]['size'] == '0'
+    d.close()
 
 
 def test_create_file_from_another_file(dut, log_level):
@@ -122,6 +137,7 @@ def test_create_file_from_another_file(dut, log_level):
     d.file.create(name='test_file_1.cfg', filename='default.cfg')
     assert 'default.cfg' in d.file.keys()
     assert 'test_file_1.cfg' in d.file.keys()
+    assert d.file['default.cfg']['size'] == d.file['test_file_1.cfg']['size']
     d.close()
 
 

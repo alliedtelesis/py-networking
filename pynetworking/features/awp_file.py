@@ -96,18 +96,38 @@ class awp_file(Feature):
         if (filename == '' and text == ''):
             raise KeyError('Cannot have both host file name and host string empty')
 
+        # data to be copied will always come from a local file named 'file_2_copy_from'
+        if (filename == ''):
+            file_2_copy_from = name
+        else:
+            file_2_copy_from = filename
+        if (text != ''):
+            myfile = open(file_2_copy_from, 'w')
+            myfile.write(text)
+            myfile.close()
+
         # host HTTP server thread
+        # TO BE ADDED
 
         # device commands
         host_ip_address = socket.gethostbyname(socket.getfqdn())
-        # device_ip_address = self._d._host
-        update_cmd = 'copy ' + ' http://' + host_ip_address + '/' + filename + ' ' + name
-        cmds = {'cmds':[{'cmd': 'enable'  , 'prompt':'\#'},
-                        {'cmd': 'conf t'  , 'prompt':'\(config\)\#'},
-                        {'cmd': update_cmd, 'prompt':''},
-                        {'cmd': 'y'       , 'prompt':'\#'},
-                       ]}
 
+        if (new_name == ''):
+            update_cmd = 'copy http://' + host_ip_address + '/' + file_2_copy_from + ' ' + name
+            cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
+                             {'cmd': 'conf t', 'prompt': '\(config\)\#'},
+                             {'cmd': update_cmd, 'prompt': ''},
+                             {'cmd': chr(26), 'prompt': '\#'}
+            ]}
+        else:
+            update_cmd = 'copy http://' + host_ip_address + '/' + file_2_copy_from + ' ' + new_name
+            remove_cmd = 'delete ' + name
+            cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
+                             {'cmd': 'conf t', 'prompt': '\(config\)\#'},
+                             {'cmd': update_cmd, 'prompt': '\(config\)\#'},
+                             {'cmd': remove_cmd, 'prompt': '\(config\)\#'},
+                             {'cmd': chr(26), 'prompt': '\#'}
+            ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()
 

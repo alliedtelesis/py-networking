@@ -100,16 +100,14 @@ class awp_file(Feature):
         server_thread.start()
         self._d.log_info("server running on {0}:{1}".format(ip, port))
 
-        # issue the command to load the file
-        # sleep(1000)
-        # self._d.cmd('copy http://{0}:{1}/{2} {2}'.format(ip, port, filename))
-        # server.shutdown()
-
         # device commands
-        # host_ip_address = socket.gethostbyname(socket.getfqdn())
+        host_ip_address = socket.gethostbyname(socket.getfqdn())
 
-        # create_cmd = 'copy http://{0}:{1}/{2} {3}'.format(ip, port, filename, name)
-        create_cmd = 'copy http://{0}:{1}/{2} {3}'.format(socket.gethostbyname(socket.getfqdn()), port, filename, name)
+        create_cmd = 'copy http://{0}:{1}/{2} {3}'.format(host_ip_address
+
+
+
+                                                          , port, filename, name)
         cmds = {'cmds':[{'cmd': 'enable'    , 'prompt':'\#'},
                         {'cmd': create_cmd  , 'prompt':'\#'}
                        ]}
@@ -158,10 +156,12 @@ class awp_file(Feature):
 
         if (new_name == ''):
             update_cmd = 'copy http://{0}:{1}/{2} {3}'.format(host_ip_address, port, file_2_copy_from, name)
+            delete_cmd = 'delete {0}'.format(name)
             cmds = {'cmds': [{'cmd': 'enable'  , 'prompt': '\#'},
-                             {'cmd': update_cmd, 'prompt': ''  },
-                             {'cmd': 'y'       , 'prompt': '\#'}
-            ]}
+                             {'cmd': delete_cmd, 'prompt': ''  },
+                             {'cmd': 'y'       , 'prompt': '\#'},
+                             {'cmd': update_cmd, 'prompt': '\#'}
+                            ]}
         else:
             update_cmd = 'copy http://{0}:{1}/{2} {3}'.format(host_ip_address, port, file_2_copy_from, new_name)
             delete_cmd = 'delete {0}'.format(name)
@@ -169,7 +169,7 @@ class awp_file(Feature):
                              {'cmd': update_cmd, 'prompt': '\#'},
                              {'cmd': delete_cmd, 'prompt': ''  },
                              {'cmd': 'y'       , 'prompt': '\#'}
-            ]}
+                            ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()
 
@@ -182,6 +182,9 @@ class awp_file(Feature):
     def delete(self, file_name):
         self._d.log_info("remove {0}".format(file_name))
         self._update_file()
+
+        if file_name not in self._d.file.keys():
+            raise KeyError('file {0} is not existing'.format(file_name))
 
         delete_cmd = 'delete {0}'.format(file_name)
         cmds = {'cmds':[{'cmd': 'enable'  , 'prompt':'\#'},

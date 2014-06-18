@@ -98,6 +98,7 @@ class awp_file(Feature):
         server_thread = threading.Thread(target=server.serve_forever)
         server_thread.daemon = True
         server_thread.start()
+        # port=49152
         self._d.log_info("server running on {0}:{1}".format(ip, port))
 
         # device commands
@@ -149,6 +150,7 @@ class awp_file(Feature):
         server_thread = threading.Thread(target=server.serve_forever)
         server_thread.daemon = True
         server_thread.start()
+        # port=49152
         self._d.log_info("server running on {0}:{1}".format(ip, port))
 
         # device commands
@@ -237,15 +239,3 @@ class awp_file(Feature):
                                   }
                 self._file[key] = dict(self._file[key].items() + self._file_config[key].items())
         self._d.log_debug("File {0}".format(pformat(json.dumps(self._file))))
-
-
-# if __name__ == '__main__':
-#     server_class = BaseHTTPServer.HTTPServer
-#     httpd = server_class((HOST_NAME, PORT_NUMBER), FileHandler)
-#     print time.asctime(), "Server Starts - %s:%s" % (HOST_NAME, PORT_NUMBER)
-#     try:
-#         httpd.serve_forever()
-#     except KeyboardInterrupt:
-#         pass
-#     httpd.server_close()
-#     print time.asctime(), "Server Stops - %s:%s" % (HOST_NAME, PORT_NUMBER)

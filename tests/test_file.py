@@ -6,6 +6,9 @@ from time import sleep
 from paramiko.rsakey import RSAKey
 
 
+http_iana_port = 49152
+
+
 def setup_dut(dut):
     dut.reset()
     dut.add_cmd({'cmd':'show version',        'state':-1, 'action': 'PRINT','args':["""
@@ -56,10 +59,10 @@ end
     assert 'default.cfg' in d.file.keys()
     with pytest.raises(KeyError) as excinfo:
         d.file.create(name='default.cfg', text=host_content)
-    # with pytest.raises(KeyError) as excinfo:
-    #     d.file.create(name='test_file.cfg', filename='unexisting.cfg')
     with pytest.raises(KeyError) as excinfo:
         d.file.create(name='test_file.cfg', text=host_content, filename='default.cfg')
+    with pytest.raises(KeyError) as excinfo:
+        d.file['video-3.cfg']
     d.close()
 
 
@@ -89,7 +92,7 @@ def test_create_empty_file(dut, log_level):
 """]
     setup_dut(dut)
     host_file_name = 'test_file_0.cfg'
-    create_cmd = 'copy http://{0}/test_file_0.cfg test_file_0.cfg'.format(socket.gethostbyname(socket.getfqdn()))
+    create_cmd = 'copy http://{0}:{1}/test_file_0.cfg test_file_0.cfg'.format(socket.gethostbyname(socket.getfqdn()), http_iana_port)
     dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
     dut.add_cmd({'cmd': create_cmd, 'state':0, 'action':'SET_STATE','args':[1]})
     dut.add_cmd({'cmd': 'dir'     , 'state':1, 'action':'PRINT','args': dir_1})
@@ -98,7 +101,7 @@ def test_create_empty_file(dut, log_level):
     assert host_file_name not in d.file.keys()
     d.file.create(name=host_file_name)
     assert host_file_name in d.file.keys()
-    assert d.file[host_file_name]['size'] == '0'
+    assert (host_file_name, {'size': '0', 'mdate': '16-Jun-2014', 'permission': '-rw-', 'mtime': '15:15:15'}) in d.file.items()
     d.close()
 
 
@@ -115,7 +118,7 @@ def test_create_file_from_another_file(dut, log_level):
       735 -rw- Aug 23 2013 08:48:35  exception.log
 """]
     dir_1 = ["""
-      588 -rw- Jun 16 2014 15:15:15  test_file_1.cfg
+      288 -rw- Jun 16 2014 15:15:15  test_file_1.cfg
       588 -rw- Jun 10 2014 12:38:10  video-2.cfg
       588 -rw- Jun 10 2014 12:38:10  video.cfg
       633 -rw- May 29 2014 12:34:00  voice.cfg
@@ -152,7 +155,7 @@ end
     myfile = open(host_file_name, 'w')
     myfile.write(host_content)
     myfile.close()
-    create_cmd = 'copy http://{0}/local.cfg test_file_1.cfg'.format(socket.gethostbyname(socket.getfqdn()))
+    create_cmd = 'copy http://{0}:{1}/local.cfg test_file_1.cfg'.format(socket.gethostbyname(socket.getfqdn()), http_iana_port)
     dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
     dut.add_cmd({'cmd': create_cmd, 'state':0, 'action':'SET_STATE','args':[1]})
     dut.add_cmd({'cmd': 'dir'     , 'state':1, 'action':'PRINT','args': dir_1})
@@ -181,7 +184,7 @@ def test_create_file_from_string(dut, log_level):
 """]
     dir_1 = ["""
       588 -rw- Jun 16 2014 15:15:15  test_file_1.cfg
-      287 -rw- Jun 16 2014 15:23:44  test_file_2.cfg
+      288 -rw- Jun 16 2014 15:23:44  test_file_2.cfg
       588 -rw- Jun 10 2014 12:38:10  video-2.cfg
       588 -rw- Jun 10 2014 12:38:10  video.cfg
       633 -rw- May 29 2014 12:34:00  voice.cfg
@@ -214,7 +217,7 @@ end
 """
     setup_dut(dut)
     host_file_name = 'test_file_2.cfg'
-    create_cmd = 'copy http://{0}/test_file_2.cfg test_file_2.cfg'.format(socket.gethostbyname(socket.getfqdn()))
+    create_cmd = 'copy http://{0}:{1}/test_file_2.cfg test_file_2.cfg'.format(socket.gethostbyname(socket.getfqdn()), http_iana_port)
     dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
     dut.add_cmd({'cmd': create_cmd, 'state':0, 'action':'SET_STATE','args':[1]})
     dut.add_cmd({'cmd': 'dir'     , 'state':1, 'action':'PRINT','args': dir_1})
@@ -290,7 +293,7 @@ def test_update_file_with_text(dut, log_level):
       735 -rw- Aug 23 2013 08:48:35  exception.log
 """]
     dir_1 = ["""
-      284 -rw- Jun 16 2014 15:15:33  test_file_1.cfg
+      339 -rw- Jun 16 2014 15:15:33  test_file_1.cfg
       588 -rw- Jun 10 2014 12:38:10  video-2.cfg
       588 -rw- Jun 10 2014 12:38:10  video.cfg
       633 -rw- May 29 2014 12:34:00  voice.cfg
@@ -325,17 +328,17 @@ vlan 777 name video-vlan state enable
 end
 """
     name = 'test_file_1.cfg'
-    update_cmd = 'copy http://{0}/test_file_1.cfg test_file_1.cfg'.format(socket.gethostbyname(socket.getfqdn()))
+    update_cmd = 'copy http://{0}:{1}/test_file_1.cfg test_file_1.cfg'.format(socket.gethostbyname(socket.getfqdn()), http_iana_port)
     setup_dut(dut)
     dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
     dut.add_cmd({'cmd': update_cmd, 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'y'       , 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'dir'     , 'state':2, 'action':'PRINT','args': dir_1})
+    dut.add_cmd({'cmd': 'dir'     , 'state':1, 'action':'PRINT','args': dir_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'test_file_1.cfg' in d.file.keys()
     old_date = d.file['test_file_1.cfg']['mtime']
     d.file.update(name='test_file_1.cfg', text=host_text)
+    print(d.file)
     assert old_date != d.file['test_file_1.cfg']['mtime']
     assert d.file['test_file_1.cfg']['size'] == '{0}'.format(len(host_text))
     d.close()
@@ -355,7 +358,7 @@ def test_update_file_with_another_file(dut, log_level):
       735 -rw- Aug 23 2013 08:48:35  exception.log
 """]
     dir_1 = ["""
-      588 -rw- Jun 16 2014 15:15:33  test_file_1.cfg
+      377 -rw- Jun 16 2014 15:15:33  test_file_1.cfg
       588 -rw- Jun 10 2014 12:38:10  video-2.cfg
       588 -rw- Jun 10 2014 12:38:10  video.cfg
       633 -rw- May 29 2014 12:34:00  voice.cfg
@@ -393,12 +396,11 @@ end
     myfile = open('temp.cfg', 'w')
     myfile.write(host_text)
     myfile.close()
-    update_cmd = 'copy http://{0}/temp.cfg test_file_1.cfg'.format(socket.gethostbyname(socket.getfqdn()))
+    update_cmd = 'copy http://{0}:{1}/temp.cfg test_file_1.cfg'.format(socket.gethostbyname(socket.getfqdn()), http_iana_port)
     setup_dut(dut)
     dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
     dut.add_cmd({'cmd': update_cmd, 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'y'       , 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'dir'     , 'state':2, 'action':'PRINT','args': dir_1})
+    dut.add_cmd({'cmd': 'dir'     , 'state':1, 'action':'PRINT','args': dir_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'test_file_1.cfg' in d.file.keys()
@@ -424,7 +426,7 @@ def test_update_file_and_rename(dut, log_level):
 """]
     dir_1 = ["""
       588 -rw- Jun 16 2014 15:15:16  test_file_1.cfg
-      588 -rw- Jun 16 2014 15:15:33  test_file_3.cfg
+      417 -rw- Jun 16 2014 15:15:33  test_file_3.cfg
       588 -rw- Jun 10 2014 12:38:10  video-2.cfg
       588 -rw- Jun 10 2014 12:38:10  video.cfg
       633 -rw- May 29 2014 12:34:00  voice.cfg
@@ -436,7 +438,7 @@ def test_update_file_and_rename(dut, log_level):
       735 -rw- Aug 23 2013 08:48:35  exception.log
 """]
     dir_2 = ["""
-      588 -rw- Jun 16 2014 15:15:33  test_file_3.cfg
+      417 -rw- Jun 16 2014 15:15:33  test_file_3.cfg
       588 -rw- Jun 10 2014 12:38:10  video-2.cfg
       588 -rw- Jun 10 2014 12:38:10  video.cfg
       633 -rw- May 29 2014 12:34:00  voice.cfg
@@ -472,7 +474,7 @@ vlan 999 name service-vlan state enable
 !
 end
 """
-    update_cmd = 'copy http://{0}/test_file_1.cfg test_file_3.cfg'.format(socket.gethostbyname(socket.getfqdn()))
+    update_cmd = 'copy http://{0}:{1}/test_file_1.cfg test_file_3.cfg'.format(socket.gethostbyname(socket.getfqdn()), http_iana_port)
     delete_cmd = 'delete test_file_1.cfg'
     setup_dut(dut)
     dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
@@ -487,6 +489,7 @@ end
     d.file.update(name='test_file_1.cfg', text=host_text, new_name='test_file_3.cfg')
     assert 'test_file_1.cfg' not in d.file.keys()
     assert 'test_file_3.cfg' in d.file.keys()
+    assert d.file['test_file_3.cfg']['size'] == '{0}'.format(len(host_text))
     d.close()
 
 

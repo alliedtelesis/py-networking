@@ -3,7 +3,10 @@ from pynetworking import Feature
 from pprint import pformat
 import re
 import json
+import os
 import socket
+import SocketServer
+import threading
 import BaseHTTPServer
 try:
     from collections import OrderedDict
@@ -11,31 +14,31 @@ except ImportError: #pragma: no cover
     from ordereddict import OrderedDict
 
 
-HOST_NAME = 'mmensuali.net' # !!!REMEMBER TO CHANGE THIS!!!
-PORT_NUMBER = 80 # Maybe set this to 9000.
+class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
+   def do_GET(self):
+       if self.server.filename == self.path[1:]:
+           try:
+               with open(os.path.abspath(self.server.filename), 'rb') as f:
+                   self.server._d.log_info('sending file {0}'.format(os.path.abspath(self.server.filename)))
+                   self.send_response(200)
+                   self.send_header('Content-type', 'application/octet-string')
+                   self.end_headers()
+                   self.wfile.write(f.read())
+           except:
+               self.server._d.log_error('cannot open file {0}'.format(self.path))
+               self.send_response(404)
+               self.end_headers()
+       else:
+           self.server._d.log_error('wrong file requested {0}'.format(self.path))
+           self.send_response(404)
+           self.end_headers()
 
 
-class FileHandler(BaseHTTPServer.BaseHTTPRequestHandler):
-    def __init__(self, text='',filename=''):
-        self._text = text
-        self._filename = filename
-
-    def do_HEAD(s):
-        s.send_response(200)
-        s.send_header("Content-type", "text/html")
-        s.end_headers()
-
-    def do_GET(s):
-        """Respond to a GET request."""
-        s.send_response(200)
-        s.send_header("Content-type", "text/html")
-        s.end_headers()
-        s.wfile.write("<html><head><title>Title goes here.</title></head>")
-        s.wfile.write("<body><p>This is a test.</p>")
-        # If someone went to "http://something.somewhere.net/foo/bar/",
-        # then s.path equals "/foo/bar/".
-        s.wfile.write("<p>You accessed path: %s</p>" % s.path)
-        s.wfile.write("</body></html>")
+class Server(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
+   def __init__(self, address, handler, device, filename):
+       self.filename = filename
+       self._d = device
+       SocketServer.TCPServer.__init__(self, address, handler)
 
 
 class awp_file(Feature):
@@ -79,42 +82,43 @@ class awp_file(Feature):
 
         if name in self._d.file.keys():
             raise KeyError('file {0} is already existing'.format(name))
-        if (filename != '' and filename not in self._d.file.keys()):
-            raise KeyError('file {0} is not existing'.format(filename))
         if (filename != '' and text != ''):
             raise KeyError('Cannot have both source device file name and host string not empty')
 
         if (filename == ''):
-            # host HTTP server thread
-            # fileCreator = FileHandler()
-            # TO BE ADDED
-        # server_class = BaseHTTPServer.HTTPServer
-        # httpd = server_class((HOST_NAME, PORT_NUMBER), FileHandler)
-        # print time.asctime(), "Server Starts - %s:%s" % (HOST_NAME, PORT_NUMBER)
-        # try:
-        #     httpd.serve_forever()
-        # except KeyboardInterrupt:
-        #     pass
-        # httpd.server_close()
-        # print time.asctime(), "Server Stops - %s:%s" % (HOST_NAME, PORT_NUMBER)
+            filename = name
+            myfile = open(filename, 'w')
+            myfile.write(text)
+            myfile.close()
 
-            # device commands
-            host_ip_address = socket.gethostbyname(socket.getfqdn())
+        # host HTTP server thread
+        server = Server(("", 0), Handler, self._d, filename)
+        ip, port = server.server_address
 
-            create_cmd = 'copy http://' + host_ip_address + '/' + name + ' ' + name
-            cmds = {'cmds':[{'cmd': 'enable'    , 'prompt':'\#'},
-                            {'cmd': create_cmd  , 'prompt':'\#'}
-                           ]}
-            self._device.cmd(cmds, cache=False, flush_cache=True)
-            self._device.load_system()
-        else:
-            # device commands
-            create_cmd = 'copy ' + filename + ' ' + name
-            cmds = {'cmds':[{'cmd': 'enable'    , 'prompt':'\#'},
-                            {'cmd': create_cmd  , 'prompt':'\#'}
-                           ]}
-            self._device.cmd(cmds, cache=False, flush_cache=True)
-            self._device.load_system()
+        server_thread = threading.Thread(target=server.serve_forever)
+        server_thread.daemon = True
+        server_thread.start()
+        self._d.log_info("server running on {0}:{1}".format(ip, port))
+
+        # issue the command to load the file
+        # sleep(1000)
+        # self._d.cmd('copy http://{0}:{1}/{2} {2}'.format(ip, port, filename))
+        # server.shutdown()
+
+        # device commands
+        # host_ip_address = socket.gethostbyname(socket.getfqdn())
+
+        # create_cmd = 'copy http://{0}:{1}/{2} {3}'.format(ip, port, filename, name)
+        create_cmd = 'copy http://{0}:{1}/{2} {3}'.format(socket.gethostbyname(socket.getfqdn()), port, filename, name)
+        cmds = {'cmds':[{'cmd': 'enable'    , 'prompt':'\#'},
+                        {'cmd': create_cmd  , 'prompt':'\#'}
+                       ]}
+        self._device.cmd(cmds, cache=False, flush_cache=True)
+        self._device.load_system()
+
+        server.shutdown()
+        if (text != ''):
+            os.remove(filename)
 
 
     def update(self, name, filename='', text='', new_name=''):
@@ -141,20 +145,26 @@ class awp_file(Feature):
             myfile.close()
 
         # host HTTP server thread
-        # TO BE ADDED
+        server = Server(("", 0), Handler, self._d, file_2_copy_from)
+        ip, port = server.server_address
+
+        server_thread = threading.Thread(target=server.serve_forever)
+        server_thread.daemon = True
+        server_thread.start()
+        self._d.log_info("server running on {0}:{1}".format(ip, port))
 
         # device commands
         host_ip_address = socket.gethostbyname(socket.getfqdn())
 
         if (new_name == ''):
-            update_cmd = 'copy http://' + host_ip_address + '/' + file_2_copy_from + ' ' + name
+            update_cmd = 'copy http://{0}:{1}/{2} {3}'.format(host_ip_address, port, file_2_copy_from, name)
             cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
                              {'cmd': 'conf t', 'prompt': '\(config\)\#'},
                              {'cmd': update_cmd, 'prompt': ''},
                              {'cmd': chr(26), 'prompt': '\#'}
             ]}
         else:
-            update_cmd = 'copy http://' + host_ip_address + '/' + file_2_copy_from + ' ' + new_name
+            update_cmd = 'copy http://{0}:{1}/{2} {3}'.format(host_ip_address, port, file_2_copy_from, new_name)
             remove_cmd = 'delete ' + name
             cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
                              {'cmd': 'conf t', 'prompt': '\(config\)\#'},
@@ -165,58 +175,12 @@ class awp_file(Feature):
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()
 
-    # def download(self, device_path):
-    #     self._d.log_info("copying {0} from device to host".format(device_path))
-    #     self._update_file()
-    #
-    #     # host HTTP server thread
-    #
-    #     # device commands
-    #     host_ip_address = socket.gethostbyname(socket.getfqdn())
-    #     device_ip_address = self._d._host
-    #     download_cmd = 'copy ' + device_path + ' http://' + device_ip_address + '/' + device_path
-    #     cmds = {'cmds':[{'cmd': 'enable'    , 'prompt':'\#'},
-    #                     {'cmd': 'conf t'    , 'prompt':'\(config\)\#'},
-    #                     {'cmd': download_cmd, 'prompt':'\(config\)\#'},
-    #                     {'cmd': chr(26)     , 'prompt':'\#'},
-    #                    ]}
-    #
-    #     self._device.cmd(cmds, cache=False, flush_cache=True)
-    #     self._device.load_system()
-    #
-    #
-    # def upload(self, host_path, overwrite=False):
-    #     self._d.log_info("copying {0} from host to device".format(host_path))
-    #     self._update_file()
-    #
-    #     add_confirmation = False
-    #     dir_names = host_path.split('/')
-    #     dev_file_name = dir_names[-1]
-    #     if dev_file_name in self._d.file.keys():
-    #         if overwrite == False:
-    #             raise KeyError('file {0} cannot be overwritten'.format(dev_file_name))
-    #         else:
-    #             add_confirmation = True
-    #
-    #     # host HTTP server thread
-    #
-    #     # device commands
-    #     host_ip_address = socket.gethostbyname(socket.getfqdn())
-    #     device_ip_address = self._d._host
-    #     upload_cmd = 'copy http://' + host_ip_address + host_path + ' ' + dev_file_name
-    #     cmds = {'cmds':[{'cmd': 'enable'  , 'prompt':'\#'},
-    #                     {'cmd': 'conf t'  , 'prompt':'\(config\)\#'},
-    #                     {'cmd': upload_cmd, 'prompt':'\(config\)\#'}
-    #                    ]}
-    #
-    #     if add_confirmation == True:
-    #         cmds['cmds'].append({'cmd': 'y', 'prompt':''})
-    #     cmds['cmds'].append({'cmd': chr(26), 'prompt':'\#'})
-    #
-    #     self._device.cmd(cmds, cache=False, flush_cache=True)
-    #     self._device.load_system()
-    #
-    #
+        server.shutdown()
+
+        if (text != ''):
+            os.remove(file_2_copy_from)
+
+
     def delete(self, file_name):
         self._d.log_info("remove {0}".format(file_name))
         self._update_file()

@@ -158,19 +158,17 @@ class awp_file(Feature):
 
         if (new_name == ''):
             update_cmd = 'copy http://{0}:{1}/{2} {3}'.format(host_ip_address, port, file_2_copy_from, name)
-            cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
-                             {'cmd': 'conf t', 'prompt': '\(config\)\#'},
-                             {'cmd': update_cmd, 'prompt': ''},
-                             {'cmd': chr(26), 'prompt': '\#'}
+            cmds = {'cmds': [{'cmd': 'enable'  , 'prompt': '\#'},
+                             {'cmd': update_cmd, 'prompt': ''  },
+                             {'cmd': 'y'       , 'prompt': '\#'}
             ]}
         else:
             update_cmd = 'copy http://{0}:{1}/{2} {3}'.format(host_ip_address, port, file_2_copy_from, new_name)
-            remove_cmd = 'delete ' + name
-            cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
-                             {'cmd': 'conf t', 'prompt': '\(config\)\#'},
-                             {'cmd': update_cmd, 'prompt': '\(config\)\#'},
-                             {'cmd': remove_cmd, 'prompt': '\(config\)\#'},
-                             {'cmd': chr(26), 'prompt': '\#'}
+            delete_cmd = 'delete {0}'.format(name)
+            cmds = {'cmds': [{'cmd': 'enable'  , 'prompt': '\#'},
+                             {'cmd': update_cmd, 'prompt': '\#'},
+                             {'cmd': delete_cmd, 'prompt': ''  },
+                             {'cmd': 'y'       , 'prompt': '\#'}
             ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()

@@ -319,6 +319,9 @@ switchport mode access
 interface vlan1
 ip address 10.17.39.253/24
 !
+vlan database
+vlan 777 name video-vlan state enable
+!
 end
 """
     name = 'test_file_1.cfg'
@@ -326,7 +329,8 @@ end
     setup_dut(dut)
     dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
     dut.add_cmd({'cmd': update_cmd, 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'dir'     , 'state':1, 'action':'PRINT','args': dir_1})
+    dut.add_cmd({'cmd': 'y'       , 'state':1, 'action':'SET_STATE','args':[2]})
+    dut.add_cmd({'cmd': 'dir'     , 'state':2, 'action':'PRINT','args': dir_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'test_file_1.cfg' in d.file.keys()
@@ -380,6 +384,10 @@ switchport mode access
 interface vlan1
 ip address 10.17.39.253/24
 !
+vlan database
+vlan 777 name video-vlan state enable
+vlan 888 name voice-vlan state enable
+!
 end
 """
     myfile = open('temp.cfg', 'w')
@@ -389,7 +397,8 @@ end
     setup_dut(dut)
     dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
     dut.add_cmd({'cmd': update_cmd, 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'dir'     , 'state':1, 'action':'PRINT','args': dir_1})
+    dut.add_cmd({'cmd': 'y'       , 'state':1, 'action':'SET_STATE','args':[2]})
+    dut.add_cmd({'cmd': 'dir'     , 'state':2, 'action':'PRINT','args': dir_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'test_file_1.cfg' in d.file.keys()
@@ -455,6 +464,11 @@ switchport mode access
 !
 interface vlan1
 ip address 10.17.39.253/24
+!
+vlan database
+vlan 777 name video-vlan state enable
+vlan 888 name voice-vlan state enable
+vlan 999 name service-vlan state enable
 !
 end
 """

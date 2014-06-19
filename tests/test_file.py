@@ -98,7 +98,7 @@ def test_create_empty_file(dut, log_level):
     assert host_file_name not in d.file.keys()
     d.file.create(name=host_file_name)
     assert host_file_name in d.file.keys()
-    # assert (host_file_name, {'size': '0', 'mdate': '16-Jun-2014', 'permission': '-rw-', 'mtime': '15:15:15'}) in d.file.items()
+    assert (host_file_name, {'size': '0', 'mdate': d.file[host_file_name]['mdate'], 'permission': '-rw-', 'mtime': d.file[host_file_name]['mtime']}) in d.file.items()
     d.close()
 
 
@@ -333,10 +333,9 @@ end
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'test_file_1.cfg' in d.file.keys()
-    old_date = d.file['test_file_1.cfg']['mtime']
+    old_mtime = d.file['test_file_1.cfg']['mtime']
     d.file.update(name='test_file_1.cfg', text=host_text)
-    print(d.file)
-    assert old_date != d.file['test_file_1.cfg']['mtime']
+    assert old_mtime != d.file['test_file_1.cfg']['mtime']
     assert d.file['test_file_1.cfg']['size'] == '{0}'.format(len(host_text))
     d.close()
 
@@ -401,9 +400,10 @@ end
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'test_file_1.cfg' in d.file.keys()
-    old_date = d.file['test_file_1.cfg']['mtime']
+    old_mtime = d.file['test_file_1.cfg']['mtime']
     d.file.update(name='test_file_1.cfg', filename='temp.cfg')
-    assert old_date != d.file['test_file_1.cfg']['mtime']
+    assert old_mtime != d.file['test_file_1.cfg']['mtime']
+    assert d.file['test_file_1.cfg']['size'] == '{0}'.format(len(host_text))
     d.close()
     os.remove('temp.cfg')
 

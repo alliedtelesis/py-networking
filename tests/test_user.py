@@ -370,16 +370,21 @@ interface vlan1
 end
 """]
 
+    # Regular expressions are used. In emulated mode, if the password contains metacharacters like: . ^ $ * + ? { [ ] \ | ( )
+    # prepone them a \ character, otherwise they won't match. Follow the example here below.
     enc_pwd_1 = '$1$uWpWUKfS$l0FbezBRUBllEpc8.9kIF/'
     enc_pwd_2 = '$1$CEgGZi0q$3JfHL/fM2F5YS47c/54ZQ.'
+    re_enc_pwd_1 = '\$1\$uWpWUKfS\$l0FbezBRUBllEpc8\.9kIF/'
+    re_enc_pwd_2 = '\$1\$CEgGZi0q\$3JfHL/fM2F5YS47c/54ZQ\.'
+
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'show running-config'                                  , 'state':0, 'action':'PRINT','args': config_0})
-    dut.add_cmd({'cmd': 'username encuser privilege 10 password 8 ' + enc_pwd_1, 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'show running-config'                                  , 'state':1, 'action':'PRINT','args': config_1})
-    dut.add_cmd({'cmd': 'username encuser password 8 ' + enc_pwd_2             , 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'show running-config'                                  , 'state':2, 'action':'PRINT','args': config_2})
-    dut.add_cmd({'cmd': 'no username encuser'                                  , 'state':2, 'action':'SET_STATE','args':[3]})
-    dut.add_cmd({'cmd': 'show running-config'                                  , 'state':3, 'action':'PRINT','args': config_3})
+    dut.add_cmd({'cmd': 'show running-config'                                                 , 'state':0, 'action':'PRINT','args': config_0})
+    dut.add_cmd({'cmd': 'username\s+encuser\s+privilege\s+10\s+password\s+8\s+' + re_enc_pwd_1, 'state':0, 'action':'SET_STATE','args':[1]})
+    dut.add_cmd({'cmd': 'show running-config'                                                 , 'state':1, 'action':'PRINT','args': config_1})
+    dut.add_cmd({'cmd': 'username\s+encuser\s+password\s+8\s+' + re_enc_pwd_2                 , 'state':1, 'action':'SET_STATE','args':[2]})
+    dut.add_cmd({'cmd': 'show running-config'                                                 , 'state':2, 'action':'PRINT','args': config_2})
+    dut.add_cmd({'cmd': 'no username encuser'                                                 , 'state':2, 'action':'SET_STATE','args':[3]})
+    dut.add_cmd({'cmd': 'show running-config'                                                 , 'state':3, 'action':'PRINT','args': config_3})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'encuser' not in d.user.keys()

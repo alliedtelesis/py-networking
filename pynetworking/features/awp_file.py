@@ -98,17 +98,12 @@ class awp_file(Feature):
         server_thread = threading.Thread(target=server.serve_forever)
         server_thread.daemon = True
         server_thread.start()
-        # port=49152
         self._d.log_info("server running on {0}:{1}".format(ip, port))
 
         # device commands
         host_ip_address = socket.gethostbyname(socket.getfqdn())
 
-        create_cmd = 'copy http://{0}:{1}/{2} {3}'.format(host_ip_address
-
-
-
-                                                          , port, filename, name)
+        create_cmd = 'copy http://{0}:{1}/{2} {3}'.format(host_ip_address, port, filename, name)
         cmds = {'cmds':[{'cmd': 'enable'    , 'prompt':'\#'},
                         {'cmd': create_cmd  , 'prompt':'\#'}
                        ]}
@@ -150,7 +145,6 @@ class awp_file(Feature):
         server_thread = threading.Thread(target=server.serve_forever)
         server_thread.daemon = True
         server_thread.start()
-        # port=49152
         self._d.log_info("server running on {0}:{1}".format(ip, port))
 
         # device commands

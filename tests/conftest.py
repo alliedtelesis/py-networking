@@ -61,7 +61,7 @@ class Emulator(recvline.HistoricRecvLine):
             else:
                 ret = None
                 for action in sorted(self.parent.cmds.values(), key=lambda k: (k['seq'],k['state'])):
-                    if action['cmd']== line and (action['state'] == -1 or action['state'] == self.parent.state):
+                    if re.match(action['cmd'], line) and (action['state'] == -1 or action['state'] == self.parent.state):
                         if action['action'] == 'PRINT':
                             ret = action['args'][0]
                             log.msg("Printing {0}".format(ret))

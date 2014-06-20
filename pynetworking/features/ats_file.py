@@ -3,6 +3,8 @@ from pynetworking import Feature
 from pprint import pformat
 import re
 import json
+import os
+import socket
 try:
     from collections import OrderedDict
 except ImportError: #pragma: no cover
@@ -35,9 +37,8 @@ class ats_file(Feature):
             m = ifre.match(line)
             self._d.log_info("read {0}".format(line))
             if m:
-                self._file_config[m.group('file_name')] = {'permission': m.group('permission'),
-                                                           'flash_size': m.group('flash_size'),
-                                                           'data_size': m.group('data_size'),
+                self._file_config[m.group('file_name')] = {'size': m.group('data_size'),
+                                                           'permission': m.group('permission'),
                                                            'mdate': m.group('date'),
                                                            'mtime': m.group('time')
                                                           }
@@ -134,6 +135,9 @@ class ats_file(Feature):
         self._d.log_info("remove {0}".format(file_name))
         self._update_file()
 
+        if file_name not in self._d.file.keys():
+            raise KeyError('file {0} is not existing'.format(file_name))
+
         delete_cmd = 'delete {0}'.format(file_name)
         cmds = {'cmds':[{'cmd': delete_cmd, 'prompt':''  },
                         {'cmd': 'y'       , 'prompt':'\#'}
@@ -176,9 +180,8 @@ class ats_file(Feature):
             self._d.log_info("read {0}".format(line))
             if m:
                 key = m.group('file_name')
-                self._file[key] = {'permission': m.group('permission'),
-                                   'flash_size': m.group('flash_size'),
-                                   'data_size': m.group('data_size'),
+                self._file[key] = {'size': m.group('data_size'),
+                                   'permission': m.group('permission'),
                                    'mdate': m.group('date'),
                                    'mtime': m.group('time')
                                   }

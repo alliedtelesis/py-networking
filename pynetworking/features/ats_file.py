@@ -44,28 +44,90 @@ class ats_file(Feature):
         self._d.log_info(self._file_config)
 
 
-    def copy(self, source_file, dest_file, source_ip_address, dest_ip_address, protocol='tftp'):
-        if (source_ip_address == 'localhost'):
-            self._d.log_info("copying {0} to {1}://{2}/{3}".format(source_file, protocol, dest_ip_address, dest_file))
-        else:
-            if (dest_ip_address == 'localhost'):
-                self._d.log_info("copying {0}://{1}/{2} to {3}".format(protocol, source_ip_address, source_file, dest_file))
-            else:
-                self._d.log_info("no localhost file specified")
-                return
-
+    def create(self, name, text='', filename=''):
+        self._d.log_info("create file {0}".format(name))
         self._update_file()
 
-        copy_cmd = ''
-        # copy_cmd = 'copy {0}'.format(file_name) ...... to be defined
-        cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
-                        {'cmd': 'conf t', 'prompt':'\(config\)\#'},
-                        {'cmd': copy_cmd, 'prompt':'\(config\)\#'},
-                        {'cmd': chr(26) , 'prompt':'\#'},
-                       ]}
+        if name in self._d.file.keys():
+            raise KeyError('file {0} is already existing'.format(name))
+        if (filename != '' and text != ''):
+            raise KeyError('Cannot have both source device file name and host string not empty')
 
+        if (filename == ''):
+            filename = name
+            myfile = open(filename, 'w')
+            myfile.write(text)
+            myfile.close()
+
+        # host TFTP server thread
+        # TO BE ADDED
+        port = 49152
+
+        # device commands
+        host_ip_address = socket.gethostbyname(socket.getfqdn())
+
+        create_cmd = 'copy tftp://{0}:{1}/{2} {3}'.format(host_ip_address, port, filename, name)
+        cmds = {'cmds':[{'cmd': 'enable'    , 'prompt':'\#'},
+                        {'cmd': create_cmd  , 'prompt':'\#'}
+                       ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()
+
+        if (text != ''):
+            os.remove(filename)
+
+
+    def update(self, name, filename='', text='', new_name=''):
+        self._d.log_info("copying {0} from host to device".format(name))
+        self._update_file()
+
+        if name not in self._d.file.keys():
+            raise KeyError('file {0} is not existing'.format(name))
+        if new_name in self._d.file.keys():
+            raise KeyError('file {0} cannot be overwritten'.format(new_name))
+        if (filename != '' and text != ''):
+            raise KeyError('Cannot have both host file name and host string not empty')
+        if (filename == '' and text == ''):
+            raise KeyError('Cannot have both host file name and host string empty')
+
+        # data to be copied will always come from a local file named 'file_2_copy_from'
+        if (filename == ''):
+            file_2_copy_from = name
+        else:
+            file_2_copy_from = filename
+        if (text != ''):
+            myfile = open(file_2_copy_from, 'w')
+            myfile.write(text)
+            myfile.close()
+
+        # host TFTP server thread
+        # TO BE ADDED
+        port = 49152
+
+        # device commands
+        host_ip_address = socket.gethostbyname(socket.getfqdn())
+
+        if (new_name == ''):
+            update_cmd = 'copy tftp://{0}:{1}/{2} {3}'.format(host_ip_address, port, file_2_copy_from, name)
+            delete_cmd = 'delete {0}'.format(name)
+            cmds = {'cmds': [{'cmd': 'enable'  , 'prompt': '\#'},
+                             {'cmd': delete_cmd, 'prompt': ''  },
+                             {'cmd': 'y'       , 'prompt': '\#'},
+                             {'cmd': update_cmd, 'prompt': '\#'}
+                            ]}
+        else:
+            update_cmd = 'copy tftp://{0}:{1}/{2} {3}'.format(host_ip_address, port, file_2_copy_from, new_name)
+            delete_cmd = 'delete {0}'.format(name)
+            cmds = {'cmds': [{'cmd': 'enable'  , 'prompt': '\#'},
+                             {'cmd': update_cmd, 'prompt': '\#'},
+                             {'cmd': delete_cmd, 'prompt': ''  },
+                             {'cmd': 'y'       , 'prompt': '\#'}
+                            ]}
+        self._device.cmd(cmds, cache=False, flush_cache=True)
+        self._device.load_system()
+
+        if (text != ''):
+            os.remove(file_2_copy_from)
 
 
     def delete(self, file_name):

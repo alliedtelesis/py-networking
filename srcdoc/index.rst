@@ -7,6 +7,7 @@ Contents
     intro
     device
     facts
+    file
     interface
     user
     vlan

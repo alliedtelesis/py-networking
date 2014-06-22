@@ -9,9 +9,11 @@ features:
   vlan: awp_vlan
   interface: awp_interface
   user: awp_user
+  file: awp_file
 {% elif os == 'ats' %}
   interface: ats_interface
   vlan: ats_vlan
   user: ats_user
+  file: ats_file
 {% endif %}
 

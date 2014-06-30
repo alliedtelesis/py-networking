@@ -98,7 +98,6 @@ def test_create_empty_file(dut, log_level):
     assert host_file_name not in d.file.keys()
     d.file.create(name=host_file_name)
     assert host_file_name in d.file.keys()
-    assert (host_file_name, {'size': '0', 'mdate': d.file[host_file_name]['mdate'], 'permission': '-rw-', 'mtime': d.file[host_file_name]['mtime']}) in d.file.items()
     d.close()
 
 
@@ -224,6 +223,48 @@ end
     d.file.create(name='test_file_2.cfg', text=host_content)
     assert 'test_file_2.cfg' in d.file.keys()
     assert d.file['test_file_2.cfg']['size'] == '{0}'.format(len(host_content))
+    d.close()
+
+
+def test_read_file(dut, log_level):
+    dir_0 = ["""
+      588 -rw- Jun 16 2014 15:15:15  test_file_1.cfg
+      288 -rw- Jun 16 2014 15:23:44  test_file_2.cfg
+      588 -rw- Jun 10 2014 12:38:10  video-2.cfg
+      588 -rw- Jun 10 2014 12:38:10  video.cfg
+      633 -rw- May 29 2014 12:34:00  voice.cfg
+      588 -rw- Apr 10 2014 08:10:02  default.cfg
+ 16654715 -rw- Jan 20 2014 15:28:41  x210-5.4.3-3.9.rel
+     4647 -rw- Nov 18 2013 11:14:46  x210.cfg
+ 16629994 -rw- Oct  3 2013 09:56:13  x210-5.4.3-2.6.rel
+  3936572 -rw- Oct  3 2013 09:48:43  x210-gui_543_04.jar
+      735 -rw- Aug 23 2013 08:48:35  exception.log
+"""]
+    host_content = """
+!
+service password-encryption
+!
+no banner motd
+!
+username manager privilege 15 password 8 $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0
+!
+ssh server allow-users manager
+service ssh
+!
+interface port1.0.1-1.0.50
+ switchport
+ switchport mode access
+!
+interface vlan1
+ ip address 10.17.39.253/24
+!
+end
+"""
+    setup_dut(dut)
+    dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d.open()
+    assert ('test_file_2.cfg', {'content': '', 'size': '288', 'mdate': d.file['test_file_2.cfg']['mdate'], 'permission': '-rw-', 'mtime': d.file['test_file_2.cfg']['mtime']}) in d.file.items()
     d.close()
 
 

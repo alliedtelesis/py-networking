@@ -66,12 +66,12 @@ class awp_file(Feature):
                           '(?P<file_name>[^\s]+)')
         for line in self._device.cmd("dir").split('\n'):
             m = ifre.match(line)
-            self._d.log_info("read {0}".format(line))
             if m:
                 self._file_config[m.group('file_name')] = {'size': m.group('size'),
                                                            'permission': m.group('permission'),
                                                            'mdate': m.group('day') + '-' + m.group('month') + '-' + m.group('year'),
-                                                           'mtime': m.group('hhmmss')
+                                                           'mtime': m.group('hhmmss'),
+                                                           'content': ''
                                                           }
         self._d.log_info(self._file_config)
 
@@ -205,6 +205,14 @@ class awp_file(Feature):
     def __getitem__(self, filename):
         self._update_file()
         if filename in self._file.keys():
+            self._d.log_debug("Read file {0} content".format(filename))
+            read_cmd = 'show {0}'.format(filename)
+            cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
+                             {'cmd': read_cmd, 'prompt': '\#'}
+                            ]}
+
+            self._device.cmd(cmds, cache=False, flush_cache=True)
+            self._device.load_system()
             return self._file[filename]
         raise KeyError('file {0} does not exist'.format(filename))
 
@@ -223,13 +231,13 @@ class awp_file(Feature):
                           '(?P<file_name>[^\s]+)')
         for line in self._device.cmd("dir").split('\n'):
             m = ifre.match(line)
-            self._d.log_info("read {0}".format(line))
             if m:
                 key = m.group('file_name')
                 self._file[key] = {'size': m.group('size'),
                                    'permission': m.group('permission'),
                                    'mdate': m.group('day') + '-' + m.group('month') + '-' + m.group('year'),
-                                   'mtime': m.group('hhmmss')
+                                   'mtime': m.group('hhmmss'),
+                                   'content': ''
                                   }
                 self._file[key] = dict(self._file[key].items() + self._file_config[key].items())
         self._d.log_debug("File {0}".format(pformat(json.dumps(self._file))))

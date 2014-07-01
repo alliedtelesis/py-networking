@@ -98,6 +98,7 @@ def test_create_empty_file(dut, log_level):
     assert host_file_name not in d.file.keys()
     d.file.create(name=host_file_name)
     assert host_file_name in d.file.keys()
+    assert (host_file_name, {'size': '0', 'mdate': d.file[host_file_name]['mdate'], 'permission': '-rw-', 'mtime': d.file[host_file_name]['mtime']}) in d.file.items()
     d.close()
 
 

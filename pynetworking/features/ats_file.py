@@ -68,9 +68,7 @@ class ats_file(Feature):
         host_ip_address = socket.gethostbyname(socket.getfqdn())
 
         create_cmd = 'copy tftp://{0}:{1}/{2} {3}'.format(host_ip_address, port, filename, name)
-        cmds = {'cmds':[{'cmd': 'enable'    , 'prompt':'\#'},
-                        {'cmd': create_cmd  , 'prompt':'\#'}
-                       ]}
+        cmds = {'cmds':[{'cmd': create_cmd  , 'prompt':'\#'}]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()
 
@@ -111,16 +109,14 @@ class ats_file(Feature):
         if (new_name == ''):
             update_cmd = 'copy tftp://{0}:{1}/{2} {3}'.format(host_ip_address, port, file_2_copy_from, name)
             delete_cmd = 'delete {0}'.format(name)
-            cmds = {'cmds': [{'cmd': 'enable'  , 'prompt': '\#'},
-                             {'cmd': delete_cmd, 'prompt': ''  },
+            cmds = {'cmds': [{'cmd': delete_cmd, 'prompt': ''  },
                              {'cmd': 'y'       , 'prompt': '\#'},
                              {'cmd': update_cmd, 'prompt': '\#'}
                             ]}
         else:
             update_cmd = 'copy tftp://{0}:{1}/{2} {3}'.format(host_ip_address, port, file_2_copy_from, new_name)
             delete_cmd = 'delete {0}'.format(name)
-            cmds = {'cmds': [{'cmd': 'enable'  , 'prompt': '\#'},
-                             {'cmd': update_cmd, 'prompt': '\#'},
+            cmds = {'cmds': [{'cmd': update_cmd, 'prompt': '\#'},
                              {'cmd': delete_cmd, 'prompt': ''  },
                              {'cmd': 'y'       , 'prompt': '\#'}
                             ]}
@@ -168,9 +164,7 @@ class ats_file(Feature):
     def _update_file_content(self, filename):
         self._d.log_info("Read file {0} content".format(filename))
         read_cmd = 'show file {0}'.format(filename)
-        cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
-                        {'cmd': read_cmd, 'prompt':'\#'}
-                       ]}
+        cmds = {'cmds':[{'cmd': read_cmd, 'prompt':'\#'}]}
         read_output = self._device.cmd(read_cmd)
         read_output = read_output.replace('\r', '')
         read_output = read_output.replace('\n\n', '\n')

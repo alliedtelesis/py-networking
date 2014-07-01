@@ -70,8 +70,8 @@ class awp_file(Feature):
                 self._file_config[m.group('file_name')] = {'size': m.group('size'),
                                                            'permission': m.group('permission'),
                                                            'mdate': m.group('day') + '-' + m.group('month') + '-' + m.group('year'),
-                                                           'mtime': m.group('hhmmss'),
-                                                           'content': ''
+                                                           'mtime': m.group('hhmmss')
+                                                           # 'content': 'empty'
                                                           }
         self._d.log_info(self._file_config)
 
@@ -205,16 +205,40 @@ class awp_file(Feature):
     def __getitem__(self, filename):
         self._update_file()
         if filename in self._file.keys():
-            self._d.log_debug("Read file {0} content".format(filename))
-            read_cmd = 'show {0}'.format(filename)
-            cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
-                             {'cmd': read_cmd, 'prompt': '\#'}
-                            ]}
-
-            self._device.cmd(cmds, cache=False, flush_cache=True)
-            self._device.load_system()
+            # self._update_file_content(filename)
+            self._file[filename]['content'] = self.update_file_content(filename)
             return self._file[filename]
         raise KeyError('file {0} does not exist'.format(filename))
+
+
+    def update_file_content(self, filename):
+        self._d.log_info("Read file {0} content".format(filename))
+        read_cmd = 'show file {0}'.format(filename)
+        self._d.log_info('command used is {0}'.format(read_cmd))
+        cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
+                        {'cmd': read_cmd, 'prompt':'\#'}
+                       ]}
+        read_output = self._device.cmd(read_cmd)
+        self._d.log_info("len before {0}".format(len(read_output)))
+        read_output = read_output.replace('\r', '')
+        self._d.log_info("len after {0}".format(len(read_output)))
+        # read_output = read_output[:-1]
+        read_output = read_output.replace('\n\n', '\n')
+        self._d.log_info("len after after{0}".format(len(read_output)))
+        return read_output
+        # read_output = self._device.cmd(cmds, cache=False, flush_cache=True)
+        # self._device.load_system()
+        # self._d.log_info('read_output is {0}'.format(read_output))
+        # # return read_output
+        # self._file[filename]['size'] = '10101010'
+        # self._file[filename]['content'] = read_output
+        # self._d.log_info('read_output is always {0}'.format(self._file[filename]['content']))
+        # cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
+        #                  {'cmd': read_cmd, 'prompt': '\#'}
+        #                 ]}
+        #
+        # self._device.cmd(cmds, cache=False, flush_cache=True)
+        # self._device.load_system()
 
 
     def _update_file(self):
@@ -236,8 +260,8 @@ class awp_file(Feature):
                 self._file[key] = {'size': m.group('size'),
                                    'permission': m.group('permission'),
                                    'mdate': m.group('day') + '-' + m.group('month') + '-' + m.group('year'),
-                                   'mtime': m.group('hhmmss'),
-                                   'content': ''
+                                   'mtime': m.group('hhmmss')
+                                   # 'content': 'empty'
                                   }
                 self._file[key] = dict(self._file[key].items() + self._file_config[key].items())
         self._d.log_debug("File {0}".format(pformat(json.dumps(self._file))))

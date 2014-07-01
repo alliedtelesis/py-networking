@@ -14,7 +14,7 @@ except ImportError: #pragma: no cover
     from ordereddict import OrderedDict
 
 
-class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
+class HTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
    def do_GET(self):
        if self.server.filename == self.path[1:]:
            try:
@@ -91,7 +91,7 @@ class awp_file(Feature):
             myfile.close()
 
         # host HTTP server thread
-        server = Server(("", 0), Handler, self._d, filename)
+        server = Server(("", 0), HTTPHandler, self._d, filename)
         ip, port = server.server_address
 
         server_thread = threading.Thread(target=server.serve_forever)
@@ -138,7 +138,7 @@ class awp_file(Feature):
             myfile.close()
 
         # host HTTP server thread
-        server = Server(("", 0), Handler, self._d, file_2_copy_from)
+        server = Server(("", 0), HTTPHandler, self._d, file_2_copy_from)
         ip, port = server.server_address
 
         server_thread = threading.Thread(target=server.serve_forever)

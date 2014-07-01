@@ -5,11 +5,25 @@ import re
 import json
 import os
 import socket
+import SocketServer
+import threading
 import tftpy
 try:
     from collections import OrderedDict
 except ImportError: #pragma: no cover
     from ordereddict import OrderedDict
+
+
+class TFTPHandler(tftpy.TftpServer):
+   def serve_forever(self):
+       self._d.log_info("invoking TFTP stuff")
+
+
+class Server(SocketServer.ThreadingMixIn, SocketServer.UDPServer):
+   def __init__(self, address, handler, device, filename):
+       self.filename = filename
+       self._d = device
+       SocketServer.UDPServer.__init__(self, address, handler)
 
 
 class ats_file(Feature):
@@ -62,17 +76,23 @@ class ats_file(Feature):
             myfile.close()
 
         # host TFTP server thread
-        # TO BE ADDED
-        port = 49152
+        server = Server(("", 0), TFTPHandler, self._d, filename)
+        ip, port = server.server_address
+
+        server_thread = threading.Thread(target=server.serve_forever)
+        server_thread.daemon = True
+        server_thread.start()
+        self._d.log_info("server running on {0}:{1}".format(ip, port))
 
         # device commands
         host_ip_address = socket.gethostbyname(socket.getfqdn())
 
-        create_cmd = 'copy tftp://{0}:{1}/{2} {3}'.format(host_ip_address, port, filename, name)
+        create_cmd = 'copy tftp://{0}/{1} {2}'.format(host_ip_address, filename, name)
         cmds = {'cmds':[{'cmd': create_cmd  , 'prompt':'\#'}]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()
 
+        server.shutdown()
         if (text != ''):
             os.remove(filename)
 
@@ -101,21 +121,26 @@ class ats_file(Feature):
             myfile.close()
 
         # host TFTP server thread
-        # TO BE ADDED
-        port = 49152
+        server = Server(("", 0), TFTPHandler, self._d, filename)
+        ip, port = server.server_address
+
+        server_thread = threading.Thread(target=server.serve_forever)
+        server_thread.daemon = True
+        server_thread.start()
+        self._d.log_info("server running on {0}:{1}".format(ip, port))
 
         # device commands
         host_ip_address = socket.gethostbyname(socket.getfqdn())
 
         if (new_name == ''):
-            update_cmd = 'copy tftp://{0}:{1}/{2} {3}'.format(host_ip_address, port, file_2_copy_from, name)
+            update_cmd = 'copy tftp://{0}/{1} {2}'.format(host_ip_address, file_2_copy_from, name)
             delete_cmd = 'delete {0}'.format(name)
             cmds = {'cmds': [{'cmd': delete_cmd, 'prompt': ''  },
                              {'cmd': 'y'       , 'prompt': '\#'},
                              {'cmd': update_cmd, 'prompt': '\#'}
                             ]}
         else:
-            update_cmd = 'copy tftp://{0}:{1}/{2} {3}'.format(host_ip_address, port, file_2_copy_from, new_name)
+            update_cmd = 'copy tftp://{0}/{1} {2}'.format(host_ip_address, file_2_copy_from, new_name)
             delete_cmd = 'delete {0}'.format(name)
             cmds = {'cmds': [{'cmd': update_cmd, 'prompt': '\#'},
                              {'cmd': delete_cmd, 'prompt': ''  },

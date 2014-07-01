@@ -5,6 +5,7 @@ import re
 import json
 import os
 import socket
+import tftpy
 try:
     from collections import OrderedDict
 except ImportError: #pragma: no cover

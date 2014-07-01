@@ -239,7 +239,7 @@ def test_read_file(dut, log_level):
       735 -rw- Aug 23 2013 08:48:35  exception.log
 """]
     dir_1 = ["""
-      588 -rw- Jun 16 2014 15:15:15  test_file_5.cfg
+      588 -rw- Jun 16 2014 15:15:15  test_file_r.cfg
       588 -rw- Jun 10 2014 12:38:10  video-2.cfg
       588 -rw- Jun 10 2014 12:38:10  video.cfg
       633 -rw- May 29 2014 12:34:00  voice.cfg
@@ -270,55 +270,25 @@ interface vlan1
 !
 vlan database
 vlan 555 name only-for-read-test state enable
-vlan 555 name only-for-read-test state enable
-vlan 555 name only-for-read-test state enable
-vlan 555 name only-for-read-test state enable
-vlan 555 name only-for-read-test state enable
-vlan 555 name only-for-read-test state enable
-vlan 555 name only-for-read-test state enable
-vlan 555 name only-for-read-test state enable
-vlan 555 name only-for-read-test state enable
-vlan 555 name only-for-read-test state enable
-vlan 555 name only-for-read-test state enable
-vlan 555 name only-for-read-test state enable
 !
 end
 """
     setup_dut(dut)
-    create_cmd = 'copy\s+http://{0}:\d+/test_file_5.cfg\s+test_file_5.cfg'.format(socket.gethostbyname(socket.getfqdn()))
-    dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
-    dut.add_cmd({'cmd': create_cmd, 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'dir'     , 'state':1, 'action':'PRINT','args': dir_1})
-    dut.add_cmd({'cmd': 'show file test_file_5.cfg', 'state':1, 'action':'PRINT','args': [host_content]})
-    # dut.add_cmd({'cmd': 'show file', 'state':1, 'action':'PRINT','args': host_content})
-    # print(dut.port)
-    # sleep(1000)
+    create_cmd = 'copy\s+http://{0}:\d+/test_file_r.cfg\s+test_file_r.cfg'.format(socket.gethostbyname(socket.getfqdn()))
+    dut.add_cmd({'cmd': 'dir'                      , 'state':0, 'action':'PRINT','args': dir_0})
+    dut.add_cmd({'cmd': create_cmd                 , 'state':0, 'action':'SET_STATE','args':[1]})
+    dut.add_cmd({'cmd': 'dir'                      , 'state':1, 'action':'PRINT','args': dir_1})
+    dut.add_cmd({'cmd': 'show file test_file_r.cfg', 'state':1, 'action':'PRINT','args': [host_content]})
+    dut.add_cmd({'cmd': 'delete test_file_r.cfg'   , 'state':1, 'action':'SET_STATE','args':[2]})
+    dut.add_cmd({'cmd': 'dir'                      , 'state':2, 'action':'PRINT','args': dir_0})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
-    assert 'test_file_5.cfg' not in d.file.keys()
-    d.file.create(name='test_file_5.cfg', text=host_content)
-    assert 'test_file_5.cfg' in d.file.keys()
-    # assert ('test_file_2.cfg', {'content': '', 'size' : d.file['test_file_2.cfg']['size'], 'mdate': d.file['test_file_2.cfg']['mdate'], 'permission': '-rw-', 'mtime': d.file['test_file_2.cfg']['mtime']}) in d.file.items()
-    # print ('content is')
-    # # print d.file['test_file_5.cfg']
-    # print d.file.update_file_content('test_file_5.cfg')
-    # print ('content is')
-    # print d.file['test_file_5.cfg']['content']
-    # # print ('content printed vs ... ')
-    print ('content should be')
-    print host_content
-    print ('content detected')
-    print d.file['test_file_5.cfg']['content']
-    # print d.file.items()
-    # print d.file.keys()
-    # print d.file.__getitem__('test_file_5.cfg')
-    # WHY DOES IT FAIL?
-    assert d.file['test_file_5.cfg']['content'] == host_content
-    print d.file['test_file_5.cfg']['content']
-    print len(d.file['test_file_5.cfg']['content'])
-    print len(host_content)
-    # out1 = d.file.update_file_content('test_file_5.cfg')
-    # assert out1 == host_content
+    assert 'test_file_r.cfg' not in d.file.keys()
+    d.file.create(name='test_file_r.cfg', text=host_content)
+    assert 'test_file_r.cfg' in d.file.keys()
+    assert d.file['test_file_r.cfg']['content'] == host_content
+    d.file.delete("test_file_r.cfg")
+    assert 'test_file_r.cfg' not in d.file.keys()
     d.close()
 
 

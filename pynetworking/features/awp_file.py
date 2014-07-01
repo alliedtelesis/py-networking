@@ -71,7 +71,6 @@ class awp_file(Feature):
                                                            'permission': m.group('permission'),
                                                            'mdate': m.group('day') + '-' + m.group('month') + '-' + m.group('year'),
                                                            'mtime': m.group('hhmmss')
-                                                           # 'content': 'empty'
                                                           }
         self._d.log_info(self._file_config)
 
@@ -242,7 +241,6 @@ class awp_file(Feature):
                                    'permission': m.group('permission'),
                                    'mdate': m.group('day') + '-' + m.group('month') + '-' + m.group('year'),
                                    'mtime': m.group('hhmmss')
-                                   # 'content': 'empty'
                                   }
                 self._file[key] = dict(self._file[key].items() + self._file_config[key].items())
         self._d.log_debug("File {0}".format(pformat(json.dumps(self._file))))

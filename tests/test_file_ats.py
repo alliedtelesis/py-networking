@@ -299,6 +299,83 @@ ip ssh server
     d.close()
 
 
+def test_read_file(dut, log_level):
+    dir_0 = ["""
+Directory of flash:
+
+     File Name      Permission Flash Size Data Size        Modified
+------------------- ---------- ---------- --------- -----------------------
+starts                  rw       524288      982     01-Oct-2006 01:12:44
+image-1                 rw      5242880    4325376   01-Jan-2000 01:07:08
+image-2                 rw      5242880    4325376   01-Oct-2006 01:28:04
+dhcpsn.prv              --       131072      --      01-Jan-2000 01:02:12
+sshkeys.prv             --       262144      --      01-Oct-2006 01:01:16
+syslog1.sys             r-       262144      --      01-Oct-2006 01:03:28
+syslog2.sys             r-       262144      --      01-Oct-2006 01:03:28
+video-2.cfg             rw       524288      154     01-Oct-2006 01:02:36
+directry.prv            --       262144      --      01-Jan-2000 01:02:12
+startup-config          rw       524288      437     01-Oct-2006 02:07:34
+default.cfg             rw       131072      192     20-Jun-2014 11:48:59
+
+Total size of flash: 15990784 bytes
+Free size of flash: 3276800 bytes
+
+"""]
+    dir_1 = ["""
+Directory of flash:
+
+     File Name      Permission Flash Size Data Size        Modified
+------------------- ---------- ---------- --------- -----------------------
+starts                  rw       524288      982     01-Oct-2006 01:12:44
+image-1                 rw      5242880    4325376   01-Jan-2000 01:07:08
+image-2                 rw      5242880    4325376   01-Oct-2006 01:28:04
+dhcpsn.prv              --       131072      --      01-Jan-2000 01:02:12
+sshkeys.prv             --       262144      --      01-Oct-2006 01:01:16
+syslog1.sys             r-       262144      --      01-Oct-2006 01:03:28
+syslog2.sys             r-       262144      --      01-Oct-2006 01:03:28
+video-2.cfg             rw       524288      154     01-Oct-2006 01:02:36
+directry.prv            --       262144      --      01-Jan-2000 01:02:12
+startup-config          rw       524288      437     01-Oct-2006 02:07:34
+default.cfg             rw       131072      192     20-Jun-2014 11:48:59
+test_file_r.cfg         rw       131072      284     01-Jul-2014 11:37:01
+
+Total size of flash: 15990784 bytes
+Free size of flash: 3276800 bytes
+
+"""]
+    host_content = """
+interface range ethernet 1/e(1-16)
+spanning-tree portfast
+exit
+vlan database
+vlan 555
+exit
+interface vlan 1
+ip address 10.17.39.252 255.255.255.0
+name default_vlan
+exit
+hostname nac_dev
+ip ssh server
+"""
+    setup_dut(dut)
+    create_cmd = 'copy\s+tftp://{0}:\d+/test_file_r.cfg\s+test_file_r.cfg'.format(socket.gethostbyname(socket.getfqdn()))
+    dut.add_cmd({'cmd': 'dir'                      , 'state':0, 'action':'PRINT','args': dir_0})
+    dut.add_cmd({'cmd': create_cmd                 , 'state':0, 'action':'SET_STATE','args':[1]})
+    dut.add_cmd({'cmd': 'dir'                      , 'state':1, 'action':'PRINT','args': dir_1})
+    dut.add_cmd({'cmd': 'show file test_file_r.cfg', 'state':1, 'action':'PRINT','args': [host_content]})
+    dut.add_cmd({'cmd': 'delete test_file_r.cfg'   , 'state':1, 'action':'SET_STATE','args':[2]})
+    dut.add_cmd({'cmd': 'dir'                      , 'state':2, 'action':'PRINT','args': dir_0})
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d.open()
+    assert 'test_file_r.cfg' not in d.file.keys()
+    d.file.create(name='test_file_r.cfg', text=host_content)
+    assert 'test_file_r.cfg' in d.file.keys()
+    assert d.file['test_file_r.cfg']['content'] == host_content
+    d.file.delete("test_file_r.cfg")
+    assert 'test_file_r.cfg' not in d.file.keys()
+    d.close()
+
+
 def test_update_file_with_failures(dut, log_level):
     dir_0 = ["""
 Directory of flash:

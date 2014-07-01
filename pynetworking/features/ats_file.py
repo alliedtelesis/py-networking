@@ -160,8 +160,21 @@ class ats_file(Feature):
     def __getitem__(self, filename):
         self._update_file()
         if filename in self._file.keys():
+            self._file[filename]['content'] = self._update_file_content(filename)
             return self._file[filename]
         raise KeyError('file {0} does not exist'.format(filename))
+
+
+    def _update_file_content(self, filename):
+        self._d.log_info("Read file {0} content".format(filename))
+        read_cmd = 'show file {0}'.format(filename)
+        cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
+                        {'cmd': read_cmd, 'prompt':'\#'}
+                       ]}
+        read_output = self._device.cmd(read_cmd)
+        read_output = read_output.replace('\r', '')
+        read_output = read_output.replace('\n\n', '\n')
+        return read_output
 
 
     def _update_file(self):

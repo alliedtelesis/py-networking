@@ -182,6 +182,7 @@ VLAN ID  Name            Type    State   Member ports
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     d.vlan.create(20, name='admin', mtu=1300)
+    assert '20' in d.vlan
     assert d.vlan[20]['state'] == 'enable'
     assert d.vlan[20]['name'] == 'admin'
     assert d.vlan[20]['mtu'] == 1300

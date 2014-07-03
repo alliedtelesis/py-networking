@@ -111,10 +111,18 @@ class ats_interface(Feature):
     __repr__ = __str__  #pragma: no cover
 
     def __getitem__(self, ifn):
+        if isinstance(ifn, str) or isinstance(vid, unicode):
+            self._update_interface()
+            if ifn in self._interface:
+                return self._interface[ifn]
+            raise KeyError('interface {0} does not exist'.format(ifn))
+        else:
+            raise TypeError, "Invalid argument type."
+
+    def __iter__(self):
         self._update_interface()
-        if ifn in self._interface.keys():
-            return self._interface[ifn]
-        raise IndexError
+        for interface in self._interface:
+            yield interface
 
     def _update_interface(self):
         self._d.log_info("_update_interface")

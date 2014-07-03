@@ -245,7 +245,6 @@ end
     d.interface.update('1.0.10',description='camera_1')
     assert d.interface['1.0.10']['description'] == 'camera_1'
     d.interface.update('1.0.10',description='cam one')
-    # assert d.interface['1.0.10']['description'] == 'cam one'
     d.close()
 
 def test_unexisting_interface(dut, log_level):
@@ -272,4 +271,5 @@ def test_unexisting_interface(dut, log_level):
     with pytest.raises(ValueError) as excinfo:
         d.interface.update(max_if_name,enable=False)
     assert max_if_str in excinfo.value
+    assert '1.0.10' in d.interface
     d.close()

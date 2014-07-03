@@ -15,30 +15,30 @@ except ImportError: #pragma: no cover
 
 
 class HTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
-   def do_GET(self):
-       if self.server.filename == self.path[1:]:
-           try:
-               with open(os.path.abspath(self.server.filename), 'rb') as f:
-                   self.server._d.log_info('sending file {0}'.format(os.path.abspath(self.server.filename)))
-                   self.send_response(200)
-                   self.send_header('Content-type', 'application/octet-string')
-                   self.end_headers()
-                   self.wfile.write(f.read())
-           except:
-               self.server._d.log_error('cannot open file {0}'.format(self.path))
-               self.send_response(404)
-               self.end_headers()
-       else:
-           self.server._d.log_error('wrong file requested {0}'.format(self.path))
-           self.send_response(404)
-           self.end_headers()
+    def do_GET(self):
+        if self.server.filename == self.path[1:]:
+            try:
+                with open(os.path.abspath(self.server.filename), 'rb') as f:
+                    self.server._d.log_info('sending file {0}'.format(os.path.abspath(self.server.filename)))
+                    self.send_response(200)
+                    self.send_header('Content-type', 'application/octet-string')
+                    self.end_headers()
+                    self.wfile.write(f.read())
+            except:
+                self.server._d.log_error('cannot open file {0}'.format(self.path))
+                self.send_response(404)
+                self.end_headers()
+        else:
+            self.server._d.log_error('wrong file requested {0}'.format(self.path))
+            self.send_response(404)
+            self.end_headers()
 
 
 class Server(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
-   def __init__(self, address, handler, device, filename):
-       self.filename = filename
-       self._d = device
-       SocketServer.TCPServer.__init__(self, address, handler)
+    def __init__(self, address, handler, device, filename):
+        self.filename = filename
+        self._d = device
+        SocketServer.TCPServer.__init__(self, address, handler)
 
 
 class awp_file(Feature):

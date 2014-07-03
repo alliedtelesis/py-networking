@@ -75,10 +75,11 @@ class ats_file(Feature):
         # host TFTP server
         tftpRoot = os.path.dirname(os.path.abspath(filename))
         server = tftpy.TftpServer(tftpRoot)
-        server_timer = threading.Timer(10, self._shutdown_tftp_server(server))
-        server_timer.start()
-        server_thread = threading.Thread(target=server.listen(host_ip_address,20001))
-        server_timer.cancel()
+        server_thread = threading.Thread(target=server.listen, args=(host_ip_address, 20001))
+        server_thread.daemon = True
+        server_thread.start()
+
+        sleep(10)
 
         if (text != ''):
             os.remove(filename)
@@ -130,10 +131,11 @@ class ats_file(Feature):
         # host TFTP server
         tftpRoot = os.path.dirname(os.path.abspath(filename))
         server = tftpy.TftpServer(tftpRoot)
-        server_timer = threading.Timer(10, self._shutdown_tftp_server(server))
-        server_timer.start()
-        server_thread = threading.Thread(target=server.listen(host_ip_address,20001))
-        server_timer.cancel()
+        server_thread = threading.Thread(target=server.listen, args=(host_ip_address, 20001))
+        server_thread.daemon = True
+        server_thread.start()
+
+        sleep(10)
 
         if (text != ''):
             os.remove(file_2_copy_from)
@@ -184,7 +186,17 @@ class ats_file(Feature):
 
 
     def _shutdown_tftp_server(self, server):
+        self._d.log_info("SHUTDOWN OF TFTP SERVER!!!")
         server.shutdown_gracefully = True
+        self._d.log_info("Read root {0} content".format(server.root))
+        self._d.log_info("shutdown started")
+    #
+    #
+    # def _shutdowner(self, server, host_ip_address, port, timeout):
+    #     server_timer = threading.Timer(timeout, self._shutdown_tftp_server(server))
+    #     # server_timer.start()
+    #     server.listen(host_ip_address, port)
+
 
     def _update_file(self):
         self._d.log_info("_update_file")

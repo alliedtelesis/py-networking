@@ -107,15 +107,6 @@ class ats_file(Feature):
             myfile.write(text)
             myfile.close()
 
-        # host TFTP server thread
-        server = Server(("", 0), TFTPHandler, self._d, filename)
-        ip, port = server.server_address
-
-        server_thread = threading.Thread(target=server.serve_forever)
-        server_thread.daemon = True
-        server_thread.start()
-        self._d.log_info("server running on {0}:{1}".format(ip, port))
-
         # device commands
         host_ip_address = socket.gethostbyname(socket.getfqdn())
 
@@ -135,6 +126,14 @@ class ats_file(Feature):
                             ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()
+
+        # host TFTP server
+        tftpRoot = os.path.dirname(os.path.abspath(filename))
+        server = tftpy.TftpServer(tftpRoot)
+        server_timer = threading.Timer(10, self._shutdown_tftp_server(server))
+        server_timer.start()
+        server_thread = threading.Thread(target=server.listen(host_ip_address,20001))
+        server_timer.cancel()
 
         if (text != ''):
             os.remove(file_2_copy_from)

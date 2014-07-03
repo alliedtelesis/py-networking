@@ -5,25 +5,14 @@ import re
 import json
 import os
 import socket
-import SocketServer
 import threading
 import tftpy
+
+from time import sleep
 try:
     from collections import OrderedDict
 except ImportError: #pragma: no cover
     from ordereddict import OrderedDict
-
-
-class TFTPHandler(tftpy.TftpServer):
-   def serve_forever(self):
-       self._d.log_info("invoking TFTP stuff")
-
-
-class Server(SocketServer.ThreadingMixIn, SocketServer.UDPServer):
-   def __init__(self, address, handler, device, filename):
-       self.filename = filename
-       self._d = device
-       SocketServer.UDPServer.__init__(self, address, handler)
 
 
 class ats_file(Feature):
@@ -75,15 +64,6 @@ class ats_file(Feature):
             myfile.write(text)
             myfile.close()
 
-        # host TFTP server thread
-        server = Server(("", 0), TFTPHandler, self._d, filename)
-        ip, port = server.server_address
-
-        server_thread = threading.Thread(target=server.serve_forever)
-        server_thread.daemon = True
-        server_thread.start()
-        self._d.log_info("server running on {0}:{1}".format(ip, port))
-
         # device commands
         host_ip_address = socket.gethostbyname(socket.getfqdn())
 
@@ -92,7 +72,14 @@ class ats_file(Feature):
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()
 
-        server.shutdown()
+        # host TFTP server
+        tftpRoot = os.path.dirname(os.path.abspath(filename))
+        server = tftpy.TftpServer(tftpRoot)
+        server_timer = threading.Timer(10, self._shutdown_tftp_server(server))
+        server_timer.start()
+        server_thread = threading.Thread(target=server.listen(host_ip_address,20001))
+        server_timer.cancel()
+
         if (text != ''):
             os.remove(filename)
 
@@ -196,6 +183,9 @@ class ats_file(Feature):
         read_output = read_output.replace('\n\n', '\n')
         return read_output
 
+
+    def _shutdown_tftp_server(self, server):
+        server.shutdown_gracefully = True
 
     def _update_file(self):
         self._d.log_info("_update_file")

@@ -49,7 +49,7 @@ class ats_file(Feature):
         self._d.log_info(self._file_config)
 
 
-    def create(self, name, text='', filename=''):
+    def create(self, name, text='', filename='', server=''):
         self._d.log_info("create file {0}".format(name))
         self._update_file()
 
@@ -64,28 +64,38 @@ class ats_file(Feature):
             myfile.write(text)
             myfile.close()
 
-        # device commands
-        host_ip_address = socket.gethostbyname(socket.getfqdn())
+        if (server == ''):
+            # start local TFTP server
+            # self._d.log_info("internal TFTP server")
+            # server = socket.gethostbyname(socket.getfqdn())
+            # tftp_server = tftpy.TftpServer(os.path.dirname(os.path.abspath(filename)))
+            # server_thread = threading.Thread(target=tftp_server.listen, args=(server, 69))
+            # server_thread.daemon = True
+            # server_thread.start()
 
-        create_cmd = 'copy tftp://{0}/{1} {2}'.format(host_ip_address, filename, name)
-        cmds = {'cmds':[{'cmd': create_cmd  , 'prompt':'\#'}]}
-        self._device.cmd(cmds, cache=False, flush_cache=True)
-        self._device.load_system()
+            # device commands
+            server = socket.gethostbyname(socket.getfqdn())
+            create_cmd = 'copy tftp://{0}/{1} {2}'.format(server, filename, name)
+            cmds = {'cmds':[{'cmd': create_cmd  , 'prompt':'\#'}]}
+            self._device.cmd(cmds, cache=False, flush_cache=True)
+            self._device.load_system()
+        else:
+            # upload on a remote TFTP server
+            self._d.log_info("external TFTP server")
+            tftp_client = tftpy.TftpClient(server, 69)
+            tftp_client.upload(filename, filename)
 
-        # host TFTP server
-        tftpRoot = os.path.dirname(os.path.abspath(filename))
-        server = tftpy.TftpServer(tftpRoot)
-        server_thread = threading.Thread(target=server.listen, args=(host_ip_address, 20001))
-        server_thread.daemon = True
-        server_thread.start()
-
-        sleep(10)
+            # device commands
+            create_cmd = 'copy tftp://{0}/{1} {2}'.format(server, filename, name)
+            cmds = {'cmds':[{'cmd': create_cmd  , 'prompt':'\#'}]}
+            self._device.cmd(cmds, cache=False, flush_cache=True)
+            self._device.load_system()
 
         if (text != ''):
             os.remove(filename)
 
 
-    def update(self, name, filename='', text='', new_name=''):
+    def update(self, name, filename='', text='', new_name='', server=''):
         self._d.log_info("copying {0} from host to device".format(name))
         self._update_file()
 
@@ -108,34 +118,84 @@ class ats_file(Feature):
             myfile.write(text)
             myfile.close()
 
-        # device commands
-        host_ip_address = socket.gethostbyname(socket.getfqdn())
+        # # host TFTP server
+        # port = 20001
+        # tftpRoot = os.path.dirname(os.path.abspath(filename))
+        # server = tftpy.TftpServer(tftpRoot)
+        # server_thread = threading.Thread(target=server.listen, args=(host_ip_address, port))
+        # server_thread.daemon = True
+        # server_thread.start()
+        #
+        # # device commands
+        # host_ip_address = socket.gethostbyname(socket.getfqdn())
+        #
+        # if (new_name == ''):
+        #     update_cmd = 'copy tftp://{0}:{1}/{2} {3}'.format(host_ip_address, port, file_2_copy_from, name)
+        #     delete_cmd = 'delete {0}'.format(name)
+        #     cmds = {'cmds': [{'cmd': delete_cmd, 'prompt': ''  },
+        #                      {'cmd': 'y'       , 'prompt': '\#'},
+        #                      {'cmd': update_cmd, 'prompt': '\#'}
+        #                     ]}
+        # else:
+        #     update_cmd = 'copy tftp://{0}:{1}/{2} {3}'.format(host_ip_address, port, file_2_copy_from, new_name)
+        #     delete_cmd = 'delete {0}'.format(name)
+        #     cmds = {'cmds': [{'cmd': update_cmd, 'prompt': '\#'},
+        #                      {'cmd': delete_cmd, 'prompt': ''  },
+        #                      {'cmd': 'y'       , 'prompt': '\#'}
+        #                     ]}
+        # self._device.cmd(cmds, cache=False, flush_cache=True)
+        # self._device.load_system()
 
-        if (new_name == ''):
-            update_cmd = 'copy tftp://{0}/{1} {2}'.format(host_ip_address, file_2_copy_from, name)
-            delete_cmd = 'delete {0}'.format(name)
-            cmds = {'cmds': [{'cmd': delete_cmd, 'prompt': ''  },
-                             {'cmd': 'y'       , 'prompt': '\#'},
-                             {'cmd': update_cmd, 'prompt': '\#'}
-                            ]}
+        if (server == ''):
+            # start local TFTP server
+            # self._d.log_info("internal TFTP server")
+            # server = socket.gethostbyname(socket.getfqdn())
+            # tftp_server = tftpy.TftpServer(os.path.dirname(os.path.abspath(filename)))
+            # server_thread = threading.Thread(target=tftp_server.listen, args=(server, 69))
+            # server_thread.daemon = True
+            # server_thread.start()
+
+            # device commands
+            server = socket.gethostbyname(socket.getfqdn())
+            if (new_name == ''):
+                update_cmd = 'copy tftp://{0}/{1} {2}'.format(server, file_2_copy_from, name)
+                delete_cmd = 'delete {0}'.format(name)
+                cmds = {'cmds': [{'cmd': delete_cmd, 'prompt': ''  },
+                                 {'cmd': 'y'       , 'prompt': '\#'},
+                                 {'cmd': update_cmd, 'prompt': '\#'}
+                                ]}
+            else:
+                update_cmd = 'copy tftp://{0}/{1} {2}'.format(server, file_2_copy_from, new_name)
+                delete_cmd = 'delete {0}'.format(name)
+                cmds = {'cmds': [{'cmd': update_cmd, 'prompt': '\#'},
+                                 {'cmd': delete_cmd, 'prompt': ''  },
+                                 {'cmd': 'y'       , 'prompt': '\#'}
+                                ]}
+            self._device.cmd(cmds, cache=False, flush_cache=True)
+            self._device.load_system()
         else:
-            update_cmd = 'copy tftp://{0}/{1} {2}'.format(host_ip_address, file_2_copy_from, new_name)
-            delete_cmd = 'delete {0}'.format(name)
-            cmds = {'cmds': [{'cmd': update_cmd, 'prompt': '\#'},
-                             {'cmd': delete_cmd, 'prompt': ''  },
-                             {'cmd': 'y'       , 'prompt': '\#'}
-                            ]}
-        self._device.cmd(cmds, cache=False, flush_cache=True)
-        self._device.load_system()
+            # upload on a remote TFTP server
+            self._d.log_info("external TFTP server")
+            tftp_client = tftpy.TftpClient(server, 69)
+            tftp_client.upload(filename, filename)
 
-        # host TFTP server
-        tftpRoot = os.path.dirname(os.path.abspath(filename))
-        server = tftpy.TftpServer(tftpRoot)
-        server_thread = threading.Thread(target=server.listen, args=(host_ip_address, 20001))
-        server_thread.daemon = True
-        server_thread.start()
-
-        sleep(10)
+            # device commands
+            if (new_name == ''):
+                update_cmd = 'copy tftp://{0}/{1} {2}'.format(server, file_2_copy_from, name)
+                delete_cmd = 'delete {0}'.format(name)
+                cmds = {'cmds': [{'cmd': delete_cmd, 'prompt': ''  },
+                                 {'cmd': 'y'       , 'prompt': '\#'},
+                                 {'cmd': update_cmd, 'prompt': '\#'}
+                                ]}
+            else:
+                update_cmd = 'copy tftp://{0}/{1} {2}'.format(server, file_2_copy_from, new_name)
+                delete_cmd = 'delete {0}'.format(name)
+                cmds = {'cmds': [{'cmd': update_cmd, 'prompt': '\#'},
+                                 {'cmd': delete_cmd, 'prompt': ''  },
+                                 {'cmd': 'y'       , 'prompt': '\#'}
+                                ]}
+            self._device.cmd(cmds, cache=False, flush_cache=True)
+            self._device.load_system()
 
         if (text != ''):
             os.remove(file_2_copy_from)
@@ -183,19 +243,6 @@ class ats_file(Feature):
         read_output = read_output.replace('\r', '')
         read_output = read_output.replace('\n\n', '\n')
         return read_output
-
-
-    def _shutdown_tftp_server(self, server):
-        self._d.log_info("SHUTDOWN OF TFTP SERVER!!!")
-        server.shutdown_gracefully = True
-        self._d.log_info("Read root {0} content".format(server.root))
-        self._d.log_info("shutdown started")
-    #
-    #
-    # def _shutdowner(self, server, host_ip_address, port, timeout):
-    #     server_timer = threading.Timer(timeout, self._shutdown_tftp_server(server))
-    #     # server_timer.start()
-    #     server.listen(host_ip_address, port)
 
 
     def _update_file(self):

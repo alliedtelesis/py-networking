@@ -133,7 +133,8 @@ Free size of flash: 3276800 bytes
 """]
     setup_dut(dut)
     host_file_name = 'test_file_0.cfg'
-    create_cmd = 'copy\s+tftp://{0}/test_file_0.cfg\s+test_file_0.cfg'.format(socket.gethostbyname(socket.getfqdn()))
+    local_tftp_server = socket.gethostbyname(socket.getfqdn())
+    create_cmd = 'copy tftp://{0}/test_file_0.cfg test_file_0.cfg'.format(local_tftp_server)
     dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
     dut.add_cmd({'cmd': create_cmd, 'state':0, 'action':'SET_STATE','args':[1]})
     dut.add_cmd({'cmd': 'dir'     , 'state':1, 'action':'PRINT','args': dir_1})
@@ -211,7 +212,8 @@ ip ssh server
     myfile = open(host_file_name, 'w')
     myfile.write(host_text)
     myfile.close()
-    create_cmd = 'copy\s+tftp://{0}/local.cfg\s+test_file_1.cfg'.format(socket.gethostbyname(socket.getfqdn()))
+    local_tftp_server = socket.gethostbyname(socket.getfqdn())
+    create_cmd = 'copy tftp://{0}/local.cfg test_file_1.cfg'.format(local_tftp_server)
     dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
     dut.add_cmd({'cmd': create_cmd, 'state':0, 'action':'SET_STATE','args':[1]})
     dut.add_cmd({'cmd': 'dir'     , 'state':1, 'action':'PRINT','args': dir_1})
@@ -291,7 +293,8 @@ ip ssh server
 """
     setup_dut(dut)
     host_file_name = 'test_file_2.cfg'
-    create_cmd = 'copy\s+tftp://{0}/test_file_2.cfg\s+test_file_2.cfg'.format(socket.gethostbyname(socket.getfqdn()))
+    local_tftp_server = socket.gethostbyname(socket.getfqdn())
+    create_cmd = 'copy tftp://{0}/test_file_2.cfg test_file_2.cfg'.format(local_tftp_server)
     dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
     dut.add_cmd({'cmd': create_cmd, 'state':0, 'action':'SET_STATE','args':[1]})
     dut.add_cmd({'cmd': 'dir'     , 'state':1, 'action':'PRINT','args': dir_1})
@@ -363,7 +366,8 @@ hostname nac_dev
 ip ssh server
 """
     setup_dut(dut)
-    create_cmd = 'copy\s+tftp://{0}/test_file_r.cfg\s+test_file_r.cfg'.format(socket.gethostbyname(socket.getfqdn()))
+    local_tftp_server = socket.gethostbyname(socket.getfqdn())
+    create_cmd = 'copy tftp://{0}/test_file_r.cfg test_file_r.cfg'.format(local_tftp_server)
     dut.add_cmd({'cmd': 'dir'                      , 'state':0, 'action':'PRINT','args': dir_0})
     dut.add_cmd({'cmd': create_cmd                 , 'state':0, 'action':'SET_STATE','args':[1]})
     dut.add_cmd({'cmd': 'dir'                      , 'state':1, 'action':'PRINT','args': dir_1})
@@ -498,7 +502,8 @@ hostname nac_dev
 ip ssh server
 """
     name = 'test_file_1.cfg'
-    update_cmd = 'copy\s+tftp://{0}/test_file_1.cfg\s+test_file_1.cfg'.format(socket.gethostbyname(socket.getfqdn()))
+    local_tftp_server = socket.gethostbyname(socket.getfqdn())
+    update_cmd = 'copy tftp://{0}/test_file_1.cfg test_file_1.cfg'.format(local_tftp_server)
     setup_dut(dut)
     dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
     dut.add_cmd({'cmd': update_cmd, 'state':0, 'action':'SET_STATE','args':[1]})
@@ -578,7 +583,8 @@ ip ssh server
     myfile = open('temp.cfg', 'w')
     myfile.write(host_text)
     myfile.close()
-    update_cmd = 'copy\s+tftp://{0}/temp.cfg\s+test_file_1.cfg'.format(socket.gethostbyname(socket.getfqdn()))
+    local_tftp_server = socket.gethostbyname(socket.getfqdn())
+    update_cmd = 'copy tftp://{0}/temp.cfg test_file_1.cfg'.format(local_tftp_server)
     setup_dut(dut)
     dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
     dut.add_cmd({'cmd': update_cmd, 'state':0, 'action':'SET_STATE','args':[1]})
@@ -682,7 +688,8 @@ exit
 hostname nac_dev
 ip ssh server
 """
-    update_cmd = 'copy\s+tftp://{0}/test_file_1.cfg\s+test_file_3.cfg'.format(socket.gethostbyname(socket.getfqdn()))
+    local_tftp_server = socket.gethostbyname(socket.getfqdn())
+    update_cmd = 'copy tftp://{0}/test_file_1.cfg test_file_3.cfg'.format(local_tftp_server)
     delete_cmd = 'delete test_file_1.cfg'
     setup_dut(dut)
     dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
@@ -840,8 +847,8 @@ ip ssh server
     myfile.write(host_text_2)
     myfile.close()
 
-    create_cmd = 'copy\s+tftp://{0}/test_file_A.cfg\s+test_file_5.cfg'.format(remote_tftp_server)
-    update_cmd = 'copy\s+tftp://{0}/test_file_B.cfg\s+test_file_5.cfg'.format(remote_tftp_server)
+    create_cmd = 'copy tftp://{0}/test_file_A.cfg test_file_5.cfg'.format(remote_tftp_server)
+    update_cmd = 'copy tftp://{0}/test_file_B.cfg test_file_5.cfg'.format(remote_tftp_server)
     delete_cmd = 'delete test_file_5.cfg'
     setup_dut(dut)
     dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
@@ -859,12 +866,10 @@ ip ssh server
     assert 'test_file_3.cfg' in d.file.keys()
     assert 'test_file_5.cfg' in d.file.keys()
     assert d.file['test_file_5.cfg']['size'] == '{0}'.format(len(host_text_1))
-    # assert d.file['test_file_5.cfg']['content'] == host_text_1
     d.file.update(name='test_file_5.cfg', server = remote_tftp_server, filename='test_file_B.cfg')
     assert 'test_file_1.cfg' in d.file.keys()
     assert 'test_file_5.cfg' in d.file.keys()
     assert d.file['test_file_5.cfg']['size'] == '{0}'.format(len(host_text_2))
-    # assert d.file['test_file_5.cfg']['content'] == host_text_2
     d.file.delete("test_file_5.cfg")
     assert 'test_file_5.cfg' not in d.file.keys()
     d.close()

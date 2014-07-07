@@ -21,8 +21,8 @@ Operations
 Methods
 -------
 
-**create(name, text=None, filename=None)**
-""""""""""""""""""""""""""""""""""""""""""
+**create(name, text=None, filename=None, server=None)**
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""
 **Mandatory**
 
 **Description**:
@@ -30,7 +30,9 @@ Create a new file on the device.
 The file content can either come from a file or a string.
 If neither the file nor the string is given, the file will be empty.
 The *text* and *filename* parameters are alternative and if both are given an exception
-will be risen. 
+will be risen.
+The *server* parameter is the address of the host where the TFTP server is running.
+If not given it's the same where the library is running.
 
 **Parameters**:
 
@@ -43,8 +45,11 @@ will be risen.
     - *filename*: string
         Path and name of the file where the content will be taken from
 
-**update(name, new_name=None, text=None, filename=None)**
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+    - *server*: string
+        TFTP server IP address
+
+**update(name, new_name=None, text=None, filename=None, server=None)**
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 **Mandatory**
 
 **Description**:
@@ -52,6 +57,8 @@ Changes an existing file on the device.
 The *text* and *filename* parameters are alternative and if both are given an exception
 will be risen.
 An exception will also be risen if a *new_name* file already exists.
+The *server* parameter is the address of the host where the TFTP server is running.
+If not given it's the same where the library is running.
 
 **Parameters**:
 
@@ -66,6 +73,9 @@ An exception will also be risen if a *new_name* file already exists.
 
     - *filename*: string
         Path and name of the file where the new content will be taken from
+
+    - *server*: string
+        TFTP server IP address
 
 **delete**
 """"""""""
@@ -124,3 +134,13 @@ mtime
 **Type:** String
 
 **Description**: Last modification time.
+
+content
+"""""""
+**Mandatory**
+
+**ReadOnly**
+
+**Type:** String
+
+**Description**: File content.

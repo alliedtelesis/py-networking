@@ -63,16 +63,19 @@ class ats_file(Feature):
         if (filename == ''):
             filename = name
             myfile = open(filename, 'w')
-            myfile.write(text)
+
+            # TFTP doesn't allow empty file creation
+            if (text == ''):
+                myfile.write('\n')
+            else:
+                myfile.write(text)
             myfile.close()
 
+        # upload on TFTP server
         if (server == ''):
-            # local TFTP server
             server = socket.gethostbyname(socket.getfqdn())
-        else:
-            # remote TFTP server
-            tftp_client = tftpy.TftpClient(server, 69)
-            tftp_client.upload(filename, filename)
+        tftp_client = tftpy.TftpClient(server, 69)
+        tftp_client.upload(filename, filename)
 
         # device commands
         create_cmd = 'copy tftp://{0}/{1} {2}'.format(server, filename, name)
@@ -109,21 +112,17 @@ class ats_file(Feature):
             myfile.write(text)
             myfile.close()
 
+        # upload on TFTP server
         if (server == ''):
-            # local TFTP server
             server = socket.gethostbyname(socket.getfqdn())
-        else:
-            # remote TFTP server
-            tftp_client = tftpy.TftpClient(server, 69)
-            tftp_client.upload(filename, filename)
+        tftp_client = tftpy.TftpClient(server, 69)
+        tftp_client.upload(file_2_copy_from, file_2_copy_from)
 
         # device commands
         if (new_name == ''):
             update_cmd = 'copy tftp://{0}/{1} {2}'.format(server, file_2_copy_from, name)
-            delete_cmd = 'delete {0}'.format(name)
-            cmds = {'cmds': [{'cmd': delete_cmd, 'prompt': ''  },
-                             {'cmd': 'y'       , 'prompt': '\#'},
-                             {'cmd': update_cmd, 'prompt': '\#'}
+            cmds = {'cmds': [{'cmd': update_cmd, 'prompt': ''  },
+                             {'cmd': 'y'       , 'prompt': '\#'}
                             ]}
         else:
             update_cmd = 'copy tftp://{0}/{1} {2}'.format(server, file_2_copy_from, new_name)

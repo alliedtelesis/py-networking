@@ -57,6 +57,8 @@ class ats_file(Feature):
             raise KeyError('file {0} is already existing'.format(name))
         if (filename != '' and text != ''):
             raise KeyError('Cannot have both source device file name and host string not empty')
+        if (filename == '' and server != ''):
+            raise KeyError('Remote file name missing')
 
         if (filename == ''):
             filename = name
@@ -94,6 +96,8 @@ class ats_file(Feature):
             raise KeyError('Cannot have both host file name and host string not empty')
         if (filename == '' and text == ''):
             raise KeyError('Cannot have both host file name and host string empty')
+        if (filename == '' and server != ''):
+            raise KeyError('Remote file name missing')
 
         # data to be copied will always come from a local file named 'file_2_copy_from'
         if (filename == ''):

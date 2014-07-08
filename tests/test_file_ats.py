@@ -147,7 +147,7 @@ Free size of flash: 3276800 bytes
     d.file.create(name=host_file_name)
     assert host_file_name in d.file.keys()
     assert (host_file_name, {'size': '1', 'mdate': d.file[host_file_name]['mdate'], 'permission': 'rw', 'mtime': d.file[host_file_name]['mtime']}) in d.file.items()
-    d.file.delete(name=host_file_name)
+    d.file.delete(host_file_name)
     assert host_file_name not in d.file.keys()
     d.close()
 

@@ -174,11 +174,19 @@ class ats_file(Feature):
 
     def _update_file_content(self, filename):
         self._d.log_info("Read file {0} content".format(filename))
-        read_cmd = 'show file {0}'.format(filename)
+        read_cmd = 'copy {0} tftp://{1}/{0}'.format(filename, socket.gethostbyname(socket.getfqdn()))
         cmds = {'cmds':[{'cmd': read_cmd, 'prompt':'\#'}]}
-        read_output = self._device.cmd(read_cmd)
-        read_output = read_output.replace('\r', '')
-        read_output = read_output.replace('\n\n', '\n')
+        self._device.cmd(cmds, cache=False, flush_cache=True)
+        self._device.load_system()
+
+        client = tftpy.TftpClient(socket.gethostbyname(socket.getfqdn()), 69)
+        client.download(filename, 'temp.txt')
+
+        read_output = ''
+        myfile = open('temp.txt', 'r')
+        read_output = myfile.read()
+        myfile.close()
+        os.remove('temp.txt')
         return read_output
 
 

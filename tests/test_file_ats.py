@@ -709,7 +709,6 @@ ip ssh server
     d.file.update(name='test_file_1.cfg', text=host_text, new_name='test_file_3.cfg')
     assert 'test_file_1.cfg' not in d.file.keys()
     assert 'test_file_3.cfg' in d.file.keys()
-    assert d.file['test_file_3.cfg']['size'] == '{0}'.format(len(host_text))
     d.close()
 
 
@@ -843,17 +842,8 @@ hostname nac_dev
 ip ssh server
 """
     remote_tftp_server = socket.gethostbyname(socket.getfqdn())
-
-    myfile = open('test_file_A.cfg', 'w')
-    myfile.write(host_text_1)
-    myfile.close()
-
-    myfile = open('test_file_B.cfg', 'w')
-    myfile.write(host_text_2)
-    myfile.close()
-
-    create_cmd = 'copy tftp://{0}/test_file_A.cfg test_file_5.cfg'.format(remote_tftp_server)
-    update_cmd = 'copy tftp://{0}/test_file_B.cfg test_file_5.cfg'.format(remote_tftp_server)
+    create_cmd = 'copy tftp://{0}/test_file_5.cfg test_file_5.cfg'.format(remote_tftp_server)
+    update_cmd = 'copy tftp://{0}/test_file_5.cfg test_file_5.cfg'.format(remote_tftp_server)
     delete_cmd = 'delete test_file_5.cfg'
     setup_dut(dut)
     dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
@@ -866,18 +856,25 @@ ip ssh server
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
     assert 'test_file_5.cfg' not in d.file.keys()
-    d.file.create(name='test_file_5.cfg', server = remote_tftp_server, filename='test_file_A.cfg')
+    myfile = open('test_file_5.cfg', 'w')
+    myfile.write(host_text_1)
+    myfile.close()
+    d.file.create(name='test_file_5.cfg', server = remote_tftp_server, filename='test_file_5.cfg')
     assert 'test_file_5.cfg' in d.file.keys()
-    assert d.file['test_file_5.cfg']['size'] == '{0}'.format(len(host_text_1))
-    d.file.update(name='test_file_5.cfg', server = remote_tftp_server, filename='test_file_B.cfg')
+    assert d.file['test_file_5.cfg']['content'] == host_text_1
+
+    myfile = open('test_file_5.cfg', 'w')
+    myfile.write(host_text_2)
+    myfile.close()
+    d.file.update(name='test_file_5.cfg', server = remote_tftp_server, filename='test_file_5.cfg')
     assert 'test_file_5.cfg' in d.file.keys()
-    assert d.file['test_file_5.cfg']['size'] == '{0}'.format(len(host_text_2))
+    assert d.file['test_file_5.cfg']['content'] == host_text_2
+
     d.file.delete("test_file_5.cfg")
     assert 'test_file_5.cfg' not in d.file.keys()
     d.close()
 
-    os.remove('test_file_A.cfg')
-    os.remove('test_file_B.cfg')
+    os.remove('test_file_5.cfg')
 
 
 def test_remove_files(dut, log_level):

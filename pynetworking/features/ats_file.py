@@ -83,8 +83,8 @@ class ats_file(Feature):
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()
 
-        if (text != ''):
-            os.remove(filename)
+        # if (text != ''):
+        #     os.remove(filename)
 
 
     def update(self, name, filename='', text='', new_name='', server=''):
@@ -134,8 +134,8 @@ class ats_file(Feature):
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()
 
-        if (text != ''):
-            os.remove(file_2_copy_from)
+        # if (text != ''):
+        #     os.remove(file_2_copy_from)
 
 
     def delete(self, file_name):
@@ -165,10 +165,14 @@ class ats_file(Feature):
 
 
     def __getitem__(self, filename):
+        self._d.log_info("Keys before are {0}".format(self._file.keys()))
+        self._d.log_info("Items before are {0}".format(self._file.items()))
         self._update_file()
         if filename in self._file.keys():
             self._file[filename]['content'] = self._update_file_content(filename)
             return self._file[filename]
+        self._d.log_info("Keys after are {0}".format(self._file.keys()))
+        self._d.log_info("Items after are {0}".format(self._file.items()))
         raise KeyError('file {0} does not exist'.format(filename))
 
 

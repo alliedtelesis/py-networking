@@ -126,11 +126,12 @@ class Emulator(recvline.HistoricRecvLine):
                 dst_path = tftp_dir + '/' + dst.split('/')[-1]
             shutil.copy2(src_path,dst_path)
 
-        for action in sorted(self.parent.cmds.values(), key=lambda k: (k['seq'],k['state'])):
-            if (action['cmd'].find('http://') > 0 or action['cmd'].find('tftp://') > 0) and (action['state'] == self.parent.state):
-                if action['action'] == 'SET_STATE':
-                    self.parent.state = int(action['args'][0])
-                break
+        if (src.find('http://') == 0) or (src.find('tftp://') == 0):
+            for action in sorted(self.parent.cmds.values(), key=lambda k: (k['seq'], k['state'])):
+                if (action['cmd'].find('http://') > 0 or action['cmd'].find('tftp://') > 0) and (action['state'] == self.parent.state):
+                    if action['action'] == 'SET_STATE':
+                        self.parent.state = int(action['args'][0])
+                    break
 
         self._prompt = "#"
         self.terminal.nextLine()

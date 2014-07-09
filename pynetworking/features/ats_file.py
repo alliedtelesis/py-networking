@@ -165,14 +165,10 @@ class ats_file(Feature):
 
 
     def __getitem__(self, filename):
-        self._d.log_info("Keys before are {0}".format(self._file.keys()))
-        self._d.log_info("Items before are {0}".format(self._file.items()))
         self._update_file()
         if filename in self._file.keys():
             self._file[filename]['content'] = self._update_file_content(filename)
             return self._file[filename]
-        self._d.log_info("Keys after are {0}".format(self._file.keys()))
-        self._d.log_info("Items after are {0}".format(self._file.items()))
         raise KeyError('file {0} does not exist'.format(filename))
 
 

@@ -2,7 +2,6 @@ import pytest
 import os
 import socket
 import tftpy
-import logging
 import threading
 from pynetworking import Device
 from time import sleep
@@ -10,14 +9,12 @@ from paramiko.rsakey import RSAKey
 
 
 def tftp_server_for_ever():
-    tftp_dir = './tftpServer'
+    tftp_dir = './tftpdir'
     if (os.path.exists(tftp_dir) == False):
         os.mkdir(tftp_dir)
-    ip_address = socket.gethostbyname(socket.getfqdn())
-    server = tftpy.TftpServer(tftp_dir)
-    log = logging.getLogger('tftpy')
-    log.setLevel(logging.DEBUG)
-    server.listen(ip_address, 69)
+        ip_address = socket.gethostbyname(socket.getfqdn())
+        server = tftpy.TftpServer(tftp_dir)
+        server.listen(ip_address, 69)
 
 
 def setup_dut(dut):
@@ -163,9 +160,7 @@ Free size of flash: 3276800 bytes
     d.file.create(name=host_file_name)
     assert host_file_name in d.file.keys()
     mmdate = d.file[host_file_name]['mdate']
-    print("mmdate {0}".format(mmdate))
     mmtime = d.file[host_file_name]['mtime']
-    print("mmtime {0}".format(mmtime))
     assert (host_file_name, {'size': '1', 'mdate': mmdate, 'permission': 'rw', 'mtime': mmtime}) in d.file.items()
     d.file.delete("test_file_0.cfg")
     assert host_file_name not in d.file.keys()
@@ -247,7 +242,8 @@ ip ssh server
     assert 'test_file_1.cfg' not in d.file.keys()
     d.file.create(name='test_file_1.cfg', filename='local.cfg')
     assert 'test_file_1.cfg' in d.file.keys()
-    assert d.file['test_file_1.cfg']['size'] == '{0}'.format(len(host_text))
+    # assert d.file['test_file_1.cfg']['size'] == '{0}'.format(len(host_text))
+    assert d.file['test_file_1.cfg']['content'] == host_text
     d.close()
     os.remove(host_file_name)
 
@@ -328,7 +324,8 @@ ip ssh server
     assert 'test_file_2.cfg' not in d.file.keys()
     d.file.create(name='test_file_2.cfg', text=host_text)
     assert 'test_file_2.cfg' in d.file.keys()
-    assert d.file['test_file_2.cfg']['size'] == '{0}'.format(len(host_text))
+    # assert d.file['test_file_2.cfg']['size'] == '{0}'.format(len(host_text))
+    assert d.file['test_file_2.cfg']['content'] == host_text
     d.close()
 
 
@@ -539,7 +536,7 @@ ip ssh server
     old_mtime = d.file['test_file_1.cfg']['mtime']
     d.file.update(name='test_file_1.cfg', text=host_text)
     assert old_mtime != d.file['test_file_1.cfg']['mtime']
-    assert d.file['test_file_1.cfg']['size'] == '{0}'.format(len(host_text))
+    assert d.file['test_file_1.cfg']['content'] == host_text
     d.close()
 
 
@@ -620,7 +617,7 @@ ip ssh server
     old_mtime = d.file['test_file_1.cfg']['mtime']
     d.file.update(name='test_file_1.cfg', filename='temp.cfg')
     assert old_mtime != d.file['test_file_1.cfg']['mtime']
-    assert d.file['test_file_1.cfg']['size'] == '{0}'.format(len(host_text))
+    assert d.file['test_file_1.cfg']['content'] == host_text
     d.close()
     os.remove('temp.cfg')
 
@@ -729,6 +726,7 @@ ip ssh server
     d.file.update(name='test_file_1.cfg', text=host_text, new_name='test_file_3.cfg')
     assert 'test_file_1.cfg' not in d.file.keys()
     assert 'test_file_3.cfg' in d.file.keys()
+    assert d.file['test_file_3.cfg']['content'] == host_text
     d.close()
 
 

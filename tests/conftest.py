@@ -116,39 +116,22 @@ class Emulator(recvline.HistoricRecvLine):
         self.terminal.nextLine()
 
     def do_copy(self, src, dst):
-        myfile = open("do_copy_file", 'w')
-        myfile.write("Executing {0} {1} {2}".format(src, dst, src.find('tftp://')))
-        myfile.close()
-        if (src.find('tftp://') == 0):
-            str_src = './tftpServer/' + src.split('/')[-1]
-            str_dst = dst
-            myfile = open("do_copy_args", 'w')
-            myfile.write("copy {0} {1} status is {2}".format(str_src, str_dst, self.parent.state))
-            myfile.close()
-            shutil.copy2(str_src,str_dst)
-        else:
-            if (dst.find('tftp://') == 0):
-                str_src = src
-                str_dst = './tftpServer/' + dst.split('/')[-1]
-                myfile = open("do_copy_args", 'w')
-                myfile.write("copy {0} {1} status is {2}".format(str_src, str_dst, self.parent.state))
-                myfile.close()
-                shutil.copy2(str_src,str_dst)
+        if (src.find('tftp://') == 0) or (dst.find('tftp://') == 0):
+            tftp_dir = 'tftpdir'
+            if (src.find('tftp://') == 0):
+                src_path = tftp_dir + '/' + src.split('/')[-1]
+                dst_path = dst
+            else:
+                src_path = src
+                dst_path = tftp_dir + '/' + dst.split('/')[-1]
+            shutil.copy2(src_path,dst_path)
 
-        line1 = 'copy '
-        line2 = ' tftp://'
-        myfile = open("cmds", 'w')
         for action in sorted(self.parent.cmds.values(), key=lambda k: (k['seq'],k['state'])):
-            myfile.write("cmd {0} state {1}\n".format(action['cmd'], action['state']))
-            # if (action['cmd'][0:8] == line[0:8]) and (action['state'] == self.parent.state):
-            if (action['cmd'][0:5] == line1) and (action['cmd'].find(line2) >= 0) and (action['state'] == self.parent.state):
+            if (action['cmd'].find('http://') > 0 or action['cmd'].find('tftp://') > 0) and (action['state'] == self.parent.state):
                 if action['action'] == 'SET_STATE':
                     self.parent.state = int(action['args'][0])
-                    myfile.write("Switching to state {0}".format(self.parent.state))
                 break
-        myfile.close()
 
-        # self.parent.state = self.parent.state + 1
         self._prompt = "#"
         self.terminal.nextLine()
         self.showPrompt()

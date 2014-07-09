@@ -2,9 +2,22 @@ import pytest
 import os
 import socket
 import tftpy
+import logging
+import threading
 from pynetworking import Device
 from time import sleep
 from paramiko.rsakey import RSAKey
+
+
+def tftp_server_for_ever():
+    tftp_dir = './tftpServer'
+    if (os.path.exists(tftp_dir) == False):
+        os.mkdir(tftp_dir)
+    ip_address = socket.gethostbyname(socket.getfqdn())
+    server = tftpy.TftpServer(tftp_dir)
+    log = logging.getLogger('tftpy')
+    log.setLevel(logging.DEBUG)
+    server.listen(ip_address, 69)
 
 
 def setup_dut(dut):
@@ -31,6 +44,9 @@ Unit     Up time
 Unit Number:   1
 Serial number:
     """]})
+    dut.tftp_server_thread = threading.Thread(target=tftp_server_for_ever)
+    dut.tftp_server_thread.daemon = True
+    dut.tftp_server_thread.start()
 
 
 def test_create_file_with_failures(dut, log_level):

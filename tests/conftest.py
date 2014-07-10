@@ -137,6 +137,19 @@ class Emulator(recvline.HistoricRecvLine):
         self.terminal.nextLine()
         self.showPrompt()
 
+    def do_delete(self, name):
+        del_cmd = 'delete {0}'.format(name)
+        os.remove(name)
+        for action in sorted(self.parent.cmds.values(), key=lambda k: (k['seq'], k['state'])):
+            if (action['cmd'] == del_cmd) and (action['state'] == self.parent.state):
+                if action['action'] == 'SET_STATE':
+                    self.parent.state = int(action['args'][0])
+                break
+
+        self._prompt = "#"
+        self.terminal.nextLine()
+        self.showPrompt()
+
 
 class Forwarder(recvline.HistoricRecvLine):
     def __init__(self, user, parent, cmd=None):

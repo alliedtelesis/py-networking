@@ -83,9 +83,6 @@ class ats_file(Feature):
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()
 
-        # if (text != ''):
-        #     os.remove(filename)
-
 
     def update(self, name, filename='', text='', new_name='', server=''):
         self._d.log_info("copying {0} from host to device".format(name))
@@ -133,9 +130,6 @@ class ats_file(Feature):
                              ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()
-
-        # if (text != ''):
-        #     os.remove(file_2_copy_from)
 
 
     def delete(self, file_name):

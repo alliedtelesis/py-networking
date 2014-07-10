@@ -555,7 +555,7 @@ ip ssh server
     assert 'test_file_3.cfg' in d.file.keys()
     mmdate = d.file['test_file_3.cfg']['mdate']
     mmtime = d.file['test_file_3.cfg']['mtime']
-    assert ('test_file_3.cfg', {'size': '1', 'mdate': '20-Jun-2014', 'permission': 'rw', 'mtime': '11:51:01'}) in d.file.items()
+    assert ('test_file_3.cfg', {'size': '1', 'mdate': mmdate, 'permission': 'rw', 'mtime': mmtime}) in d.file.items()
     d.file.update(name='test_file_3.cfg', text=host_text, new_name='test_file_4.cfg')
     assert 'test_file_3.cfg' not in d.file.keys()
     assert 'test_file_4.cfg' in d.file.keys()

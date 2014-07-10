@@ -568,6 +568,10 @@ ip ssh server
 def test_clean(dut, log_level):
     if dut.mode != 'emulated':
         pytest.skip("only on emulated")
+    os.remove('test_file_1.cfg')
+    os.remove('test_file_2.cfg')
+    os.remove('test_file_3.cfg')
+    os.remove('test_file_4.cfg')
     os.remove('tftpdir/temp_1.cfg')
     os.remove('tftpdir/temp_2.cfg')
     os.remove('tftpdir/test_file_1.cfg')

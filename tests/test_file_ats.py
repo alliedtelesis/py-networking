@@ -425,6 +425,9 @@ hostname nac_dev
 ip ssh server
 """
     setup_dut(dut)
+    # remote_tftp_server = '10.17.38.121'
+    # create_cmd = 'copy tftp://{0}/test_file_2.cfg test_file_2.cfg'.format(remote_tftp_server)
+    # update_cmd = 'copy tftp://{0}/test_file_2.cfg test_file_2.cfg'.format(remote_tftp_server)
     local_tftp_server = socket.gethostbyname(socket.getfqdn())
     create_cmd = 'copy tftp://{0}/test_file_2.cfg test_file_2.cfg'.format(local_tftp_server)
     update_cmd = 'copy tftp://{0}/test_file_2.cfg test_file_2.cfg'.format(local_tftp_server)
@@ -560,3 +563,15 @@ ip ssh server
     d.file.delete("test_file_4.cfg")
     assert 'test_file_4.cfg' not in d.file.keys()
     d.close()
+
+
+def test_clean(dut, log_level):
+    if dut.mode != 'emulated':
+        pytest.skip("only on emulated")
+    os.remove('tftpdir/temp_1.cfg')
+    os.remove('tftpdir/temp_2.cfg')
+    os.remove('tftpdir/test_file_1.cfg')
+    os.remove('tftpdir/test_file_2.cfg')
+    os.remove('tftpdir/test_file_3.cfg')
+    os.remove('tftpdir/test_file_4.cfg')
+    os.rmdir('tftpdir')

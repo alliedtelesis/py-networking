@@ -126,9 +126,9 @@ class Emulator(recvline.HistoricRecvLine):
                 dst_path = tftp_dir + '/' + dst.split('/')[-1]
             shutil.copy2(src_path,dst_path)
 
-        if (src.find('http://') == 0) or (src.find('tftp://') == 0):
+        if (src.find('http://') == 0) or (src.find('tftp://') == 0) or (src == 'r' and dst == 's'):
             for action in sorted(self.parent.cmds.values(), key=lambda k: (k['seq'], k['state'])):
-                if (action['cmd'].find('http://') > 0 or action['cmd'].find('tftp://') > 0) and (action['state'] == self.parent.state):
+                if (action['cmd'].find('http://') > 0 or action['cmd'].find('tftp://') > 0 or action['cmd'] == 'copy r s') and (action['state'] == self.parent.state):
                     if action['action'] == 'SET_STATE':
                         self.parent.state = int(action['args'][0])
                     break
@@ -136,20 +136,6 @@ class Emulator(recvline.HistoricRecvLine):
         self._prompt = "#"
         self.terminal.nextLine()
         self.showPrompt()
-
-    # def do_delete(self, name):
-    #     del_cmd = 'delete {0}'.format(name)
-    #     if (os.path.exists(name) == True):
-    #         os.remove(name)
-    #     for action in sorted(self.parent.cmds.values(), key=lambda k: (k['seq'], k['state'])):
-    #         if (action['cmd'] == del_cmd) and (action['state'] == self.parent.state):
-    #             if action['action'] == 'SET_STATE':
-    #                 self.parent.state = int(action['args'][0])
-    #             break
-    #
-    #     self._prompt = "#"
-    #     self.terminal.nextLine()
-    #     self.showPrompt()
 
 
 class Forwarder(recvline.HistoricRecvLine):

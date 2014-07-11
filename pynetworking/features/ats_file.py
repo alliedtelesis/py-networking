@@ -9,6 +9,7 @@ import socket
 import threading
 import tftpy
 
+from tempfile import mkstemp
 from time import sleep
 try:
     from collections import OrderedDict
@@ -177,15 +178,16 @@ class ats_file(Feature):
         cmds = {'cmds':[{'cmd': read_cmd, 'prompt':'\#'}]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()
+        temp, temp_file_name = mkstemp()
 
         client = tftpy.TftpClient(socket.gethostbyname(socket.getfqdn()), 69)
-        client.download(filename, 'temp.txt')
+        client.download(filename, temp_file_name)
 
         read_output = ''
-        myfile = open('temp.txt', 'r')
+        myfile = open(temp_file_name, 'r')
         read_output = myfile.read()
         myfile.close()
-        os.remove('temp.txt')
+        os.remove(temp_file_name)
         return read_output
 
 

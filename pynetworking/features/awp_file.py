@@ -24,14 +24,14 @@ class HTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                     self.send_header('Content-type', 'application/octet-string')
                     self.end_headers()
                     self.wfile.write(f.read())
-            except:
-                self.server._d.log_error('cannot open file {0}'.format(self.path))
-                self.send_response(404)
-                self.end_headers()
-        else:
-            self.server._d.log_error('wrong file requested {0}'.format(self.path))
-            self.send_response(404)
-            self.end_headers()
+            except:                                                                 #pragma: no cover
+                self.server._d.log_error('cannot open file {0}'.format(self.path))  #pragma: no cover
+                self.send_response(404)                                             #pragma: no cover
+                self.end_headers()                                                  #pragma: no cover
+        else:                                                                       #pragma: no cover
+            self.server._d.log_error('wrong file requested {0}'.format(self.path))  #pragma: no cover
+            self.send_response(404)                                                 #pragma: no cover
+            self.end_headers()                                                      #pragma: no cover
 
 
 class Server(SocketServer.ThreadingMixIn, SocketServer.TCPServer):

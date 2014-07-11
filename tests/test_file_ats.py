@@ -3,6 +3,8 @@ import os
 import socket
 import tftpy
 import threading
+import getpass
+
 from pynetworking import Device
 from time import sleep
 from paramiko.rsakey import RSAKey
@@ -84,6 +86,7 @@ exit
 hostname nac_dev
 ip ssh server
 """
+    print('\nCurrent user is {0}'.format(getpass.getuser()))
     setup_dut(dut)
     dut.add_cmd({'cmd': 'dir'   , 'state':0, 'action':'PRINT','args': dir_0})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)

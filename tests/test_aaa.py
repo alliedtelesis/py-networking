@@ -3,7 +3,6 @@ import os
 import socket
 import tftpy
 import threading
-import getpass
 
 from pynetworking import Device
 from time import sleep
@@ -11,11 +10,14 @@ from paramiko.rsakey import RSAKey
 
 
 def tftp_server_for_ever():
-    tftp_dir = './tftpdir'
-    if (os.path.exists(tftp_dir) == False):
-        os.mkdir(tftp_dir)
+    tftp_client_dir = './tftp_client_dir'
+    if (os.path.exists(tftp_client_dir) == False):
+        os.mkdir(tftp_client_dir)
+    tftp_server_dir = './tftp_server_dir'
+    if (os.path.exists(tftp_server_dir) == False):
+        os.mkdir(tftp_server_dir)
         ip_address = socket.gethostbyname(socket.getfqdn())
-        server = tftpy.TftpServer(tftp_dir)
+        server = tftpy.TftpServer(tftp_server_dir)
         server.listen(ip_address, 69)
 
 
@@ -86,7 +88,6 @@ exit
 hostname nac_dev
 ip ssh server
 """
-    print('\nCurrent user is {0}'.format(getpass.getuser()))
     setup_dut(dut)
     dut.add_cmd({'cmd': 'dir'   , 'state':0, 'action':'PRINT','args': dir_0})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
@@ -571,14 +572,17 @@ ip ssh server
 def test_clean(dut, log_level):
     if dut.mode != 'emulated':
         pytest.skip("only on emulated")
-    os.remove('test_file_1.cfg')
-    os.remove('test_file_2.cfg')
-    os.remove('test_file_3.cfg')
-    os.remove('test_file_4.cfg')
-    os.remove('tftpdir/temp_1.cfg')
-    os.remove('tftpdir/temp_2.cfg')
-    os.remove('tftpdir/test_file_1.cfg')
-    os.remove('tftpdir/test_file_2.cfg')
-    os.remove('tftpdir/test_file_3.cfg')
-    os.remove('tftpdir/test_file_4.cfg')
-    os.rmdir('tftpdir')
+
+    os.remove('tftp_client_dir/test_file_1.cfg')
+    os.remove('tftp_client_dir/test_file_2.cfg')
+    os.remove('tftp_client_dir/test_file_3.cfg')
+    os.remove('tftp_client_dir/test_file_4.cfg')
+    os.rmdir('tftp_client_dir')
+
+    os.remove('tftp_server_dir/temp_1.cfg')
+    os.remove('tftp_server_dir/temp_2.cfg')
+    os.remove('tftp_server_dir/test_file_1.cfg')
+    os.remove('tftp_server_dir/test_file_2.cfg')
+    os.remove('tftp_server_dir/test_file_3.cfg')
+    os.remove('tftp_server_dir/test_file_4.cfg')
+    os.rmdir('tftp_server_dir')

@@ -4,6 +4,7 @@ from pprint import pformat
 import re
 import json
 import os
+import getpass
 import socket
 import threading
 import tftpy
@@ -50,6 +51,7 @@ class ats_file(Feature):
 
 
     def create(self, name, text='', filename='', server=''):
+        self._d.log_info("TFTP server running on {0}, user is {1}".format(socket.gethostbyname(socket.getfqdn()),getpass.getuser()))
         self._d.log_info("create file {0}".format(name))
         self._update_file()
 
@@ -130,6 +132,9 @@ class ats_file(Feature):
                              ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()
+
+        if (text != ''):
+            os.remove(file_2_copy_from)
 
 
     def delete(self, file_name):

@@ -119,13 +119,14 @@ class Emulator(recvline.HistoricRecvLine):
 
     def do_copy(self, src, dst):
         if (src.find('tftp://') == 0) or (dst.find('tftp://') == 0):
-            tftp_dir = 'tftpdir'
+            tftp_client_dir = './tftp_client_dir'
+            tftp_server_dir = './tftp_server_dir'
             if (src.find('tftp://') == 0):
-                src_path = tftp_dir + '/' + src.split('/')[-1]
-                dst_path = dst
+                src_path = tftp_server_dir + '/' + src.split('/')[-1]
+                dst_path = tftp_client_dir + '/' + dst
             else:
-                src_path = src
-                dst_path = tftp_dir + '/' + dst.split('/')[-1]
+                src_path = tftp_client_dir + '/' + src
+                dst_path = tftp_server_dir + '/' + dst.split('/')[-1]
             shutil.copy2(src_path,dst_path)
 
         if (src.find('http://') == 0):

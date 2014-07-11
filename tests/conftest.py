@@ -3,6 +3,8 @@ import sys
 import re
 import os
 import shutil
+import urllib
+import urllib2
 from hashlib import md5
 from pprint import pprint
 from multiprocessing import Process, Value, Array, Manager
@@ -125,6 +127,10 @@ class Emulator(recvline.HistoricRecvLine):
                 src_path = src
                 dst_path = tftp_dir + '/' + dst.split('/')[-1]
             shutil.copy2(src_path,dst_path)
+
+        if (src.find('http://') == 0):
+            aResp = urllib2.urlopen(src)
+            web_pg = aResp.read()
 
         if (src.find('http://') == 0) or (src.find('tftp://') == 0) or (src == 'r' and dst == 's'):
             for action in sorted(self.parent.cmds.values(), key=lambda k: (k['seq'], k['state'])):

@@ -117,7 +117,6 @@ class awp_vlan(Feature):
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()
 
-
     def delete_interface(self, vid, ifn):
         self._d.log_info("delete_interface {0} ifn={1}".format(vid, ifn))
         self._update_vlan()
@@ -168,11 +167,19 @@ class awp_vlan(Feature):
     __repr__ = __str__ #pragma: no cover
 
     def __getitem__(self, vid):
+        if isinstance(vid, str) or isinstance(vid, int) or isinstance(vid, unicode):
+            self._update_vlan()
+            vid = str(vid)
+            if vid in self._vlan:
+                return self._vlan[vid]
+            raise KeyError('vlan id {0} does not exist'.format(vid))
+        else:
+            raise TypeError, "Invalid argument type."
+
+    def __iter__(self):
         self._update_vlan()
-        vid = str(vid)
-        if vid in self._vlan:
-            return self._vlan[vid]
-        raise KeyError('vlan id {0} does not exist'.format(vid))
+        for vlan in self._vlan:
+            yield vlan
 
     def _get_vlan_ids(self, vlan_id):
         vlan_id = str(vlan_id)

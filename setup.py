@@ -122,7 +122,7 @@ setup(name             = 'py-networking',
                             'Jinja2',
                             'ply',
                             'pyasn1',
-                            'pyzmq',
+                            'pyzmq>=14.0.0',
                             'ordereddict',
                             'TFTPy'
                          ],

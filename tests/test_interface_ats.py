@@ -925,6 +925,7 @@ Port      Description
     """]})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
+    assert '1.0.10' in d.interface
     assert d.interface['1.0.24']['enable'] == False
     d.interface.update('1.0.18',description='test description')
     assert d.interface['1.0.18']['description'] == 'test description'

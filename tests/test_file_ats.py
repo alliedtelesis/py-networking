@@ -300,6 +300,9 @@ ip ssh server
     myfile.write(host_text_2)
     myfile.close()
 
+    # remote_tftp_server = '10.17.38.121'
+    # create_cmd = 'copy tftp://{0}/test_file_2.cfg test_file_2.cfg'.format(remote_tftp_server)
+    # update_cmd = 'copy tftp://{0}/test_file_2.cfg test_file_2.cfg'.format(remote_tftp_server)
     local_tftp_server = socket.gethostbyname(socket.getfqdn())
     create_cmd = 'copy tftp://{0}/temp_1.cfg test_file_1.cfg'.format(local_tftp_server)
     update_cmd = 'copy tftp://{0}/temp_2.cfg test_file_1.cfg'.format(local_tftp_server)
@@ -315,9 +318,11 @@ ip ssh server
     d.open()
     assert 'test_file_1.cfg' not in d.file.keys()
     d.file.create(name='test_file_1.cfg', filename='temp_1.cfg')
+    # d.file.create(name='test_file_1.cfg', filename='temp_1.cfg',server=remote_tftp_server)
     assert 'test_file_1.cfg' in d.file.keys()
     assert d.file['test_file_1.cfg']['content'] == host_text_1
     d.file.update(name='test_file_1.cfg', filename='temp_2.cfg')
+    # d.file.update(name='test_file_1.cfg', filename='temp_2.cfg',server=remote_tftp_server)
     assert 'test_file_1.cfg' in d.file.keys()
     assert d.file['test_file_1.cfg']['content'] == host_text_2
     d.file.delete('test_file_1.cfg')
@@ -429,9 +434,6 @@ hostname nac_dev
 ip ssh server
 """
     setup_dut(dut)
-    # remote_tftp_server = '10.17.38.121'
-    # create_cmd = 'copy tftp://{0}/test_file_2.cfg test_file_2.cfg'.format(remote_tftp_server)
-    # update_cmd = 'copy tftp://{0}/test_file_2.cfg test_file_2.cfg'.format(remote_tftp_server)
     local_tftp_server = socket.gethostbyname(socket.getfqdn())
     create_cmd = 'copy tftp://{0}/test_file_2.cfg test_file_2.cfg'.format(local_tftp_server)
     update_cmd = 'copy tftp://{0}/test_file_2.cfg test_file_2.cfg'.format(local_tftp_server)

@@ -52,7 +52,10 @@ class ats_file(Feature):
 
 
     def create(self, name, text='', filename='', server=''):
-        self._d.log_info("TFTP server running on {0}, user is {1}".format(socket.gethostbyname(socket.getfqdn()),getpass.getuser()))
+        if (server == ''):
+            self._d.log_info("TFTP server running on {0}, user is {1}".format(socket.gethostbyname(socket.getfqdn()),getpass.getuser()))
+        else:
+            self._d.log_info("TFTP server running on {0}, user is {1}".format(server,getpass.getuser()))
         self._d.log_info("create file {0}".format(name))
         self._update_file()
 

@@ -21,23 +21,28 @@ Operations
 Methods
 -------
 
-**create(name, text=None, filename=None, server=None)**
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""
+**create(name, port=69, text=None, filename=None, server=None)**
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 **Mandatory**
 
 **Description**:
 Create a new file on the device.
 The file content can either come from a file or a string.
 If neither the file nor the string is given, the file will be empty.
+The *port* parameter is the port where the TFTP server is listening.
+If not given it's the default TFTP port.
 The *text* and *filename* parameters are alternative and if both are given an exception
 will be risen.
 The *server* parameter is the address of the host where the TFTP server is running.
-If not given it's the same where the library is running.
+If not given it's the library host one.
 
 **Parameters**:
 
     - *name*: string
         Name of the file on the device that will be created
+
+    - *port*: integer
+        TFTP server port number
 
     - *text*: string
         String bearing the content of the file to be created
@@ -48,22 +53,27 @@ If not given it's the same where the library is running.
     - *server*: string
         TFTP server IP address
 
-**update(name, new_name=None, text=None, filename=None, server=None)**
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+**update(name, port=69, new_name=None, text=None, filename=None, server=None)**
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 **Mandatory**
 
 **Description**:
 Changes an existing file on the device.
+The *port* parameter is the port where the TFTP server is listening.
+If not given it's the default TFTP port.
 The *text* and *filename* parameters are alternative and if both are given an exception
 will be risen.
 An exception will also be risen if a *new_name* file already exists.
 The *server* parameter is the address of the host where the TFTP server is running.
-If not given it's the same where the library is running.
+If not given it's the library host one.
 
 **Parameters**:
 
     - *name*: string
         Name of the file on the device that will be updated
+
+    - *port*: integer
+        TFTP server port number
 
     - *new_name*: string
         The new name of the file on the device

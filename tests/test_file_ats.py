@@ -3,13 +3,14 @@ import os
 import socket
 import tftpy
 import threading
+import getpass
 
 from pynetworking import Device
 from time import sleep
 from paramiko.rsakey import RSAKey
 
 
-def tftp_server_for_ever():
+def tftp_server_for_ever(port):
     tftp_client_dir = './tftp_client_dir'
     if (os.path.exists(tftp_client_dir) == False):
         os.mkdir(tftp_client_dir)
@@ -18,7 +19,7 @@ def tftp_server_for_ever():
         os.mkdir(tftp_server_dir)
         ip_address = socket.gethostbyname(socket.getfqdn())
         server = tftpy.TftpServer(tftp_server_dir)
-        server.listen(ip_address, 69)
+        server.listen(ip_address, port)
 
 
 def setup_dut(dut):
@@ -45,7 +46,12 @@ Unit     Up time
 Unit Number:   1
 Serial number:
     """]})
-    dut.tftp_server_thread = threading.Thread(target=tftp_server_for_ever)
+    if (dut.mode != 'emulated'):
+        assert 'root' == getpass.getuser()
+    dut.tftp_port = 69
+    if (getpass.getuser() != 'root'):
+        dut.tftp_port = 20069
+    dut.tftp_server_thread = threading.Thread(target=tftp_server_for_ever, args=(dut.tftp_port,))
     dut.tftp_server_thread.daemon = True
     dut.tftp_server_thread.start()
 
@@ -317,11 +323,11 @@ ip ssh server
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'test_file_1.cfg' not in d.file.keys()
-    d.file.create(name='test_file_1.cfg', filename='temp_1.cfg')
+    d.file.create(name='test_file_1.cfg', port=dut.tftp_port, filename='temp_1.cfg')
     # d.file.create(name='test_file_1.cfg', filename='temp_1.cfg',server=remote_tftp_server)
     assert 'test_file_1.cfg' in d.file.keys()
     assert d.file['test_file_1.cfg']['content'] == host_text_1
-    d.file.update(name='test_file_1.cfg', filename='temp_2.cfg')
+    d.file.update(name='test_file_1.cfg', port=dut.tftp_port, filename='temp_2.cfg')
     # d.file.update(name='test_file_1.cfg', filename='temp_2.cfg',server=remote_tftp_server)
     assert 'test_file_1.cfg' in d.file.keys()
     assert d.file['test_file_1.cfg']['content'] == host_text_2
@@ -448,10 +454,10 @@ ip ssh server
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'test_file_2.cfg' not in d.file.keys()
-    d.file.create(name='test_file_2.cfg', text=host_text_1)
+    d.file.create(name='test_file_2.cfg', port=dut.tftp_port, text=host_text_1)
     assert 'test_file_2.cfg' in d.file.keys()
     assert d.file['test_file_2.cfg']['content'] == host_text_1
-    d.file.update(name='test_file_2.cfg', text=host_text_2)
+    d.file.update(name='test_file_2.cfg', port=dut.tftp_port, text=host_text_2)
     assert 'test_file_2.cfg' in d.file.keys()
     assert d.file['test_file_2.cfg']['content'] == host_text_2
     d.file.delete('test_file_2.cfg')
@@ -557,12 +563,12 @@ ip ssh server
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'test_file_3.cfg' not in d.file.keys()
-    d.file.create(name='test_file_3.cfg')
+    d.file.create(name='test_file_3.cfg', port=dut.tftp_port)
     assert 'test_file_3.cfg' in d.file.keys()
     mmdate = d.file['test_file_3.cfg']['mdate']
     mmtime = d.file['test_file_3.cfg']['mtime']
     assert ('test_file_3.cfg', {'size': '1', 'mdate': mmdate, 'permission': 'rw', 'mtime': mmtime}) in d.file.items()
-    d.file.update(name='test_file_3.cfg', text=host_text, new_name='test_file_4.cfg')
+    d.file.update(name='test_file_3.cfg', port=dut.tftp_port, text=host_text, new_name='test_file_4.cfg')
     assert 'test_file_3.cfg' not in d.file.keys()
     assert 'test_file_4.cfg' in d.file.keys()
     assert d.file['test_file_4.cfg']['content'] == host_text
@@ -588,3 +594,5 @@ def test_clean(dut, log_level):
     os.remove('tftp_server_dir/test_file_3.cfg')
     os.remove('tftp_server_dir/test_file_4.cfg')
     os.rmdir('tftp_server_dir')
+
+    os.remove('tftp_port_number')

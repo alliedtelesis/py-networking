@@ -301,8 +301,8 @@ ip ssh server
     myfile.close()
 
     # remote_tftp_server = '10.17.39.119'
-    # create_cmd = 'copy tftp://{0}/temp_1.cfg test_file_2.cfg'.format(remote_tftp_server)
-    # update_cmd = 'copy tftp://{0}/temp_2.cfg test_file_2.cfg'.format(remote_tftp_server)
+    # create_cmd = 'copy tftp://{0}/temp_1.cfg test_file_1.cfg'.format(remote_tftp_server)
+    # update_cmd = 'copy tftp://{0}/temp_2.cfg test_file_1.cfg'.format(remote_tftp_server)
     local_tftp_server = socket.gethostbyname(socket.getfqdn())
     create_cmd = 'copy tftp://{0}/temp_1.cfg test_file_1.cfg'.format(local_tftp_server)
     update_cmd = 'copy tftp://{0}/temp_2.cfg test_file_1.cfg'.format(local_tftp_server)

@@ -624,3 +624,7 @@ def test_remove_files(dut, log_level):
     assert 'test_file_2.cfg' not in d.file.keys()
     assert 'test_file_3.cfg' not in d.file.keys()
     d.close()
+
+
+def test_clean(dut, log_level):
+    os.remove('test_file_0.cfg')

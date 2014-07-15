@@ -2,6 +2,9 @@ import pytest
 import sys
 import re
 import os
+import shutil
+import urllib
+import urllib2
 from hashlib import md5
 from pprint import pprint
 from multiprocessing import Process, Value, Array, Manager
@@ -113,6 +116,34 @@ class Emulator(recvline.HistoricRecvLine):
     def do_state(self):
         self.terminal.write("State is {0}".format(self.parent.state))
         self.terminal.nextLine()
+
+    def do_copy(self, src, dst):
+        if (src.find('tftp://') == 0) or (dst.find('tftp://') == 0):
+            tftp_client_dir = './tftp_client_dir'
+            tftp_server_dir = './tftp_server_dir'
+            if (src.find('tftp://') == 0):
+                src_path = tftp_server_dir + '/' + src.split('/')[-1]
+                dst_path = tftp_client_dir + '/' + dst
+                shutil.copy2(src.split('/')[-1],src_path)
+            else:
+                src_path = tftp_client_dir + '/' + src
+                dst_path = tftp_server_dir + '/' + dst.split('/')[-1]
+            shutil.copy2(src_path,dst_path)
+
+        if (src.find('http://') == 0):
+            aResp = urllib2.urlopen(src)
+            web_pg = aResp.read()
+
+        if (src.find('http://') == 0) or (src.find('tftp://') == 0) or (src == 'r' and dst == 's'):
+            for action in sorted(self.parent.cmds.values(), key=lambda k: (k['seq'], k['state'])):
+                if (action['cmd'].find('http://') > 0 or action['cmd'].find('tftp://') > 0 or action['cmd'] == 'copy r s') and (action['state'] == self.parent.state):
+                    if action['action'] == 'SET_STATE':
+                        self.parent.state = int(action['args'][0])
+                    break
+
+        self._prompt = "#"
+        self.terminal.nextLine()
+        self.showPrompt()
 
 
 class Forwarder(recvline.HistoricRecvLine):

@@ -14,31 +14,31 @@ except ImportError: #pragma: no cover
     from ordereddict import OrderedDict
 
 
-class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
-   def do_GET(self):
-       if self.server.filename == self.path[1:]:
-           try:
-               with open(os.path.abspath(self.server.filename), 'rb') as f:
-                   self.server._d.log_info('sending file {0}'.format(os.path.abspath(self.server.filename)))
-                   self.send_response(200)
-                   self.send_header('Content-type', 'application/octet-string')
-                   self.end_headers()
-                   self.wfile.write(f.read())
-           except:
-               self.server._d.log_error('cannot open file {0}'.format(self.path))
-               self.send_response(404)
-               self.end_headers()
-       else:
-           self.server._d.log_error('wrong file requested {0}'.format(self.path))
-           self.send_response(404)
-           self.end_headers()
+class HTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.server.filename == self.path[1:]:
+            try:
+                with open(os.path.abspath(self.server.filename), 'rb') as f:
+                    self.server._d.log_info('sending file {0}'.format(os.path.abspath(self.server.filename)))
+                    self.send_response(200)
+                    self.send_header('Content-type', 'application/octet-string')
+                    self.end_headers()
+                    self.wfile.write(f.read())
+            except:                                                                 #pragma: no cover
+                self.server._d.log_error('cannot open file {0}'.format(self.path))  #pragma: no cover
+                self.send_response(404)                                             #pragma: no cover
+                self.end_headers()                                                  #pragma: no cover
+        else:                                                                       #pragma: no cover
+            self.server._d.log_error('wrong file requested {0}'.format(self.path))  #pragma: no cover
+            self.send_response(404)                                                 #pragma: no cover
+            self.end_headers()                                                      #pragma: no cover
 
 
 class Server(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
-   def __init__(self, address, handler, device, filename):
-       self.filename = filename
-       self._d = device
-       SocketServer.TCPServer.__init__(self, address, handler)
+    def __init__(self, address, handler, device, filename):
+        self.filename = filename
+        self._d = device
+        SocketServer.TCPServer.__init__(self, address, handler)
 
 
 class awp_file(Feature):
@@ -66,7 +66,6 @@ class awp_file(Feature):
                           '(?P<file_name>[^\s]+)')
         for line in self._device.cmd("dir").split('\n'):
             m = ifre.match(line)
-            self._d.log_info("read {0}".format(line))
             if m:
                 self._file_config[m.group('file_name')] = {'size': m.group('size'),
                                                            'permission': m.group('permission'),
@@ -76,7 +75,7 @@ class awp_file(Feature):
         self._d.log_info(self._file_config)
 
 
-    def create(self, name, text='', filename=''):
+    def create(self, name, port=80, text='', filename=''):
         self._d.log_info("create file {0}".format(name))
         self._update_file()
 
@@ -92,7 +91,7 @@ class awp_file(Feature):
             myfile.close()
 
         # host HTTP server thread
-        server = Server(("", 0), Handler, self._d, filename)
+        server = Server(("", 0), HTTPHandler, self._d, filename)
         ip, port = server.server_address
 
         server_thread = threading.Thread(target=server.serve_forever)
@@ -115,7 +114,7 @@ class awp_file(Feature):
             os.remove(filename)
 
 
-    def update(self, name, filename='', text='', new_name=''):
+    def update(self, name, port=80, filename='', text='', new_name=''):
         self._d.log_info("copying {0} from host to device".format(name))
         self._update_file()
 
@@ -139,7 +138,7 @@ class awp_file(Feature):
             myfile.close()
 
         # host HTTP server thread
-        server = Server(("", 0), Handler, self._d, file_2_copy_from)
+        server = Server(("", 0), HTTPHandler, self._d, file_2_copy_from)
         ip, port = server.server_address
 
         server_thread = threading.Thread(target=server.serve_forever)
@@ -205,8 +204,21 @@ class awp_file(Feature):
     def __getitem__(self, filename):
         self._update_file()
         if filename in self._file.keys():
+            self._file[filename]['content'] = self._update_file_content(filename)
             return self._file[filename]
         raise KeyError('file {0} does not exist'.format(filename))
+
+
+    def _update_file_content(self, filename):
+        self._d.log_info("Read file {0} content".format(filename))
+        read_cmd = 'show file {0}'.format(filename)
+        cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
+                        {'cmd': read_cmd, 'prompt':'\#'}
+                       ]}
+        read_output = self._device.cmd(read_cmd)
+        read_output = read_output.replace('\r', '')
+        read_output = read_output.replace('\n\n', '\n')
+        return read_output
 
 
     def _update_file(self):
@@ -223,7 +235,6 @@ class awp_file(Feature):
                           '(?P<file_name>[^\s]+)')
         for line in self._device.cmd("dir").split('\n'):
             m = ifre.match(line)
-            self._d.log_info("read {0}".format(line))
             if m:
                 key = m.group('file_name')
                 self._file[key] = {'size': m.group('size'),

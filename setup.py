@@ -123,7 +123,8 @@ setup(name             = 'py-networking',
                             'ply',
                             'pyasn1',
                             'pyzmq>=14.0.0',
-                            'ordereddict'
+                            'ordereddict',
+                            'TFTPy'
                          ],
       setup_requires   = [ 'sphinx',
                            'sphinx_rtd_theme'

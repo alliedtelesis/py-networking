@@ -10,10 +10,12 @@ features:
   interface: awp_interface
   user: awp_user
   file: awp_file
+  sw_upgrade: awp_sw_upgrade
 {% elif os == 'ats' %}
   interface: ats_interface
   vlan: ats_vlan
   user: ats_user
   file: ats_file
+  sw_upgrade: ats_sw_upgrade
 {% endif %}
 

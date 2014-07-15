@@ -24,279 +24,152 @@ from paramiko.rsakey import RSAKey
 #
 def setup_dut(dut):
     dut.reset()
-    dut.prompt = '#'
-    dut.add_cmd({'cmd':'show version', 'state':-1, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd':'show version',        'state':-1, 'action': 'PRINT','args':["""
+AlliedWare Plus (TM) 5.4.2 09/25/13 12:57:26
 
-        Unit             SW version         Boot version         HW version
-------------------- ------------------- ------------------- -------------------
-         1               3.0.0.44            1.0.1.07            00.01.00
-
+Build name : x600-5.4.2-3.14.rel
+Build date : Wed Sep 25 12:57:26 NZST 2013
+Build type : RELEASE
     """]})
-    dut.add_cmd({'cmd':'show system', 'state':-1, 'action':'PRINT','args':["""
-
-Unit        Type
----- -------------------
- 1     AT-8000S/24
 
 
-Unit     Up time
----- ---------------
- 1     00,00:14:51
+def test_download_image(dut, log_level):
+    if (dut.mode == 'emulated'):
+        if (os.path.exists('x210-5.4.3-99.99.rel') == True):
+            os.remove('x210-5.4.3-99.99.rel')
+        myfile = open('x210-5.4.3-3.9.rel','w')
+        myfile.write('1')
+        myfile.close()
+        pytest.skip("only on real device")
 
-Unit Number:   1
-Serial number:
-    """]})
-    # if (dut.mode != 'emulated'):
-    #     assert 'root' == getpass.getuser()
-    # dut.http_port = 69
-    # if (getpass.getuser() != 'root'):
-    #     dut.http_port = 20069
-    # dut.http_server_thread = threading.Thread(target=http_server_for_ever, args=(dut.http_port,))
-    # dut.http_server_thread.daemon = True
-    # dut.http_server_thread.start()
-
-
-def test_create_image_with_failures(dut, log_level):
     dir_0 = ["""
-Directory of flash:
-
-     File Name      Permission Flash Size Data Size        Modified
-------------------- ---------- ---------- --------- -----------------------
-starts                  rw       524288      982     01-Oct-2006 01:12:44
-image-1                 rw      5242880    4325376   01-Jan-2000 01:07:08
-image-2                 rw      5242880    4325376   01-Oct-2006 01:28:04
-dhcpsn.prv              --       131072      --      01-Jan-2000 01:02:12
-sshkeys.prv             --       262144      --      01-Oct-2006 01:01:16
-syslog1.sys             r-       262144      --      01-Oct-2006 01:03:28
-syslog2.sys             r-       262144      --      01-Oct-2006 01:03:28
-video-2.cfg             rw       524288      154     01-Oct-2006 01:02:36
-directry.prv            --       262144      --      01-Jan-2000 01:02:12
-startup-config          rw       524288      437     01-Oct-2006 02:07:34
-
-Total size of flash: 15990784 bytes
-Free size of flash: 3276800 bytes
-
+      588 -rw- Jun 10 2014 12:38:10  video-2.cfg
+      588 -rw- Jun 10 2014 12:38:10  video.cfg
+      633 -rw- May 29 2014 12:34:00  voice.cfg
+      588 -rw- Apr 10 2014 08:10:02  default.cfg
+ 16654715 -rw- Jan 20 2014 15:28:41  x210-5.4.3-3.9.rel
+     4647 -rw- Nov 18 2013 11:14:46  x210.cfg
+ 16629994 -rw- Oct  3 2013 09:56:13  x210-5.4.3-2.6.rel
+  3936572 -rw- Oct  3 2013 09:48:43  x210-gui_543_04.jar
+      735 -rw- Aug 23 2013 08:48:35  exception.log
 """]
-    host_text = """
-interface range ethernet 1/e(1-16)
-spanning-tree portfast
-exit
-vlan database
-vlan 2,10,30,100,1000,2000,3000,4000,4045,4093
-exit
-interface vlan 10
-name "long vlan name"
-exit
-interface vlan 1
-ip address 10.17.39.252 255.255.255.0
-name default_vlan
-exit
-hostname nac_dev
-ip ssh server
-"""
     setup_dut(dut)
     dut.add_cmd({'cmd': 'dir'   , 'state':0, 'action':'PRINT','args': dir_0})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
-    # assert 'startup-config' in d.file.keys()
-    # with pytest.raises(KeyError) as excinfo:
-    #     d.file.create(name='startup-config', text=host_text)
-    # with pytest.raises(KeyError) as excinfo:
-    #     d.file.create(name='test_file.cfg', text=host_text, filename='startup-config')
-    # with pytest.raises(KeyError) as excinfo:
-    #     d.file.create(name='test_file.cfg', text=host_text, server='10.17.90.1')
-    # with pytest.raises(KeyError) as excinfo:
-    #     d.file.create(name='test_file.cfg', server='10.17.90.1')
-    # with pytest.raises(KeyError) as excinfo:
-    #     d.file['video-3.cfg']
+
+    assert 'x210-5.4.3-3.9.rel' in d.file.keys()
+    m = d.file['x210-5.4.3-3.9.rel']['content']
+
+    assert m != ''
+    myfile = open('x210-5.4.3-3.9.rel','w')
+    myfile.write(m)
+    myfile.close()
+
+    d.close()
+
+
+def test_create_image_with_failures(dut, log_level):
+    dir_0 = ["""
+      588 -rw- Jun 10 2014 12:38:10  video-2.cfg
+      588 -rw- Jun 10 2014 12:38:10  video.cfg
+      633 -rw- May 29 2014 12:34:00  voice.cfg
+      588 -rw- Apr 10 2014 08:10:02  default.cfg
+ 16654715 -rw- Jan 20 2014 15:28:41  x210-5.4.3-3.9.rel
+     4647 -rw- Nov 18 2013 11:14:46  x210.cfg
+ 16629994 -rw- Oct  3 2013 09:56:13  x210-5.4.3-2.6.rel
+  3936572 -rw- Oct  3 2013 09:48:43  x210-gui_543_04.jar
+      735 -rw- Aug 23 2013 08:48:35  exception.log
+"""]
+    setup_dut(dut)
+    dut.add_cmd({'cmd': 'dir'   , 'state':0, 'action':'PRINT','args': dir_0})
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d.open()
+    assert (os.path.exists('x210-5.4.3-3.9.rel') == True)
+    assert (os.path.exists('x210-5.4.3-99.99.rel') == False)
+    assert 'x210-5.4.3-3.9.rel' in d.file.keys()
+    assert 'x210-5.4.3-99.99.rel' not in d.file.keys()
+    with pytest.raises(KeyError) as excinfo:
+        d.sw_upgrade.create(name='x210-5.4.3-99.99.rel')
+    with pytest.raises(KeyError) as excinfo:
+        d.sw_upgrade.create(name='x210-5.4.3-3.9.rel')
     d.close()
 
 
 def test_update_image_with_failures(dut, log_level):
     dir_0 = ["""
-Directory of flash:
-
-     File Name      Permission Flash Size Data Size        Modified
-------------------- ---------- ---------- --------- -----------------------
-starts                  rw       524288      982     01-Oct-2006 01:12:44
-image-1                 rw      5242880    4325376   01-Jan-2000 01:07:08
-image-2                 rw      5242880    4325376   01-Oct-2006 01:28:04
-dhcpsn.prv              --       131072      --      01-Jan-2000 01:02:12
-sshkeys.prv             --       262144      --      01-Oct-2006 01:01:16
-syslog1.sys             r-       262144      --      01-Oct-2006 01:03:28
-syslog2.sys             r-       262144      --      01-Oct-2006 01:03:28
-video-2.cfg             rw       524288      154     01-Oct-2006 01:02:36
-directry.prv            --       262144      --      01-Jan-2000 01:02:12
-startup-config          rw       524288      437     01-Oct-2006 02:07:34
-test_file_1.cfg         rw       131072      284     20-Jun-2014 11:49:22
-
-Total size of flash: 15990784 bytes
-Free size of flash: 3276800 bytes
-
+      588 -rw- Jun 10 2014 12:38:10  video-2.cfg
+      588 -rw- Jun 10 2014 12:38:10  video.cfg
+      633 -rw- May 29 2014 12:34:00  voice.cfg
+      588 -rw- Apr 10 2014 08:10:02  default.cfg
+ 16654715 -rw- Jan 20 2014 15:28:41  x210-5.4.3-3.9.rel
+     4647 -rw- Nov 18 2013 11:14:46  x210.cfg
+ 16629994 -rw- Oct  3 2013 09:56:13  x210-5.4.3-2.6.rel
+  3936572 -rw- Oct  3 2013 09:48:43  x210-gui_543_04.jar
+      735 -rw- Aug 23 2013 08:48:35  exception.log
 """]
-    host_text = """
-interface range ethernet 1/e(1-16)
-spanning-tree portfast
-exit
-vlan database
-vlan 2,10
-exit
-interface vlan 1
-ip address 10.17.39.252 255.255.255.0
-name default_vlan
-exit
-hostname nac_dev
-ip ssh server
-"""
     setup_dut(dut)
     dut.add_cmd({'cmd': 'dir'   , 'state':0, 'action':'PRINT','args': dir_0})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
-    # assert 'startup-config' in d.file.keys()
-    # with pytest.raises(KeyError) as excinfo:
-    #     d.file.update(name='test_file_3.cfg', text=host_text)
-    # with pytest.raises(KeyError) as excinfo:
-    #     d.file.update(name='test_file_1.cfg', text=host_text, new_name='startup-config')
-    # with pytest.raises(KeyError) as excinfo:
-    #     d.file.update(name='test_file_1.cfg')
-    # with pytest.raises(KeyError) as excinfo:
-    #     d.file.update(name='test_file_1.cfg', filename='host_temp.cfg', text=host_text)
-    # with pytest.raises(KeyError) as excinfo:
-    #     d.file.update(name='test_file_1.cfg', text=host_text, server='10.17.90.1')
-    # with pytest.raises(KeyError) as excinfo:
-    #     d.file.update(name='test_file_1.cfg', server='10.17.90.1')
+    os.rename('x210-5.4.3-3.9.rel', 'x210-5.4.3-99.99.rel')
+    assert (os.path.exists('x210-5.4.3-3.9.rel') == False)
+    assert (os.path.exists('x210-5.4.3-99.99.rel') == True)
+    assert 'x210-5.4.3-3.9.rel' in d.file.keys()
+    assert 'x210-5.4.3-99.99.rel' not in d.file.keys()
+    with pytest.raises(KeyError) as excinfo:
+        d.sw_upgrade.update(name='x210-5.4.3-3.9.rel')
+    with pytest.raises(KeyError) as excinfo:
+        d.sw_upgrade.update(name='x210-5.4.3-99.99.rel')
+    os.rename('x210-5.4.3-99.99.rel', 'x210-5.4.3-3.9.rel')
     d.close()
 
 
 def test_delete_image_with_failures(dut, log_level):
     dir_0 = ["""
-Directory of flash:
-
-     File Name      Permission Flash Size Data Size        Modified
-------------------- ---------- ---------- --------- -----------------------
-starts                  rw       524288      982     01-Oct-2006 01:12:44
-image-1                 rw      5242880    4325376   01-Jan-2000 01:07:08
-image-2                 rw      5242880    4325376   01-Oct-2006 01:28:04
-dhcpsn.prv              --       131072      --      01-Jan-2000 01:02:12
-sshkeys.prv             --       262144      --      01-Oct-2006 01:01:16
-syslog1.sys             r-       262144      --      01-Oct-2006 01:03:28
-syslog2.sys             r-       262144      --      01-Oct-2006 01:03:28
-video-2.cfg             rw       524288      154     01-Oct-2006 01:02:36
-directry.prv            --       262144      --      01-Jan-2000 01:02:12
-startup-config          rw       524288      437     01-Oct-2006 02:07:34
-test_file_1.cfg         rw       131072      284     20-Jun-2014 11:49:22
-
-Total size of flash: 15990784 bytes
-Free size of flash: 3276800 bytes
-
+      588 -rw- Jun 10 2014 12:38:10  video-2.cfg
+      588 -rw- Jun 10 2014 12:38:10  video.cfg
+      633 -rw- May 29 2014 12:34:00  voice.cfg
+      588 -rw- Apr 10 2014 08:10:02  default.cfg
+ 16654715 -rw- Jan 20 2014 15:28:41  x210-5.4.3-3.9.rel
+     4647 -rw- Nov 18 2013 11:14:46  x210.cfg
+ 16629994 -rw- Oct  3 2013 09:56:13  x210-5.4.3-2.6.rel
+  3936572 -rw- Oct  3 2013 09:48:43  x210-gui_543_04.jar
+      735 -rw- Aug 23 2013 08:48:35  exception.log
 """]
     setup_dut(dut)
     dut.add_cmd({'cmd': 'dir'   , 'state':0, 'action':'PRINT','args': dir_0})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
-    # assert 'test_file_x.cfg' not in d.file.keys()
-    # with pytest.raises(KeyError) as excinfo:
-    #     d.file.delete("test_file_x.cfg")
+    assert 'x210-5.4.3-99.99.rel' not in d.file.keys()
+    with pytest.raises(KeyError) as excinfo:
+        d.sw_upgrade.delete("x210-5.4.3-99.99.rel")
     d.close()
 
 
 def test_create_image(dut, log_level):
     dir_0 = ["""
-Directory of flash:
-
-     File Name      Permission Flash Size Data Size        Modified
-------------------- ---------- ---------- --------- -----------------------
-starts                  rw       524288      982     01-Oct-2006 01:12:44
-image-1                 rw      5242880    4325376   01-Jan-2000 01:07:08
-image-2                 rw      5242880    4325376   01-Oct-2006 01:28:04
-dhcpsn.prv              --       131072      --      01-Jan-2000 01:02:12
-sshkeys.prv             --       262144      --      01-Oct-2006 01:01:16
-syslog1.sys             r-       262144      --      01-Oct-2006 01:03:28
-syslog2.sys             r-       262144      --      01-Oct-2006 01:03:28
-video-2.cfg             rw       524288      154     01-Oct-2006 01:02:36
-directry.prv            --       262144      --      01-Jan-2000 01:02:12
-startup-config          rw       524288      437     01-Oct-2006 02:07:34
-
-Total size of flash: 15990784 bytes
-Free size of flash: 3276800 bytes
-
+      588 -rw- Jun 10 2014 12:38:10  video-2.cfg
+      588 -rw- Jun 10 2014 12:38:10  video.cfg
+      633 -rw- May 29 2014 12:34:00  voice.cfg
+      588 -rw- Apr 10 2014 08:10:02  default.cfg
+ 16654715 -rw- Jan 20 2014 15:28:41  x210-5.4.3-3.9.rel
+     4647 -rw- Nov 18 2013 11:14:46  x210.cfg
+ 16629994 -rw- Oct  3 2013 09:56:13  x210-5.4.3-2.6.rel
+  3936572 -rw- Oct  3 2013 09:48:43  x210-gui_543_04.jar
+      735 -rw- Aug 23 2013 08:48:35  exception.log
 """]
     dir_1 = ["""
-Directory of flash:
-
-     File Name      Permission Flash Size Data Size        Modified
-------------------- ---------- ---------- --------- -----------------------
-starts                  rw       524288      982     01-Oct-2006 01:12:44
-image-1                 rw      5242880    4325376   01-Jan-2000 01:07:08
-image-2                 rw      5242880    4325376   01-Oct-2006 01:28:04
-dhcpsn.prv              --       131072      --      01-Jan-2000 01:02:12
-sshkeys.prv             --       262144      --      01-Oct-2006 01:01:16
-syslog1.sys             r-       262144      --      01-Oct-2006 01:03:28
-syslog2.sys             r-       262144      --      01-Oct-2006 01:03:28
-video-2.cfg             rw       524288      154     01-Oct-2006 01:02:36
-directry.prv            --       262144      --      01-Jan-2000 01:02:12
-startup-config          rw       524288      437     01-Oct-2006 02:07:34
-test_file_1.cfg         rw       131072      284     20-Jun-2014 11:49:22
-
-Total size of flash: 15990784 bytes
-Free size of flash: 3276800 bytes
-
+      588 -rw- Jun 10 2014 12:38:10  video-2.cfg
+      588 -rw- Jun 10 2014 12:38:10  video.cfg
+      633 -rw- May 29 2014 12:34:00  voice.cfg
+      588 -rw- Apr 10 2014 08:10:02  default.cfg
+ 16654715 -rw- Jan 20 2014 15:28:41  x210-5.4.3-3.9.rel
+     4647 -rw- Nov 18 2013 11:14:46  x210.cfg
+ 16629994 -rw- Oct  3 2013 09:56:13  x210-5.4.3-2.6.rel
+  3936572 -rw- Oct  3 2013 09:48:43  x210-gui_543_04.jar
+      735 -rw- Aug 23 2013 08:48:35  exception.log
 """]
-    dir_2 = ["""
-Directory of flash:
-
-     File Name      Permission Flash Size Data Size        Modified
-------------------- ---------- ---------- --------- -----------------------
-starts                  rw       524288      982     01-Oct-2006 01:12:44
-image-1                 rw      5242880    4325376   01-Jan-2000 01:07:08
-image-2                 rw      5242880    4325376   01-Oct-2006 01:28:04
-dhcpsn.prv              --       131072      --      01-Jan-2000 01:02:12
-sshkeys.prv             --       262144      --      01-Oct-2006 01:01:16
-syslog1.sys             r-       262144      --      01-Oct-2006 01:03:28
-syslog2.sys             r-       262144      --      01-Oct-2006 01:03:28
-video-2.cfg             rw       524288      154     01-Oct-2006 01:02:36
-directry.prv            --       262144      --      01-Jan-2000 01:02:12
-startup-config          rw       524288      437     01-Oct-2006 02:07:34
-test_file_1.cfg         rw       131072      244     20-Jun-2014 11:52:07
-
-Total size of flash: 15990784 bytes
-Free size of flash: 3276800 bytes
-
-"""]
-    host_text_1 = """
-interface range ethernet 1/e(1-16)
-spanning-tree portfast
-exit
-vlan database
-vlan 2,10,30,100,1000,2000,3000,4000,4045,4093
-exit
-interface vlan 10
-name "long vlan name"
-exit
-interface vlan 1
-ip address 10.17.39.252 255.255.255.0
-name default_vlan
-exit
-hostname nac_dev
-ip ssh server
-"""
-    host_text_2 = """
-interface range ethernet 1/e(1-16)
-spanning-tree portfast
-exit
-vlan database
-vlan 2,10,2000
-exit
-interface vlan 2000
-name video1
-exit
-interface vlan 1
-ip address 10.17.39.252 255.255.255.0
-name default_vlan
-exit
-hostname nac_dev
-ip ssh server
-"""
     setup_dut(dut)
 
     # myfile = open('temp_1.cfg', 'w')
@@ -341,104 +214,27 @@ ip ssh server
 
 def test_update_image(dut, log_level):
     dir_0 = ["""
-Directory of flash:
-
-     File Name      Permission Flash Size Data Size        Modified
-------------------- ---------- ---------- --------- -----------------------
-starts                  rw       524288      982     01-Oct-2006 01:12:44
-image-1                 rw      5242880    4325376   01-Jan-2000 01:07:08
-image-2                 rw      5242880    4325376   01-Oct-2006 01:28:04
-dhcpsn.prv              --       131072      --      01-Jan-2000 01:02:12
-sshkeys.prv             --       262144      --      01-Oct-2006 01:01:16
-syslog1.sys             r-       262144      --      01-Oct-2006 01:03:28
-syslog2.sys             r-       262144      --      01-Oct-2006 01:03:28
-video-2.cfg             rw       524288      154     01-Oct-2006 01:02:36
-directry.prv            --       262144      --      01-Jan-2000 01:02:12
-startup-config          rw       524288      437     01-Oct-2006 02:07:34
-test_file_1.cfg         rw       131072      284     20-Jun-2014 11:49:22
-
-Total size of flash: 15990784 bytes
-Free size of flash: 3276800 bytes
-
+      588 -rw- Jun 10 2014 12:38:10  video-2.cfg
+      588 -rw- Jun 10 2014 12:38:10  video.cfg
+      633 -rw- May 29 2014 12:34:00  voice.cfg
+      588 -rw- Apr 10 2014 08:10:02  default.cfg
+ 16654715 -rw- Jan 20 2014 15:28:41  x210-5.4.3-3.9.rel
+     4647 -rw- Nov 18 2013 11:14:46  x210.cfg
+ 16629994 -rw- Oct  3 2013 09:56:13  x210-5.4.3-2.6.rel
+  3936572 -rw- Oct  3 2013 09:48:43  x210-gui_543_04.jar
+      735 -rw- Aug 23 2013 08:48:35  exception.log
 """]
     dir_1 = ["""
-Directory of flash:
-
-     File Name      Permission Flash Size Data Size        Modified
-------------------- ---------- ---------- --------- -----------------------
-starts                  rw       524288      982     01-Oct-2006 01:12:44
-image-1                 rw      5242880    4325376   01-Jan-2000 01:07:08
-image-2                 rw      5242880    4325376   01-Oct-2006 01:28:04
-dhcpsn.prv              --       131072      --      01-Jan-2000 01:02:12
-sshkeys.prv             --       262144      --      01-Oct-2006 01:01:16
-syslog1.sys             r-       262144      --      01-Oct-2006 01:03:28
-syslog2.sys             r-       262144      --      01-Oct-2006 01:03:28
-video-2.cfg             rw       524288      154     01-Oct-2006 01:02:36
-directry.prv            --       262144      --      01-Jan-2000 01:02:12
-startup-config          rw       524288      437     01-Oct-2006 02:07:34
-test_file_1.cfg         rw       131072      284     20-Jun-2014 11:49:22
-test_file_2.cfg         rw       131072      321     20-Jun-2014 11:54:01
-
-Total size of flash: 15990784 bytes
-Free size of flash: 3276800 bytes
-
+      588 -rw- Jun 10 2014 12:38:10  video-2.cfg
+      588 -rw- Jun 10 2014 12:38:10  video.cfg
+      633 -rw- May 29 2014 12:34:00  voice.cfg
+      588 -rw- Apr 10 2014 08:10:02  default.cfg
+ 16654715 -rw- Jan 20 2014 15:28:41  x210-5.4.3-3.9.rel
+     4647 -rw- Nov 18 2013 11:14:46  x210.cfg
+ 16629994 -rw- Oct  3 2013 09:56:13  x210-5.4.3-2.6.rel
+  3936572 -rw- Oct  3 2013 09:48:43  x210-gui_543_04.jar
+      735 -rw- Aug 23 2013 08:48:35  exception.log
 """]
-    dir_2 = ["""
-Directory of flash:
-
-     File Name      Permission Flash Size Data Size        Modified
-------------------- ---------- ---------- --------- -----------------------
-starts                  rw       524288      982     01-Oct-2006 01:12:44
-image-1                 rw      5242880    4325376   01-Jan-2000 01:07:08
-image-2                 rw      5242880    4325376   01-Oct-2006 01:28:04
-dhcpsn.prv              --       131072      --      01-Jan-2000 01:02:12
-sshkeys.prv             --       262144      --      01-Oct-2006 01:01:16
-syslog1.sys             r-       262144      --      01-Oct-2006 01:03:28
-syslog2.sys             r-       262144      --      01-Oct-2006 01:03:28
-video-2.cfg             rw       524288      154     01-Oct-2006 01:02:36
-directry.prv            --       262144      --      01-Jan-2000 01:02:12
-startup-config          rw       524288      437     01-Oct-2006 02:07:34
-test_file_1.cfg         rw       131072      284     20-Jun-2014 11:49:22
-test_file_2.cfg         rw       131072      202     20-Jun-2014 11:55:43
-
-Total size of flash: 15990784 bytes
-Free size of flash: 3276800 bytes
-
-"""]
-    host_text_1 = """
-interface range ethernet 1/e(1-16)
-spanning-tree portfast
-exit
-vlan database
-vlan 2,10,30,100,1000,2000,3000,4000,4045,4093
-exit
-interface vlan 10
-name "long vlan name"
-exit
-interface vlan 2000
-name video1
-exit
-interface vlan 1
-ip address 10.17.39.252 255.255.255.0
-name default_vlan
-exit
-hostname nac_dev
-ip ssh server
-"""
-    host_text_2 = """
-interface range ethernet 1/e(1-16)
-spanning-tree portfast
-exit
-vlan database
-vlan 2,10
-exit
-interface vlan 1
-ip address 10.17.39.252 255.255.255.0
-name default_vlan
-exit
-hostname nac_dev
-ip ssh server
-"""
     setup_dut(dut)
     local_http_server = socket.gethostbyname(socket.getfqdn())
     # create_cmd = 'copy http://{0}/test_file_2.cfg test_file_2.cfg'.format(local_http_server)
@@ -467,87 +263,27 @@ ip ssh server
 
 def test_delete_image(dut, log_level):
     dir_0 = ["""
-Directory of flash:
-
-     File Name      Permission Flash Size Data Size        Modified
-------------------- ---------- ---------- --------- -----------------------
-starts                  rw       524288      982     01-Oct-2006 01:12:44
-image-1                 rw      5242880    4325376   01-Jan-2000 01:07:08
-image-2                 rw      5242880    4325376   01-Oct-2006 01:28:04
-dhcpsn.prv              --       131072      --      01-Jan-2000 01:02:12
-sshkeys.prv             --       262144      --      01-Oct-2006 01:01:16
-syslog1.sys             r-       262144      --      01-Oct-2006 01:03:28
-syslog2.sys             r-       262144      --      01-Oct-2006 01:03:28
-video-2.cfg             rw       524288      154     01-Oct-2006 01:02:36
-directry.prv            --       262144      --      01-Jan-2000 01:02:12
-startup-config          rw       524288      437     01-Oct-2006 02:07:34
-
-Total size of flash: 15990784 bytes
-Free size of flash: 3276800 bytes
-
+      588 -rw- Jun 10 2014 12:38:10  video-2.cfg
+      588 -rw- Jun 10 2014 12:38:10  video.cfg
+      633 -rw- May 29 2014 12:34:00  voice.cfg
+      588 -rw- Apr 10 2014 08:10:02  default.cfg
+ 16654715 -rw- Jan 20 2014 15:28:41  x210-5.4.3-3.9.rel
+     4647 -rw- Nov 18 2013 11:14:46  x210.cfg
+ 16629994 -rw- Oct  3 2013 09:56:13  x210-5.4.3-2.6.rel
+  3936572 -rw- Oct  3 2013 09:48:43  x210-gui_543_04.jar
+      735 -rw- Aug 23 2013 08:48:35  exception.log
 """]
     dir_1 = ["""
-Directory of flash:
-
-     File Name      Permission Flash Size Data Size        Modified
-------------------- ---------- ---------- --------- -----------------------
-starts                  rw       524288      982     01-Oct-2006 01:12:44
-image-1                 rw      5242880    4325376   01-Jan-2000 01:07:08
-image-2                 rw      5242880    4325376   01-Oct-2006 01:28:04
-dhcpsn.prv              --       131072      --      01-Jan-2000 01:02:12
-sshkeys.prv             --       262144      --      01-Oct-2006 01:01:16
-syslog1.sys             r-       262144      --      01-Oct-2006 01:03:28
-syslog2.sys             r-       262144      --      01-Oct-2006 01:03:28
-video-2.cfg             rw       524288      154     01-Oct-2006 01:02:36
-directry.prv            --       262144      --      01-Jan-2000 01:02:12
-startup-config          rw       524288      437     01-Oct-2006 02:07:34
-test_file_3.cfg         rw       524288       1      20-Jun-2014 11:51:01
-
-Total size of flash: 15990784 bytes
-Free size of flash: 3276800 bytes
-
+      588 -rw- Jun 10 2014 12:38:10  video-2.cfg
+      588 -rw- Jun 10 2014 12:38:10  video.cfg
+      633 -rw- May 29 2014 12:34:00  voice.cfg
+      588 -rw- Apr 10 2014 08:10:02  default.cfg
+ 16654715 -rw- Jan 20 2014 15:28:41  x210-5.4.3-3.9.rel
+     4647 -rw- Nov 18 2013 11:14:46  x210.cfg
+ 16629994 -rw- Oct  3 2013 09:56:13  x210-5.4.3-2.6.rel
+  3936572 -rw- Oct  3 2013 09:48:43  x210-gui_543_04.jar
+      735 -rw- Aug 23 2013 08:48:35  exception.log
 """]
-    dir_2 = ["""
-Directory of flash:
-
-     File Name      Permission Flash Size Data Size        Modified
-------------------- ---------- ---------- --------- -----------------------
-starts                  rw       524288      982     01-Oct-2006 01:12:44
-image-1                 rw      5242880    4325376   01-Jan-2000 01:07:08
-image-2                 rw      5242880    4325376   01-Oct-2006 01:28:04
-dhcpsn.prv              --       131072      --      01-Jan-2000 01:02:12
-sshkeys.prv             --       262144      --      01-Oct-2006 01:01:16
-syslog1.sys             r-       262144      --      01-Oct-2006 01:03:28
-syslog2.sys             r-       262144      --      01-Oct-2006 01:03:28
-video-2.cfg             rw       524288      154     01-Oct-2006 01:02:36
-directry.prv            --       262144      --      01-Jan-2000 01:02:12
-startup-config          rw       524288      437     01-Oct-2006 02:07:34
-test_file_4.cfg         rw       524288      286     20-Jun-2014 11:52:38
-
-Total size of flash: 15990784 bytes
-Free size of flash: 3276800 bytes
-
-"""]
-    host_text = """
-interface range ethernet 1/e(1-16)
-spanning-tree portfast
-exit
-vlan database
-vlan 2,10,2000,2001
-exit
-interface vlan 2000
-name video1
-exit
-interface vlan 2001
-name voice1
-exit
-interface vlan 1
-ip address 10.17.39.252 255.255.255.0
-name default_vlan
-exit
-hostname nac_dev
-ip ssh server
-"""
     setup_dut(dut)
     # local_http_server = socket.gethostbyname(socket.getfqdn())
     # create_cmd = 'copy http://{0}/test_file_3.cfg test_file_3.cfg'.format(local_http_server)
@@ -580,19 +316,4 @@ ip ssh server
 def test_clean(dut, log_level):
     if dut.mode != 'emulated':
         pytest.skip("only on emulated")
-    #
-    # os.remove('http_client_dir/test_file_1.cfg')
-    # os.remove('http_client_dir/test_file_2.cfg')
-    # os.remove('http_client_dir/test_file_3.cfg')
-    # os.remove('http_client_dir/test_file_4.cfg')
-    # os.rmdir('http_client_dir')
-    #
-    # os.remove('http_server_dir/temp_1.cfg')
-    # os.remove('http_server_dir/temp_2.cfg')
-    # os.remove('http_server_dir/test_file_1.cfg')
-    # os.remove('http_server_dir/test_file_2.cfg')
-    # os.remove('http_server_dir/test_file_3.cfg')
-    # os.remove('http_server_dir/test_file_4.cfg')
-    # os.rmdir('http_server_dir')
-    #
-    # os.remove('http_port_number')
+    os.remove('x210-5.4.3-3.9.rel')

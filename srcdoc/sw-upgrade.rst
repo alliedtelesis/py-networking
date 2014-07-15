@@ -29,7 +29,7 @@ Methods
 Create a new image on the device.
 The *server* parameter is the address of the host where the server is running.
 If not given it's the library host one.
-The *filename* parameter is the new name of the image on the device.
+The *filename* parameter is the image name on the device.
 If not given it's *name*.
 
 **Parameters**:
@@ -51,7 +51,7 @@ If not given it's *name*.
 Update an existing image on the device.
 The *server* parameter is the address of the host where the server is running.
 If not given it's the library host one.
-The *filename* parameter is the new name of the image on the device.
+The *filename* parameter is the image name on the server.
 If not given it's *name*.
 
 **Parameters**:

@@ -77,13 +77,18 @@ class awp_sw_upgrade(Feature):
         self._d.log_info("create image {0}".format(name))
         self._update_file()
 
+        if (os.path.exists(name) == False):
+            raise KeyError('image {0} not available on server'.format(name))
         if name in self._d.file.keys():
             raise KeyError('image {0} is already existing'.format(name))
-        if filename in self._d.file.keys():
-            raise KeyError('file {0} is already existing'.format(name))
+
+        # if filename in self._d.file.keys():
+        #     raise KeyError('file {0} is already existing'.format(name))
 
         # if (filename == ''):
         #     filename = name
+        # if (server == ''):
+        #     server = socket.gethostbyname(socket.getfqdn())
         #     myfile = open(filename, 'w')
         #     myfile.write(text)
         #     myfile.close()
@@ -116,10 +121,12 @@ class awp_sw_upgrade(Feature):
         self._d.log_info("upgrading image {0}".format(name))
         self._update_file()
 
+        if (os.path.exists(name) == False):
+            raise KeyError('image {0} not available on server'.format(name))
         if name not in self._d.file.keys():
             raise KeyError('image {0} is not existing'.format(name))
-        if filename in self._d.file.keys():
-            raise KeyError('file {0} cannot be overwritten'.format(new_name))
+        # if filename in self._d.file.keys():
+        #     raise KeyError('file {0} cannot be overwritten'.format(new_name))
 
         # # data to be copied will always come from a local file named 'file_2_copy_from'
         # if (filename == ''):

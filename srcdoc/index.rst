@@ -9,6 +9,7 @@ Contents
     facts
     file
     interface
+    sw-upgrade
     user
     vlan
     cookbook

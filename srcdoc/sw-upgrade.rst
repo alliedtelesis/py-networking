@@ -1,6 +1,6 @@
 Software upgrade feature
 ************************
-This feature allows the running image upgrade.
+This feature allows to upgrade the device software (image).
 
 Operations
 ----------
@@ -21,61 +21,29 @@ Operations
 Methods
 -------
 
-**create(name, server=None, filename=None)**
-""""""""""""""""""""""""""""""""""""""""""""
-**Mandatory**
-
-**Description**:
-Create a new image on the device.
-The *server* parameter is the address of the host where the server is running.
-If not given it's the library host one.
-The *filename* parameter is the image name on the device.
-If not given it's *name*.
-
-**Parameters**:
-
-    - *name*: string
-        Image name
-
-    - *server*: string
-        Server IP address
-
-    - *filename*: string
-        New image name on the device
-
 **update(name, server=None, filename=None)**
 """"""""""""""""""""""""""""""""""""""""""""
 **Mandatory**
 
 **Description**:
-Update an existing image on the device.
+It allows the software upgrade.
 The *server* parameter is the address of the host where the server is running.
 If not given it's the library host one.
-The *filename* parameter is the image name on the server.
+The *filename* parameter is the image name on the device.
+It cannot be the current running image name.
 If not given it's *name*.
+Once the upload has terminated, the device is rebooted and the new image will be run.
 
 **Parameters**:
 
     - *name*: string
-        Image name
+        Image name on server
 
     - *server*: string
         Server IP address
 
     - *filename*: string
-        New image name on the device
-
-**delete**
-""""""""""
-**Mandatory**
-
-**Description**:
-Remove an existing image on the device.
-
-**Parameters**:
-
-    - *name*: string
-        Name of the image to be removed.
+        Image name on the device
 
 **keys**
 """"""""
@@ -93,15 +61,25 @@ Remove an existing image on the device.
 Parameters
 ----------
 
-boot
-""""
+active
+""""""
 **Mandatory**
 
 **ReadOnly**
 
 **Type:** Boolean
 
-**Description**: True if current boot image.
+**Description**: True if current running image.
+
+nextboot
+""""""""
+**Mandatory**
+
+**ReadOnly**
+
+**Type:** Boolean
+
+**Description**: True if image will be running at reboot.
 
 version
 """""""

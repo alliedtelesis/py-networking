@@ -8,6 +8,7 @@ import getpass
 import socket
 import threading
 import tftpy
+import ats_file
 
 from tempfile import mkstemp
 from time import sleep
@@ -25,10 +26,13 @@ class ats_sw_upgrade(Feature):
         Feature.__init__(self, device, **kvargs)
         self._d = device
         self._d.log_debug("loading feature")
+        self._image_config={}
+        self._image={}
+        self._file = ats_file
 
     def load_config(self, config):
         self._d.log_info("loading config")
-        self._file_config = OrderedDict()
+        self._image_config = OrderedDict()
         #
         # # starts                  rw       524288      982     01-Oct-2006 01:12:44
         # ifre = re.compile('(?P<file_name>[^\s]+)\s+'
@@ -51,7 +55,7 @@ class ats_sw_upgrade(Feature):
 
     def create(self, name, server='', filename=''):
         self._d.log_info("create image {0}".format(name))
-        self._update_file()
+        self._update_image_dict()
 
         if (os.path.exists(name) == False):
             raise KeyError('image {0} not available on server'.format(name))
@@ -83,55 +87,40 @@ class ats_sw_upgrade(Feature):
         # self._device.load_system()
 
 
-    def update(self, name, server='', filename=''):
+    def update(self, name, port=69, server='', filename=''):
         self._d.log_info("upgrading image {0}".format(name))
-        self._update_file()
+        self._update_image_dict()
 
         if (os.path.exists(name) == False):
-            raise KeyError('image {0} not available on server'.format(name))
-        if name not in self._d.file.keys():
-            raise KeyError('image {0} is not existing'.format(name))
+            raise KeyError('image {0} not available'.format(name))
 
-        # # data to be copied will always come from a local file named 'file_2_copy_from'
-        # if (filename == ''):
-        #     file_2_copy_from = name
-        # else:
-        #     file_2_copy_from = filename
-        # if (text != ''):
-        #     myfile = open(file_2_copy_from, 'w')
-        #     myfile.write(text)
-        #     myfile.close()
-        #
+        self._file.create(self, 'image', port=port, filename=name, server=server)
+        boot_cmd = 'boot system image-{0}'.format(self._get_stand_by_bank())
+        cmds = {'cmds': [{'cmd': boot_cmd, 'prompt': '\#'}
+                        ]}
+        self._device.cmd(cmds, cache=False, flush_cache=True)
+        self._device.load_system()
+
         # # upload on TFTP server
         # if (server == ''):
         #     server = socket.gethostbyname(socket.getfqdn())
         # tftp_client = tftpy.TftpClient(server, port)
-        # tftp_client.upload(file_2_copy_from, file_2_copy_from)
-        # self._update_port(port)
+        # tftp_client.upload(name, name)
         #
         # # device commands
-        # if (new_name == ''):
-        #     update_cmd = 'copy tftp://{0}/{1} {2}'.format(server, file_2_copy_from, name)
-        #     cmds = {'cmds': [{'cmd': update_cmd, 'prompt': ''  },
-        #                      {'cmd': 'y'       , 'prompt': '\#'}
-        #                     ]}
-        # else:
-        #     update_cmd = 'copy tftp://{0}/{1} {2}'.format(server, file_2_copy_from, new_name)
-        #     delete_cmd = 'delete {0}'.format(name)
-        #     cmds = {'cmds': [{'cmd': update_cmd, 'prompt': '\#'},
-        #                      {'cmd': delete_cmd, 'prompt': ''  },
-        #                      {'cmd': 'y'       , 'prompt': '\#'}
-        #                      ]}
+        # stand_by_bank = 1 #FIXME
+        # update_cmd = 'copy tftp://{0}/{1} image'.format(server, name)
+        # boot_cmd = 'boot system image-{0}'.format(stand_by_bank)
+        # cmds = {'cmds': [{'cmd': update_cmd, 'prompt': '\#'},
+        #                  {'cmd': boot_cmd  , 'prompt': '\#'}
+        #                 ]}
         # self._device.cmd(cmds, cache=False, flush_cache=True)
         # self._device.load_system()
-        #
-        # if (text != ''):
-        #     os.remove(file_2_copy_from)
 
 
     def delete(self, name):
         self._d.log_info("remove image {0}".format(name))
-        self._update_file()
+        self._update_image_dict()
 
         if name not in self._d.file.keys():
             raise KeyError('image {0} is not existing'.format(name))
@@ -146,17 +135,17 @@ class ats_sw_upgrade(Feature):
 
 
     def items(self):
-        self._update_file()
+        self._update_image_dict()
         return self._file.items()
 
 
     def keys(self):
-        self._update_file()
+        self._update_image_dict()
         return self._file.keys()
 
 
     def __getitem__(self, filename):
-        self._update_file()
+        self._update_image_dict()
         if filename in self._file.keys():
             self._file[filename]['content'] = self._update_image_content(filename)
             return self._file[filename]
@@ -182,10 +171,9 @@ class ats_sw_upgrade(Feature):
         # return read_output
 
 
-    def _update_file(self):
-        self._d.log_info("_update_file")
-        self._file = OrderedDict()
-
+    def _update_image_dict(self):
+        self._d.log_info("_update_image_dict")
+        self._image = OrderedDict()
         # # starts                  rw       524288      982     01-Oct-2006 01:12:44
         # ifre = re.compile('(?P<file_name>[^\s]+)\s+'
         #                   '(?P<permission>[^\s]+)\s+'
@@ -205,3 +193,8 @@ class ats_sw_upgrade(Feature):
         #                           }
         #         self._file[key] = dict(self._file[key].items() + self._file_config[key].items())
         # self._d.log_debug("File {0}".format(pformat(json.dumps(self._file))))
+
+
+    def _get_stand_by_bank(self):
+        stand_by_bank = 1 #FIXME
+        return stand_by_bank

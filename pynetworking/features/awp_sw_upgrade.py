@@ -78,7 +78,7 @@ class awp_sw_upgrade(Feature):
         self._update_file()
 
         if (os.path.exists(name) == False):
-            raise KeyError('image {0} not available on server'.format(name))
+            raise KeyError('image {0} not available'.format(name))
         if name in self._d.file.keys():
             raise KeyError('image {0} is already existing'.format(name))
 
@@ -122,7 +122,7 @@ class awp_sw_upgrade(Feature):
         self._update_file()
 
         if (os.path.exists(name) == False):
-            raise KeyError('image {0} not available on server'.format(name))
+            raise KeyError('image {0} not available'.format(name))
         if name not in self._d.file.keys():
             raise KeyError('image {0} is not existing'.format(name))
         # if filename in self._d.file.keys():

@@ -5,6 +5,7 @@ import socket
 import logging
 import zmq
 import json
+import ats_file
 
 log = logging.getLogger(__name__)
 
@@ -50,4 +51,22 @@ class ats_system(object):
         self._d.log_info('ping')
         self._d.cmd('show version', use_cache=False)
 
-        
+    def update(self, name, server='', filename=''):
+        self._d.log_info("upgrading image {0}".format(name))
+        self._update_image_dict()
+
+        if (os.path.exists(name) == False):
+            raise KeyError('image {0} not available'.format(name))
+
+        self._file.create(self, 'image', port=port, filename=name, server=server)
+        boot_cmd = 'boot system image-{0}'.format(self._get_stand_by_bank())
+        cmds = {'cmds': [{'cmd': boot_cmd, 'prompt': '\#'},
+                         {'cmd': 'reboot', 'prompt': ''  },
+                         {'cmd': 'y'     , 'prompt': '\#'}
+                        ]}
+        self._d.cmd(cmds, cache=False, flush_cache=True)
+        self._d.load_system()
+
+    def _get_stand_by_bank(self):
+        stand_by_bank = 1 #FIXME
+        return stand_by_bank

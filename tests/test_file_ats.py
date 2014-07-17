@@ -594,5 +594,3 @@ def test_clean(dut, log_level):
     os.remove('tftp_server_dir/test_file_3.cfg')
     os.remove('tftp_server_dir/test_file_4.cfg')
     os.rmdir('tftp_server_dir')
-
-    os.remove('tftp_port_number')

@@ -25,6 +25,7 @@ class ats_file(Feature):
         Feature.__init__(self, device, **kvargs)
         self._file_config={}
         self._file={}
+        self._tftp_port=69
         self._d = device
         self._d.log_debug("loading feature")
 
@@ -81,7 +82,7 @@ class ats_file(Feature):
             server = socket.gethostbyname(socket.getfqdn())
         tftp_client = tftpy.TftpClient(server, port)
         tftp_client.upload(filename, filename)
-        self._update_port(port)
+        self._tftp_port = port
 
         # device commands
         create_cmd = 'copy tftp://{0}/{1} {2}'.format(server, filename, name)
@@ -120,7 +121,7 @@ class ats_file(Feature):
             server = socket.gethostbyname(socket.getfqdn())
         tftp_client = tftpy.TftpClient(server, port)
         tftp_client.upload(file_2_copy_from, file_2_copy_from)
-        self._update_port(port)
+        self._tftp_port = port
 
         # device commands
         if (new_name == ''):
@@ -176,13 +177,6 @@ class ats_file(Feature):
         raise KeyError('file {0} does not exist'.format(filename))
 
 
-    def _get_port(self):
-        myfile = open('tftp_port_number', 'r')
-        port = int(myfile.read())
-        myfile.close()
-        return port
-
-
     def _update_file_content(self, filename):
         self._d.log_info("Read file {0} content".format(filename))
         read_cmd = 'copy {0} tftp://{1}/{0}'.format(filename, socket.gethostbyname(socket.getfqdn()))
@@ -191,7 +185,7 @@ class ats_file(Feature):
         self._device.load_system()
         temp, temp_file_name = mkstemp()
 
-        client = tftpy.TftpClient(socket.gethostbyname(socket.getfqdn()), self._get_port())
+        client = tftpy.TftpClient(socket.gethostbyname(socket.getfqdn()), self._tftp_port)
         client.download(filename, temp_file_name)
 
         read_output = ''
@@ -226,12 +220,4 @@ class ats_file(Feature):
                 self._file[key] = dict(self._file[key].items() + self._file_config[key].items())
         self._d.log_debug("File {0}".format(pformat(json.dumps(self._file))))
 
-
-    def _update_port(self, port):
-        if (os.path.exists('tftp_port_number') == False):
-            self._d.log_info("_update_port {0}".format(port))
-            myfile = open('tftp_port_number', 'w')
-            str_port = '{0}'.format(port)
-            myfile.write(str_port)
-            myfile.close()
 

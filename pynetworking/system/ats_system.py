@@ -7,7 +7,7 @@ import logging
 import zmq
 import json
 import os
-# import ats_file
+
 try:
     from collections import OrderedDict
 except ImportError: #pragma: no cover
@@ -21,8 +21,6 @@ class ats_system(object):
     """
     def __init__(self, device):
         self._d =  device
-        self._image_config = {}
-        self._image = {}
 
     def get_config(self):
         self._d.log_info('getting device configuration')
@@ -59,15 +57,13 @@ class ats_system(object):
         self._d.log_info('ping')
         self._d.cmd('show version', use_cache=False)
 
-    def update(self, name, server='', filename=''):
+    def update(self, name, port=69, server='', filename=''):
         self._d.log_info("upgrading image {0}".format(name))
-        # self._update_image_dict()
-        # self._image = ats_file()
 
         if (os.path.exists(name) == False):
             raise KeyError('image {0} not available'.format(name))
 
-        # self._image.create(self, name, filename='image', server=server)
+        self._d.file.create(name='image', port=port, filename=name, server=server)
         boot_cmd = 'boot system image-{0}'.format(self._get_stand_by_bank())
         cmds = {'cmds': [{'cmd': boot_cmd, 'prompt': '\#'},
                          {'cmd': 'reboot', 'prompt': ''  },

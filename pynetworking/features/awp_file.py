@@ -75,7 +75,7 @@ class awp_file(Feature):
         self._d.log_info(self._file_config)
 
 
-    def create(self, name, port=80, text='', filename=''):
+    def create(self, name, text='', filename=''):
         self._d.log_info("create file {0}".format(name))
         self._update_file()
 
@@ -114,7 +114,7 @@ class awp_file(Feature):
             os.remove(filename)
 
 
-    def update(self, name, port=80, filename='', text='', new_name=''):
+    def update(self, name, filename='', text='', new_name=''):
         self._d.log_info("copying {0} from host to device".format(name))
         self._update_file()
 

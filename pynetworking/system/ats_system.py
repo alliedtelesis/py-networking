@@ -57,7 +57,7 @@ class ats_system(object):
         self._d.log_info('ping')
         self._d.cmd('show version', use_cache=False)
 
-    def update(self, name, port=69, server='', filename=''):
+    def update(self, name, port=69, server=''):
         self._d.log_info("upgrading image {0}".format(name))
 
         if (os.path.exists(name) == False):

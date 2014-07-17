@@ -153,7 +153,11 @@ def SSHProxy(device):
                             chan.send(c['cmd'])
                         else:
                             chan.send(c['cmd']+'\n')
-                        out += _get_reply(device, chan, c['prompt'])
+                        if ('timeout' in c.keys()):
+                            max_wait = c['timeout']/1000
+                        else:
+                            max_wait = 5
+                        out += _get_reply(device, chan, c['prompt'], max_wait)
                 if cmd['flush_cache']:
                     device.log_info("flush cache")
                     cache.flush()
@@ -165,19 +169,19 @@ def SSHProxy(device):
                 ret = {'status':'Error','output':'ProxyException'}
         zmq_s.send_string(json.dumps(ret))
 
-def _get_reply(device, chan, prompt):
+def _get_reply(device, chan, prompt, max_wait=5):
     prompt = '[\n\r]\w*' + prompt
     try:
         device.log_debug("waiting for {0}".format(repr(prompt)))
         buff = ''
-        deadline = time() + 5
+        deadline = time() + max_wait
         while True:
             ret = chan.recv(999)
             if ret == '' and deadline < time():
                 raise socket.timeout
             elif ret != '':
                 buff += ret
-                deadline = time() + 5
+                deadline = time() + max_wait
             if re.search(prompt,buff):
                 device.log_debug("got prompt")
                 break

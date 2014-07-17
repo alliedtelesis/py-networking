@@ -84,9 +84,10 @@ class ats_file(Feature):
         tftp_client.upload(filename, filename)
         self._tftp_port = port
 
-        # device commands
+        # device commands (timeout of 10 seconds for each MB)
+        timeout = (os.path.getsize(filename)/1048576 + 1)*10000
         create_cmd = 'copy tftp://{0}/{1} {2}'.format(server, filename, name)
-        cmds = {'cmds':[{'cmd': create_cmd  , 'prompt':'\#'}]}
+        cmds = {'cmds':[{'cmd': create_cmd, 'prompt': '\#', 'timeout': timeout}]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()
 
@@ -123,18 +124,19 @@ class ats_file(Feature):
         tftp_client.upload(file_2_copy_from, file_2_copy_from)
         self._tftp_port = port
 
-        # device commands
+        # device commands (timeout of 10 seconds for each MB)
+        timeout = (os.path.getsize(file_2_copy_from)/1048576 + 1)*10000
         if (new_name == ''):
             update_cmd = 'copy tftp://{0}/{1} {2}'.format(server, file_2_copy_from, name)
             cmds = {'cmds': [{'cmd': update_cmd, 'prompt': ''  },
-                             {'cmd': 'y'       , 'prompt': '\#'}
+                             {'cmd': 'y'       , 'prompt': '\#', 'timeout' : timeout}
                             ]}
         else:
             update_cmd = 'copy tftp://{0}/{1} {2}'.format(server, file_2_copy_from, new_name)
             delete_cmd = 'delete {0}'.format(name)
-            cmds = {'cmds': [{'cmd': update_cmd, 'prompt': '\#'},
+            cmds = {'cmds': [{'cmd': update_cmd, 'prompt': '\#', 'timeout': timeout},
                              {'cmd': delete_cmd, 'prompt': ''  },
-                             {'cmd': 'y'       , 'prompt': '\#'}
+                             {'cmd': 'y'       , 'prompt': '\#', 'timeout': timeout}
                              ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()

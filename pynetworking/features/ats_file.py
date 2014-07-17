@@ -29,7 +29,7 @@ class ats_file(Feature):
         self._d = device
         self._d.log_debug("loading feature")
 
-    def load_config(self, config):
+    def load_config(self, config=''):
         self._d.log_info("loading config")
         self._file_config = OrderedDict()
 
@@ -89,7 +89,7 @@ class ats_file(Feature):
         create_cmd = 'copy tftp://{0}/{1} {2}'.format(server, filename, name)
         cmds = {'cmds':[{'cmd': create_cmd, 'prompt': '\#', 'timeout': timeout}]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
-        self._device.load_system()
+        self.load_config()
 
 
     def update(self, name, port=69, filename='', text='', new_name='', server=''):
@@ -139,7 +139,7 @@ class ats_file(Feature):
                              {'cmd': 'y'       , 'prompt': '\#', 'timeout': timeout}
                              ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
-        self._device.load_system()
+        self.load_config()
 
         if (text != ''):
             os.remove(file_2_copy_from)
@@ -158,7 +158,7 @@ class ats_file(Feature):
                        ]}
 
         self._device.cmd(cmds, cache=False, flush_cache=True)
-        self._device.load_system()
+        self.load_config()
 
 
     def items(self):

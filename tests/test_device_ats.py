@@ -1,5 +1,7 @@
 import pytest
 import logging
+import socket
+import os
 from pynetworking import Device, DeviceException
 from time import sleep
 from paramiko.rsakey import RSAKey
@@ -107,4 +109,39 @@ def test_ping1(dut, log_level):
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
     assert d.ping()
+    d.close()
+
+
+def test_software_upgrade(dut, log_level):
+    output_0 = ["""
+Unit  Image  Filename   Version    Date                    Status
+----  -----  ---------  ---------  ---------------------   -----------
+1     1      image-1    3.0.0.44   02-Oct-2011  13:29:54   Not active
+1     2      image-2    3.0.0.44   02-Oct-2011  13:29:54   Active*
+
+"*" designates that the image was selected for the next boot
+
+"""]
+    output_1 = ["""
+Unit  Image  Filename   Version    Date                    Status
+----  -----  ---------  ---------  ---------------------   -----------
+1     1      image-1    3.0.0.45   02-Oct-2011  13:31:37   Not active*
+1     2      image-2    3.0.0.44   02-Oct-2011  13:29:54   Active
+
+"*" designates that the image was selected for the next boot
+
+"""]
+    setup_dut(dut)
+    local_tftp_server = socket.gethostbyname(socket.getfqdn())
+    update_cmd = 'copy tftp://{0}/test_file_2.cfg image'.format(local_tftp_server)
+    dut.add_cmd({'cmd': 'show bootvar', 'state':0, 'action':'PRINT','args': output_0})
+    dut.add_cmd({'cmd': update_cmd    , 'state':0, 'action':'SET_STATE','args': [1]})
+    dut.add_cmd({'cmd': 'show bootvar', 'state':1, 'action':'PRINT','args': output_1})
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    d.open()
+    assert (os.path.exists('8000s-5.4.3-3.9.rel') == True)
+    assert (os.path.exists('8001s-5.4.3-3.9.rel') == False)
+    with pytest.raises(KeyError) as excinfo:
+        d.system.update(name='8001s-5.4.3-3.9.rel')
+    d.system.update(name='8000s-5.4.3-3.9.rel')
     d.close()

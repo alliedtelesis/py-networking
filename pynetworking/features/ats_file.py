@@ -23,33 +23,14 @@ class ats_file(Feature):
     """
     def __init__(self, device, **kvargs):
         Feature.__init__(self, device, **kvargs)
-        self._file_config={}
+        # self._file_config={}
         self._file={}
         self._tftp_port=69
         self._d = device
         self._d.log_debug("loading feature")
 
-    def load_config(self, config=''):
+    def load_config(self, config):
         self._d.log_info("loading config")
-        self._file_config = OrderedDict()
-
-        # starts                  rw       524288      982     01-Oct-2006 01:12:44
-        ifre = re.compile('(?P<file_name>[^\s]+)\s+'
-                          '(?P<permission>[^\s]+)\s+'
-                          '(?P<flash_size>\d+)\s+'
-                          '(?P<data_size>\d+)\s+'
-                          '(?P<date>[^\s]+)\s+'
-                          '(?P<time>[^\s]+)\s+')
-        for line in self._device.cmd("dir").split('\n'):
-            m = ifre.match(line)
-            self._d.log_info("read {0}".format(line))
-            if m:
-                self._file_config[m.group('file_name')] = {'size': m.group('data_size'),
-                                                           'permission': m.group('permission'),
-                                                           'mdate': m.group('date'),
-                                                           'mtime': m.group('time')
-                                                          }
-        self._d.log_info(self._file_config)
 
 
     def create(self, name, port=69, text='', filename='', server=''):
@@ -84,12 +65,12 @@ class ats_file(Feature):
         tftp_client.upload(filename, filename)
         self._tftp_port = port
 
-        # device commands (timeout of 10 seconds for each MB)
-        timeout = (os.path.getsize(filename)/1048576 + 1)*10000
+        # device commands (timeout of 50 seconds for each MB)
+        timeout = (os.path.getsize(filename)/1048576 + 1)*50000
         create_cmd = 'copy tftp://{0}/{1} {2}'.format(server, filename, name)
         cmds = {'cmds':[{'cmd': create_cmd, 'prompt': '\#', 'timeout': timeout}]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
-        self.load_config()
+        self._update_file()
 
 
     def update(self, name, port=69, filename='', text='', new_name='', server=''):
@@ -124,8 +105,8 @@ class ats_file(Feature):
         tftp_client.upload(file_2_copy_from, file_2_copy_from)
         self._tftp_port = port
 
-        # device commands (timeout of 10 seconds for each MB)
-        timeout = (os.path.getsize(file_2_copy_from)/1048576 + 1)*10000
+        # device commands (timeout of 50 seconds for each MB)
+        timeout = (os.path.getsize(file_2_copy_from)/1048576 + 1)*50000
         if (new_name == ''):
             update_cmd = 'copy tftp://{0}/{1} {2}'.format(server, file_2_copy_from, name)
             cmds = {'cmds': [{'cmd': update_cmd, 'prompt': ''  },
@@ -139,7 +120,7 @@ class ats_file(Feature):
                              {'cmd': 'y'       , 'prompt': '\#', 'timeout': timeout}
                              ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
-        self.load_config()
+        self._update_file()
 
         if (text != ''):
             os.remove(file_2_copy_from)
@@ -158,7 +139,7 @@ class ats_file(Feature):
                        ]}
 
         self._device.cmd(cmds, cache=False, flush_cache=True)
-        self.load_config()
+        self._update_file()
 
 
     def items(self):
@@ -219,7 +200,6 @@ class ats_file(Feature):
                                    'mdate': m.group('date'),
                                    'mtime': m.group('time')
                                   }
-                self._file[key] = dict(self._file[key].items() + self._file_config[key].items())
         self._d.log_debug("File {0}".format(pformat(json.dumps(self._file))))
 
 

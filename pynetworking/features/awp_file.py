@@ -165,7 +165,7 @@ class awp_file(Feature):
         delete_cmd = 'delete {0}'.format(file_name)
         cmds = {'cmds':[{'cmd': 'enable'  , 'prompt':'\#'},
                         {'cmd': delete_cmd, 'prompt':''  },
-                        {'cmd': 'y'       , 'prompt':'\#'}
+                        {'cmd': 'y'       , 'prompt':'\#', 'timeout': 10000}
                        ]}
 
         self._device.cmd(cmds, cache=False, flush_cache=True)

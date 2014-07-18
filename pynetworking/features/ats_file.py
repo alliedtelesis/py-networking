@@ -135,7 +135,7 @@ class ats_file(Feature):
 
         delete_cmd = 'delete {0}'.format(file_name)
         cmds = {'cmds':[{'cmd': delete_cmd, 'prompt':''  },
-                        {'cmd': 'y'       , 'prompt':'\#'}
+                        {'cmd': 'y'       , 'prompt':'\#', 'timeout': 10000}
                        ]}
 
         self._device.cmd(cmds, cache=False, flush_cache=True)

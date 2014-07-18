@@ -47,32 +47,13 @@ class awp_file(Feature):
     """
     def __init__(self, device, **kvargs):
         Feature.__init__(self, device, **kvargs)
-        self._file_config={}
         self._file={}
         self._d = device
         self._d.log_debug("loading feature")
 
+
     def load_config(self, config):
         self._d.log_info("loading config")
-        self._file_config = OrderedDict()
-
-        # 588 -rw- Jun 10 2014 12:38:10  michele.cfg
-        ifre = re.compile('\s+(?P<size>\d+)\s+'
-                          '(?P<permission>[^\s]+)\s+'
-                          '(?P<month>[^\s]+)\s+'
-                          '(?P<day>\d+)\s+'
-                          '(?P<year>\d+)\s+'
-                          '(?P<hhmmss>[^\s]+)\s+'
-                          '(?P<file_name>[^\s]+)')
-        for line in self._device.cmd("dir").split('\n'):
-            m = ifre.match(line)
-            if m:
-                self._file_config[m.group('file_name')] = {'size': m.group('size'),
-                                                           'permission': m.group('permission'),
-                                                           'mdate': m.group('day') + '-' + m.group('month') + '-' + m.group('year'),
-                                                           'mtime': m.group('hhmmss')
-                                                          }
-        self._d.log_info(self._file_config)
 
 
     def create(self, name, text='', filename=''):
@@ -107,7 +88,7 @@ class awp_file(Feature):
                         {'cmd': create_cmd  , 'prompt':'\#'}
                        ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
-        self._device.load_system()
+        self._update_file()
 
         server.shutdown()
         if (text != ''):
@@ -166,7 +147,7 @@ class awp_file(Feature):
                              {'cmd': 'y'       , 'prompt': '\#'}
                             ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
-        self._device.load_system()
+        self._update_file()
 
         server.shutdown()
 
@@ -188,7 +169,7 @@ class awp_file(Feature):
                        ]}
 
         self._device.cmd(cmds, cache=False, flush_cache=True)
-        self._device.load_system()
+        self._update_file()
 
 
     def items(self):
@@ -242,5 +223,4 @@ class awp_file(Feature):
                                    'mdate': m.group('day') + '-' + m.group('month') + '-' + m.group('year'),
                                    'mtime': m.group('hhmmss')
                                   }
-                self._file[key] = dict(self._file[key].items() + self._file_config[key].items())
         self._d.log_debug("File {0}".format(pformat(json.dumps(self._file))))

@@ -23,11 +23,11 @@ class ats_file(Feature):
     """
     def __init__(self, device, **kvargs):
         Feature.__init__(self, device, **kvargs)
-        # self._file_config={}
         self._file={}
         self._tftp_port=69
         self._d = device
         self._d.log_debug("loading feature")
+
 
     def load_config(self, config):
         self._d.log_info("loading config")

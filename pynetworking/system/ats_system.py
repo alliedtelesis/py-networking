@@ -66,11 +66,10 @@ class ats_system(object):
         self._d.file.create(name='image', port=port, filename=name, server=server)
         boot_cmd = 'boot system image-{0}'.format(self._get_stand_by_bank())
         cmds = {'cmds': [{'cmd': boot_cmd, 'prompt': '\#'},
-                         {'cmd': 'reboot', 'prompt': ''  },
+                         {'cmd': 'reload', 'prompt': ''  },
                          {'cmd': 'y'     , 'prompt': '\#'}
                         ]}
         self._d.cmd(cmds, cache=False, flush_cache=True)
-        self._d.load_system()
 
     def _get_stand_by_bank(self):
         self._d.log_info("_get_stand_by_bank")

@@ -65,8 +65,8 @@ class ats_file(Feature):
         tftp_client.upload(filename, filename)
         self._tftp_port = port
 
-        # device commands (timeout of 50 seconds for each MB)
-        timeout = (os.path.getsize(filename)/1048576 + 1)*50000
+        # device commands (timeout of 30 seconds for each MB)
+        timeout = (os.path.getsize(filename)/1048576 + 1)*30000
         create_cmd = 'copy tftp://{0}/{1} {2}'.format(server, filename, name)
         cmds = {'cmds':[{'cmd': create_cmd, 'prompt': '\#', 'timeout': timeout}]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
@@ -105,8 +105,8 @@ class ats_file(Feature):
         tftp_client.upload(file_2_copy_from, file_2_copy_from)
         self._tftp_port = port
 
-        # device commands (timeout of 50 seconds for each MB)
-        timeout = (os.path.getsize(file_2_copy_from)/1048576 + 1)*50000
+        # device commands (timeout of 30 seconds for each MB)
+        timeout = (os.path.getsize(file_2_copy_from)/1048576 + 1)*30000
         if (new_name == ''):
             update_cmd = 'copy tftp://{0}/{1} {2}'.format(server, file_2_copy_from, name)
             cmds = {'cmds': [{'cmd': update_cmd, 'prompt': ''  },

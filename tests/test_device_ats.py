@@ -47,7 +47,11 @@ def tftp_server_for_ever(port):
         os.mkdir(tftp_server_dir)
         ip_address = socket.gethostbyname(socket.getfqdn())
         server = tftpy.TftpServer(tftp_server_dir)
-        server.listen(ip_address, port)
+        # log_level = logging.DEBUG
+        log_level = logging.WARNING
+        log = logging.getLogger('tftpy')
+        log.setLevel(log_level)
+        server.listen(ip_address, port, timeout=10)
 
 
 def setup_tftp_server(dut, image_name):
@@ -183,7 +187,7 @@ Unit  Image  Filename   Version    Date                    Status
 
     if (dut.mode == 'emulated'):
         os.remove('tftp_client_dir/image')
-        os.rmdir('tftp_client_dir')
-        os.remove('tftp_server_dir/' + image_name)
-        os.rmdir('tftp_server_dir')
         os.remove(image_name)
+    os.rmdir('tftp_client_dir')
+    os.remove('tftp_server_dir/' + image_name)
+    os.rmdir('tftp_server_dir')

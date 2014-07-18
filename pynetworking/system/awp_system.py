@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 from time import sleep
+import os
 import socket
 import logging
 import zmq
@@ -50,6 +51,20 @@ class awp_system(object):
         self._d.cmd(cmds, cache=False, flush_cache=True)
         self._d.load_system()
  
+    def update(self, name, filename=''):
+        self._d.log_info("upgrading image {0}".format(name))
+
+        if (os.path.exists(name) == False):
+            raise KeyError('image {0} not available'.format(name))
+
+        self._d.file.create(name=filename, filename=name)
+        boot_cmd = 'boot system {0}'.format(filename)
+        cmds = {'cmds': [{'cmd': boot_cmd, 'prompt': '\#'},
+                         {'cmd': 'reboot', 'prompt': ''  },
+                         {'cmd': 'y'     , 'prompt': '\#'}
+                        ]}
+        self._d.cmd(cmds, cache=False, flush_cache=True)
+
     def shell_init(self):
         self._d.log_info('shell_init')
         return [{'cmd': 'terminal length 0', 'prompt':'[\>\#]'},]

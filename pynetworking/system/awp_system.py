@@ -59,7 +59,9 @@ class awp_system(object):
 
         self._d.file.create(name=filename, filename=name)
         boot_cmd = 'boot system {0}'.format(filename)
-        cmds = {'cmds': [{'cmd': boot_cmd, 'prompt': '\#'},
+        cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
+                         {'cmd': 'conf t', 'prompt': '\#'},
+                         {'cmd': boot_cmd, 'prompt': '\#', 'timeout' : 10000},
                          {'cmd': 'reboot', 'prompt': ''  },
                          {'cmd': 'y'     , 'prompt': '\#'}
                         ]}

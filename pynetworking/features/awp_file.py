@@ -80,12 +80,12 @@ class awp_file(Feature):
         server_thread.start()
         self._d.log_info("server running on {0}:{1}".format(ip, port))
 
-        # device commands
+        # device commands (timeout of 30 seconds for each MB)
         host_ip_address = socket.gethostbyname(socket.getfqdn())
-
+        timeout = (os.path.getsize(filename)/1048576 + 1)*30000
         create_cmd = 'copy http://{0}:{1}/{2} {3}'.format(host_ip_address, port, filename, name)
         cmds = {'cmds':[{'cmd': 'enable'    , 'prompt':'\#'},
-                        {'cmd': create_cmd  , 'prompt':'\#'}
+                        {'cmd': create_cmd  , 'prompt':'\#', 'timeout': timeout}
                        ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._update_file()

@@ -53,13 +53,6 @@ Build type : RELEASE
  """]})
 
 
-def setup_http_server(dut, image_name):
-    if (dut.mode == 'emulated'):
-        myfile = open(image_name, 'w')
-        myfile.write('1')
-        myfile.close()
-
-
 def test_open_close1(dut, log_level):
     setup_dut(dut)
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
@@ -349,24 +342,27 @@ def test_software_upgrade(dut, log_level):
   3936572 -rw- Oct  3 2013 09:48:43  x210-gui_543_04.jar
       735 -rw- Aug 23 2013 08:48:35  exception.log
 """]
-    host_image_name = 'image.rel'
-    device_image_name = 'x210-5.4.3-2.7.rel'
+    image_name = 'x210-5.4.3-2.7.rel'
     false_image_name = 'x211-5.4.3-2.7.rel'
+    if (dut.mode == 'emulated'):
+        myfile = open(image_name, 'w')
+        myfile.write('1')
+        myfile.close()
+
     setup_dut(dut)
-    setup_http_server(dut, host_image_name)
     local_http_server = socket.gethostbyname(socket.getfqdn())
-    update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{2}'.format(socket.gethostbyname(socket.getfqdn()), host_image_name, device_image_name)
+    update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{2}'.format(socket.gethostbyname(socket.getfqdn()), image_name, image_name)
     dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
     dut.add_cmd({'cmd': update_cmd, 'state':0, 'action':'SET_STATE','args': [1]})
     dut.add_cmd({'cmd': 'dir'     , 'state':1, 'action':'PRINT','args': dir_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
-    assert (os.path.exists(host_image_name) == True)
+    assert (os.path.exists(image_name) == True)
     assert (os.path.exists(false_image_name) == False)
     with pytest.raises(KeyError) as excinfo:
-        d.system.update(name=false_image_name, filename=false_image_name)
-    d.system.update(name=host_image_name, filename=device_image_name)
+        d.system.update(release=false_image_name)
+    d.system.update(release=image_name)
     d.close()
 
     if (dut.mode == 'emulated'):
-        os.remove(host_image_name)
+        os.remove(image_name)

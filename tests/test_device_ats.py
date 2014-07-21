@@ -181,8 +181,8 @@ Unit  Image  Filename   Version    Date                    Status
     assert (os.path.exists(image_name) == True)
     assert (os.path.exists(false_image_name) == False)
     with pytest.raises(KeyError) as excinfo:
-        d.system.update(name=false_image_name, port=dut.tftp_port)
-    d.system.update(name=image_name, port=dut.tftp_port)
+        d.system.update(release=false_image_name, port=dut.tftp_port)
+    d.system.update(release=image_name, port=dut.tftp_port)
     d.close()
 
     if (dut.mode == 'emulated'):

@@ -21,7 +21,7 @@ Operations
 Methods
 -------
 
-**update(name, server=None, filename=None)**
+**update(name, release)**
 """"""""""""""""""""""""""""""""""""""""""""
 **Mandatory**
 
@@ -29,21 +29,17 @@ Methods
 It allows the software upgrade.
 The *server* parameter is the address of the host where the server is running.
 If not given it's the library host one.
-The *filename* parameter is the image name on the device.
+The *release* parameter is the image name on the device.
 It cannot be the current running image name.
-If not given it's *name*.
 Once the upload has terminated, the device is rebooted and the new image will be run.
 
 **Parameters**:
 
-    - *name*: string
-        Image name on server
+    - *release*: string
+        Image name
 
     - *server*: string
         Server IP address
-
-    - *filename*: string
-        Image name on the device
 
 **keys**
 """"""""

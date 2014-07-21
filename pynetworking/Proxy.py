@@ -148,16 +148,17 @@ def SSHProxy(device):
                         raise CacheMissException
                 except CacheMissException:
                     for c in cmd['cmds']:
+                        if ('timeout' in c.keys()):
+                            ttimeout = c['timeout']/1000
+                            chan.settimeout(ttimeout)
+                        else:
+                            chan.settimeout(5)
                         device.log_info("sending command '{0}' to device".format(c['cmd']))
                         if c['cmd'] == chr(26):
                             chan.send(c['cmd'])
                         else:
                             chan.send(c['cmd']+'\n')
-                        if ('timeout' in c.keys()):
-                            max_wait = c['timeout']/1000
-                        else:
-                            max_wait = 5
-                        out += _get_reply(device, chan, c['prompt'], max_wait)
+                        out += _get_reply(device, chan, c['prompt'])
                 if cmd['flush_cache']:
                     device.log_info("flush cache")
                     cache.flush()
@@ -169,19 +170,19 @@ def SSHProxy(device):
                 ret = {'status':'Error','output':'ProxyException'}
         zmq_s.send_string(json.dumps(ret))
 
-def _get_reply(device, chan, prompt, max_wait=5):
+def _get_reply(device, chan, prompt):
     prompt = '[\n\r]\w*' + prompt
     try:
         device.log_debug("waiting for {0}".format(repr(prompt)))
         buff = ''
-        deadline = time() + max_wait
+        deadline = time() + 5
         while True:
             ret = chan.recv(999)
             if ret == '' and deadline < time():
                 raise socket.timeout
             elif ret != '':
                 buff += ret
-                deadline = time() + max_wait
+                deadline = time() + 5
             if re.search(prompt,buff):
                 device.log_debug("got prompt")
                 break

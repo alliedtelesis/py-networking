@@ -346,6 +346,7 @@ Backup  boot config: flash:/backup.cfg (file not found)
 """]
     release_file = 'x210-5.4.3-2.7.rel'
     false_release_file = 'x211-5.4.3-2.7.rel'
+    bad_name_release_file = 'x210-5.4.3-2.7.rol'
     setup_dut(dut)
     setup_release_file(dut, release_file)
     local_http_server = socket.gethostbyname(socket.getfqdn())
@@ -359,6 +360,8 @@ Backup  boot config: flash:/backup.cfg (file not found)
     assert (os.path.exists(false_release_file) == False)
     with pytest.raises(KeyError) as excinfo:
         d.system.update(release=false_release_file)
+    with pytest.raises(KeyError) as excinfo:
+        d.system.update(release=bad_name_release_file)
     with pytest.raises(KeyError) as excinfo:
         d.system.update(release='x210-5.4.3-2.6.rel')
     d.system.update(release=release_file)

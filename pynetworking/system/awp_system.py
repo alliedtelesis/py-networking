@@ -56,6 +56,8 @@ class awp_system(object):
 
         if (self._check_running_software(release) == True):
             raise KeyError('cannot overwrite running software ({0})'.format(release))
+        if (release.split('.')[-1] != 'rel'):
+            raise KeyError('wrong extension ({0})'.format(release.split('.')[-1]))
         if (os.path.exists(release) == False):
             raise KeyError('image {0} not available'.format(release))
 

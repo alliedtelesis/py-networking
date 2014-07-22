@@ -54,6 +54,8 @@ class awp_system(object):
     def update(self, release):
         self._d.log_info("upgrading image {0}".format(release))
 
+        if (self._check_running_software(release) == True):
+            raise KeyError('cannot overwrite running software ({0})'.format(release))
         if (os.path.exists(release) == False):
             raise KeyError('image {0} not available'.format(release))
 
@@ -78,3 +80,23 @@ class awp_system(object):
     def ping(self):
         self._d.log_info('ping')
         self._d.cmd('show version', use_cache=False)
+
+    def _check_running_software(self, release):
+        is_running_software = False
+        string_to_be_found = 'Current software   : ' + release
+
+        # Boot configuration
+        # ----------------------------------------------------------------
+        # Current software   : x210-5.4.4.rel
+        # Current boot image : flash:/x210-5.4.4.rel
+        # Backup  boot image : flash:/x210-5.4.4.rel
+        # Default boot config: flash:/default.cfg
+        # Current boot config: flash:/my.cfg (file exists)
+        # Backup  boot config: flash:/backup.cfg (file not found)
+        for line in self._d.cmd("show boot").split('\n'):
+            self._d.log_debug("read {0}".format(line))
+            if (line.find(string_to_be_found) == 0):
+                is_running_software = True
+                break
+
+        return is_running_software

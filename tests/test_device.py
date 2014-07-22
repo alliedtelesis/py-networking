@@ -53,6 +53,14 @@ Build type : RELEASE
  """]})
 
 
+def setup_release_file(dut, release_file):
+    if (dut.mode == 'emulated'):
+        if (os.path.exists(release_file) == False):
+            myfile = open(release_file, 'w')
+            myfile.write('1')
+            myfile.close()
+
+
 def test_open_close1(dut, log_level):
     setup_dut(dut)
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
@@ -316,43 +324,43 @@ end
 
 
 def test_software_upgrade(dut, log_level):
-    dir_0 = ["""
-      588 -rw- Apr 10 2014 08:10:02  default.cfg
- 16654715 -rw- Jan 20 2014 15:28:41  x210-5.4.3-3.9.rel
-     4647 -rw- Nov 18 2013 11:14:46  x210.cfg
- 16629994 -rw- Oct  3 2013 09:56:13  x210-5.4.3-2.6.rel
-  3936572 -rw- Oct  3 2013 09:48:43  x210-gui_543_04.jar
-      735 -rw- Aug 23 2013 08:48:35  exception.log
+    output_0 = ["""
+Boot configuration
+----------------------------------------------------------------
+Current software   : x210-5.4.3-2.6.rel
+Current boot image : flash:/x210-5.4.3-2.6.rel
+Backup  boot image : flash:/x210-5.4.3-2.6.rel
+Default boot config: flash:/default.cfg
+Current boot config: flash:/my.cfg (file exists)
+Backup  boot config: flash:/backup.cfg (file not found)
 """]
-    dir_1 = ["""
-      588 -rw- Apr 10 2014 08:10:02  default.cfg
- 16664399 -rw- Jan 21 2014 09:33:19  x210-5.4.3-2.7.rel
- 16654715 -rw- Jan 20 2014 15:28:41  x210-5.4.3-3.9.rel
-     4647 -rw- Nov 18 2013 11:14:46  x210.cfg
- 16629994 -rw- Oct  3 2013 09:56:13  x210-5.4.3-2.6.rel
-  3936572 -rw- Oct  3 2013 09:48:43  x210-gui_543_04.jar
-      735 -rw- Aug 23 2013 08:48:35  exception.log
+    output_1 = ["""
+Boot configuration
+----------------------------------------------------------------
+Current software   : x210-5.4.3-2.6.rel
+Current boot image : flash:/x210-5.4.3-2.7.rel
+Backup  boot image : flash:/x210-5.4.3-2.6.rel
+Default boot config: flash:/default.cfg
+Current boot config: flash:/my.cfg (file exists)
+Backup  boot config: flash:/backup.cfg (file not found)
 """]
     release_file = 'x210-5.4.3-2.7.rel'
     false_release_file = 'x211-5.4.3-2.7.rel'
-    if (dut.mode == 'emulated'):
-        if (os.path.exists(release_file) == False):
-            myfile = open(release_file, 'w')
-            myfile.write('1')
-            myfile.close()
-
     setup_dut(dut)
+    setup_release_file(dut, release_file)
     local_http_server = socket.gethostbyname(socket.getfqdn())
-    update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{2}'.format(socket.gethostbyname(socket.getfqdn()), release_file, release_file)
-    dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
-    dut.add_cmd({'cmd': update_cmd, 'state':0, 'action':'SET_STATE','args': [1]})
-    dut.add_cmd({'cmd': 'dir'     , 'state':1, 'action':'PRINT','args': dir_1})
+    update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{2}'.format(local_http_server, release_file, release_file)
+    dut.add_cmd({'cmd': 'show boot', 'state':0, 'action':'PRINT','args': output_0})
+    dut.add_cmd({'cmd': update_cmd , 'state':0, 'action':'SET_STATE','args': [1]})
+    dut.add_cmd({'cmd': 'show boot', 'state':1, 'action':'PRINT','args': output_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
     assert (os.path.exists(release_file) == True)
     assert (os.path.exists(false_release_file) == False)
     with pytest.raises(KeyError) as excinfo:
         d.system.update(release=false_release_file)
+    with pytest.raises(KeyError) as excinfo:
+        d.system.update(release='x210-5.4.3-2.6.rel')
     d.system.update(release=release_file)
     d.close()
 

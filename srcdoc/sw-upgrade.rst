@@ -21,7 +21,7 @@ Operations
 Methods
 -------
 
-**update(release, port, server)**
+**update(release, port, server=None)**
 """"""""""""""""""""""""""""""""""""""""""""
 **Mandatory**
 
@@ -119,13 +119,3 @@ mtime
 **Type:** String
 
 **Description**: Last modification time.
-
-content
-"""""""
-**Mandatory**
-
-**ReadOnly**
-
-**Type:** String
-
-**Description**: Image content.

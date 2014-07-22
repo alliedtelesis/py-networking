@@ -315,15 +315,6 @@ end
     d.close()
 
 
-def test_ping2(dut, log_level):
-    setup_dut(dut)
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
-    d.open()
-    dut.stop()
-    assert not d.ping()
-    d.close()
-
-
 def test_software_upgrade(dut, log_level):
     dir_0 = ["""
       588 -rw- Apr 10 2014 08:10:02  default.cfg
@@ -342,27 +333,37 @@ def test_software_upgrade(dut, log_level):
   3936572 -rw- Oct  3 2013 09:48:43  x210-gui_543_04.jar
       735 -rw- Aug 23 2013 08:48:35  exception.log
 """]
-    image_name = 'x210-5.4.3-2.7.rel'
-    false_image_name = 'x211-5.4.3-2.7.rel'
+    release_file = 'x210-5.4.3-2.7.rel'
+    false_release_file = 'x211-5.4.3-2.7.rel'
     if (dut.mode == 'emulated'):
-        myfile = open(image_name, 'w')
-        myfile.write('1')
-        myfile.close()
+        if (os.path.exists(release_file) == False):
+            myfile = open(release_file, 'w')
+            myfile.write('1')
+            myfile.close()
 
     setup_dut(dut)
     local_http_server = socket.gethostbyname(socket.getfqdn())
-    update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{2}'.format(socket.gethostbyname(socket.getfqdn()), image_name, image_name)
+    update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{2}'.format(socket.gethostbyname(socket.getfqdn()), release_file, release_file)
     dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
     dut.add_cmd({'cmd': update_cmd, 'state':0, 'action':'SET_STATE','args': [1]})
     dut.add_cmd({'cmd': 'dir'     , 'state':1, 'action':'PRINT','args': dir_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
-    assert (os.path.exists(image_name) == True)
-    assert (os.path.exists(false_image_name) == False)
+    assert (os.path.exists(release_file) == True)
+    assert (os.path.exists(false_release_file) == False)
     with pytest.raises(KeyError) as excinfo:
-        d.system.update(release=false_image_name)
-    d.system.update(release=image_name)
+        d.system.update(release=false_release_file)
+    d.system.update(release=release_file)
     d.close()
 
     if (dut.mode == 'emulated'):
-        os.remove(image_name)
+        os.remove(release_file)
+
+
+def test_ping2(dut, log_level):
+    setup_dut(dut)
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    d.open()
+    dut.stop()
+    assert not d.ping()
+    d.close()

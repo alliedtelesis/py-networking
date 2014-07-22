@@ -1,6 +1,6 @@
 Software upgrade feature
 ************************
-This feature allows to upgrade the device software (image).
+This feature allows to upgrade the device software.
 
 Operations
 ----------
@@ -9,34 +9,37 @@ Operations
 """"""""""""
 **Mandatory**
 
-**Description**: Return a dictionary of the image parameters using its name as index.
+**Description**: Return a dictionary of the software parameters using its name as index.
 
 **(String)**
 """"""""""""
 **Mandatory**
 
-**Description**: Return a dictionary with all the existing images along with their parameters.
+**Description**: Return a dictionary with all the existing software along with their parameters.
 
 
 Methods
 -------
 
-**update(name, release)**
+**update(release, port, server)**
 """"""""""""""""""""""""""""""""""""""""""""
 **Mandatory**
 
 **Description**:
-It allows the software upgrade.
+It allows to upgrade the current software.
+The *release* parameter is the software name on the device.
+It cannot be the current running software name.
 The *server* parameter is the address of the host where the server is running.
 If not given it's the library host one.
-The *release* parameter is the image name on the device.
-It cannot be the current running image name.
-Once the upload has terminated, the device is rebooted and the new image will be run.
+Once the upload has terminated, the device is rebooted and the new software will be run.
 
 **Parameters**:
 
     - *release*: string
-        Image name
+        Software release name
+
+    - *port*: integer
+        Upload port
 
     - *server*: string
         Server IP address

@@ -165,9 +165,8 @@ class ats_file(Feature):
         read_cmd = 'copy {0} tftp://{1}/{0}'.format(filename, socket.gethostbyname(socket.getfqdn()))
         cmds = {'cmds':[{'cmd': read_cmd, 'prompt':'\#'}]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
-        self._device.load_system()
-        temp, temp_file_name = mkstemp()
 
+        temp, temp_file_name = mkstemp()
         client = tftpy.TftpClient(socket.gethostbyname(socket.getfqdn()), self._tftp_port)
         client.download(filename, temp_file_name)
 

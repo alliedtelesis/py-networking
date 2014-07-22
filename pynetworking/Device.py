@@ -136,7 +136,7 @@ class Device(object):
 
         cmd['cache'] = use_cache
         cmd['flush_cache'] = flush_cache
-        # self.log_warn("Device timeout is ({0})".format(timeout))
+
         self._start_proxy()
         sleep(1)
         try:

@@ -51,23 +51,23 @@ class awp_system(object):
         self._d.cmd(cmds, cache=False, flush_cache=True)
         self._d.load_system()
  
-    def update(self, release):
-        self._d.log_info("upgrading image {0}".format(release))
+    def update(self, name):
+        self._d.log_info("software upgrade with {0}".format(name))
 
-        if (self._check_running_software(release) == True):
-            raise KeyError('cannot overwrite running software ({0})'.format(release))
-        if (release.split('.')[-1] != 'rel'):
-            raise KeyError('wrong extension ({0})'.format(release.split('.')[-1]))
-        if (os.path.exists(release) == False):
-            raise KeyError('image {0} not available'.format(release))
+        if (self._check_running_software(name) == True):
+            raise KeyError('cannot overwrite running software ({0})'.format(name))
+        if (name.split('.')[-1] != 'rel'):
+            raise KeyError('wrong extension ({0})'.format(name.split('.')[-1]))
+        if (os.path.exists(name) == False):
+            raise KeyError('software {0} not available'.format(name))
 
-        self._d.file.create(name=release, filename=release)
-        boot_cmd = 'boot system {0}'.format(release)
+        self._d.file.create(name=name, filename=name)
+        boot_cmd = 'boot system {0}'.format(name)
         cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
                          {'cmd': 'conf t', 'prompt': '\(config\)\#'},
                          {'cmd': boot_cmd, 'prompt': '\(config\)\#', 'timeout' : 10000},
                          {'cmd': 'reboot', 'prompt': ''},
-                         {'cmd': 'y'     , 'prompt': ''}
+                         {'cmd': 'y'     , 'prompt': '' , 'dontwait': True}
                         ]}
         self._d.cmd(cmds, cache=False, flush_cache=True)
 

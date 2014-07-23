@@ -57,17 +57,17 @@ class ats_system(object):
         self._d.log_info('ping')
         self._d.cmd('show version', use_cache=False)
 
-    def update(self, release, port=69, server=''):
-        self._d.log_info("upgrading image {0}".format(release))
+    def update(self, name, port=69, server=''):
+        self._d.log_info("software upgrade with {0}".format(name))
 
-        if (os.path.exists(release) == False):
-            raise KeyError('image {0} not available'.format(release))
+        if (os.path.exists(name) == False):
+            raise KeyError('image {0} not available'.format(name))
 
-        self._d.file.create(name='image', port=port, filename=release, server=server)
+        self._d.file.create(name='image', port=port, filename=name, server=server)
         boot_cmd = 'boot system image-{0}'.format(self._get_stand_by_bank())
         cmds = {'cmds': [{'cmd': boot_cmd, 'prompt': '\#'},
                          {'cmd': 'reload', 'prompt': ''  },
-                         {'cmd': 'y'     , 'prompt': '\#'}
+                         {'cmd': 'y'     , 'prompt': ''   , 'dontwait': True}
                         ]}
         self._d.cmd(cmds, cache=False, flush_cache=True)
 
@@ -88,12 +88,13 @@ class ats_system(object):
             m = ifre.match(line)
             self._d.log_debug("read {0}".format(line))
             if m:
-                bnk_status = False
+                active_bank = False
                 if (m.group('status')[:6] == 'Active'):
-                    bnk_status = True
-                next_boot = False
-                if line[-2] == '*':
+                    active_bank = True
+                else:
                     stand_by_bank = m.group('image')
+                next_boot = False
+                if (line.find('*') > 0):
                     next_boot = True
                 key = m.group('file_name')
                 self._image[key] = {'unit': m.group('unit'),
@@ -102,9 +103,10 @@ class ats_system(object):
                                     'version': m.group('version'),
                                     'mdate': m.group('date'),
                                     'mtime': m.group('time'),
-                                    'active': bnk_status,
+                                    'active': active_bank,
                                     'nextboot': next_boot
                                    }
+
         self._d.log_debug("Image {0}".format(pformat(json.dumps(self._image))))
 
         return stand_by_bank

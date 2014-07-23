@@ -158,6 +158,8 @@ def SSHProxy(device):
                             chan.send(c['cmd'])
                         else:
                             chan.send(c['cmd']+'\n')
+                        if (('dontwait' in c.keys()) and (c['dontwait'] == True)):
+                            break
                         out += _get_reply(device, chan, c['prompt'])
                 if cmd['flush_cache']:
                     device.log_info("flush cache")

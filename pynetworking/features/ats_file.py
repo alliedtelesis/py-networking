@@ -65,8 +65,8 @@ class ats_file(Feature):
         tftp_client.upload(filename, filename)
         self._tftp_port = port
 
-        # device commands (timeout of 30 seconds for each MB)
-        timeout = (os.path.getsize(filename)/1048576 + 1)*30000
+        # device commands (timeout of 60 seconds for each MB)
+        timeout = (os.path.getsize(filename)/1048576 + 1)*60000
         create_cmd = 'copy tftp://{0}/{1} {2}'.format(server, filename, name)
         cmds = {'cmds':[{'cmd': create_cmd, 'prompt': '\#', 'timeout': timeout}]}
         self._device.cmd(cmds, cache=False, flush_cache=True)

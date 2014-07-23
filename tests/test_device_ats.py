@@ -176,7 +176,7 @@ Unit  Image  Filename   Version    Date                    Status
     dut.add_cmd({'cmd': 'show bootvar', 'state':0, 'action':'PRINT','args': output_0})
     dut.add_cmd({'cmd': update_cmd    , 'state':0, 'action':'SET_STATE','args': [1]})
     dut.add_cmd({'cmd': 'show bootvar', 'state':1, 'action':'PRINT','args': output_1})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level,connection_timeout=40)
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level,connection_timeout=300)
     d.open()
     assert (os.path.exists(image_name) == True)
     assert (os.path.exists(false_image_name) == False)

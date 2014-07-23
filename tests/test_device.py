@@ -359,12 +359,12 @@ Backup  boot config: flash:/backup.cfg (file not found)
     assert (os.path.exists(release_file) == True)
     assert (os.path.exists(false_release_file) == False)
     with pytest.raises(KeyError) as excinfo:
-        d.system.update(release=false_release_file)
+        d.system.update(false_release_file)
     with pytest.raises(KeyError) as excinfo:
-        d.system.update(release=bad_name_release_file)
+        d.system.update(bad_name_release_file)
     with pytest.raises(KeyError) as excinfo:
-        d.system.update(release='x210-5.4.3-2.6.rel')
-    d.system.update(release=release_file)
+        d.system.update('x210-5.4.3-2.6.rel')
+    d.system.update(release_file)
     d.close()
 
     if (dut.mode == 'emulated'):

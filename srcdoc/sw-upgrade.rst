@@ -21,21 +21,22 @@ Operations
 Methods
 -------
 
-**update(release, port, server=None)**
+**update(name, port, server=None)**
 """"""""""""""""""""""""""""""""""""""""""""
 **Mandatory**
 
 **Description**:
-It allows to upgrade the current software.
-The *release* parameter is the software name on the device.
-It cannot be the current running software name.
+It allows to upload a new software release on the device.
+The *name* parameter is the software name.
+It cannot be the current running software.
+The *port* parameter is the port used for the upload.
 The *server* parameter is the address of the host where the server is running.
 If not given it's the library host one.
 Once the upload has terminated, the device is rebooted and the new software will be run.
 
 **Parameters**:
 
-    - *release*: string
+    - *name*: string
         Software release name
 
     - *port*: integer

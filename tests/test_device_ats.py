@@ -51,7 +51,7 @@ def tftp_server_for_ever(port):
         log_level = logging.WARNING
         log = logging.getLogger('tftpy')
         log.setLevel(log_level)
-        server.listen(ip_address, port, timeout=10)
+        server.listen(ip_address, port, timeout=20)
 
 
 def setup_tftp_server(dut, image_name):
@@ -176,13 +176,13 @@ Unit  Image  Filename   Version    Date                    Status
     dut.add_cmd({'cmd': 'show bootvar', 'state':0, 'action':'PRINT','args': output_0})
     dut.add_cmd({'cmd': update_cmd    , 'state':0, 'action':'SET_STATE','args': [1]})
     dut.add_cmd({'cmd': 'show bootvar', 'state':1, 'action':'PRINT','args': output_1})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level,connection_timeout=40)
     d.open()
     assert (os.path.exists(image_name) == True)
     assert (os.path.exists(false_image_name) == False)
     with pytest.raises(KeyError) as excinfo:
-        d.system.update(release=false_image_name, port=dut.tftp_port)
-    d.system.update(release=image_name, port=dut.tftp_port)
+        d.system.update(name=false_image_name, port=dut.tftp_port)
+    d.system.update(name=image_name, port=dut.tftp_port)
     d.close()
 
     if (dut.mode == 'emulated'):

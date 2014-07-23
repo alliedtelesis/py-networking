@@ -66,6 +66,7 @@ class awp_system(object):
         cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
                          {'cmd': 'conf t', 'prompt': '\(config\)\#'},
                          {'cmd': boot_cmd, 'prompt': '\(config\)\#', 'timeout' : 10000},
+                         {'cmd': chr(26) , 'prompt': '\#'},
                          {'cmd': 'reboot', 'prompt': ''},
                          {'cmd': 'y'     , 'prompt': '' , 'dontwait': True}
                         ]}

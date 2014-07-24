@@ -24,7 +24,7 @@ Methods
 """""""""""""""
 **Mandatory**
 
-**Description**: Permits to save the running configuration in the flash memory, so to survive in case of reboot.
+**Description**: Allows to save the running configuration in the flash memory, so to survive in case of reboot.
 
 **shell_init**
 """"""""""""""
@@ -40,4 +40,26 @@ output stop waiting user input.
 
 **Description**: Returns a regular expression for the default prompt of the device.
 
+**update(name, port, server=None)**
+""""""""""""""""""""""""""""""""""""""""""""
+**Mandatory**
+
+**Description**: Allows to upgrade the device software.
+The *name* parameter is the software name.
+It cannot be the current running software.
+The *port* parameter is the port used to upload the software on the device (if required).
+The *server* parameter is the address of the host where the server is running.
+If not given it's the library host one.
+Once the upload has terminated, the device is rebooted and the new software will be running.
+
+**Parameters**:
+
+    - *name*: string
+        Software release name
+
+    - *port*: integer
+        Upload port
+
+    - *server*: string
+        Server IP address
 

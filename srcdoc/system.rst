@@ -40,13 +40,14 @@ output stop waiting user input.
 
 **Description**: Returns a regular expression for the default prompt of the device.
 
-**update(name, port, server=None)**
-""""""""""""""""""""""""""""""""""""""""""""
+**update(name, certificate=None, port=None, server=None)**
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 **Mandatory**
 
 **Description**: Allows to upgrade the device software.
 The *name* parameter is the software name.
 It cannot be the current running software.
+The *certificate* is the certificate file url in case the software upgrade is under license.
 The *port* parameter is the port used to upload the software on the device (if required).
 The *server* parameter is the address of the host where the server is running.
 If not given it's the library host one.
@@ -56,6 +57,9 @@ Once the upload has terminated, the device is rebooted and the new software will
 
     - *name*: string
         Software release name
+
+    - *certificate*: string
+        Certificate file url
 
     - *port*: integer
         Upload port

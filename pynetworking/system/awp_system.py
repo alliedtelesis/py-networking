@@ -51,7 +51,7 @@ class awp_system(object):
         self._d.cmd(cmds, cache=False, flush_cache=True)
         self._d.load_system()
  
-    def update(self, name):
+    def update(self, name, certificate=''):
         self._d.log_info("software upgrade with {0}".format(name))
 
         if (self._check_running_software(name) == True):
@@ -60,6 +60,14 @@ class awp_system(object):
             raise KeyError('wrong extension ({0})'.format(name.split('.')[-1]))
         if (os.path.exists(name) == False):
             raise KeyError('software {0} not available'.format(name))
+
+        if (certificate != ''):
+            cert_cmd = 'license certificate {0}'.format(certificate)
+            cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
+                             {'cmd': cert_cmd, 'prompt': '\#'},
+                             {'cmd': chr(26) , 'prompt': '\#'}
+                            ]}
+            self._d.cmd(cmds, cache=False, flush_cache=True)
 
         self._d.file.create(name=name, filename=name)
         boot_cmd = 'boot system {0}'.format(name)

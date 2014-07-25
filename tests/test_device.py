@@ -371,6 +371,46 @@ Backup  boot config: flash:/backup.cfg (file not found)
         os.remove(release_file)
 
 
+def test_software_upgrade_certificated(dut, log_level):
+    output_0 = ["""
+Boot configuration
+----------------------------------------------------------------
+Current software   : x210-5.4.4-1.4.rel
+Current boot image : flash:/x210-5.4.4-1.4.rel
+Backup  boot image : flash:/x210-5.4.4-1.4.rel
+Default boot config: flash:/default.cfg
+Current boot config: flash:/my.cfg (file exists)
+Backup  boot config: flash:/backup.cfg (file not found)
+"""]
+    output_1 = ["""
+Boot configuration
+----------------------------------------------------------------
+Current software   : x210-5.4.4-1.4.rel
+Current boot image : flash:/x210-5.4.5-1.0.rel
+Backup  boot image : flash:/x210-5.4.4-1.4.rel
+Default boot config: flash:/default.cfg
+Current boot config: flash:/my.cfg (file exists)
+Backup  boot config: flash:/backup.cfg (file not found)
+"""]
+    release_file = 'x210-5.4.5-1.0.rel'
+    setup_dut(dut)
+    setup_release_file(dut, release_file)
+    local_http_server = socket.gethostbyname(socket.getfqdn())
+    certificate_url = 'tftp://172.16.1.121/certificate.txt'
+    update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{2}'.format(local_http_server, release_file, release_file)
+    dut.add_cmd({'cmd': 'show boot', 'state':0, 'action':'PRINT','args': output_0})
+    dut.add_cmd({'cmd': update_cmd , 'state':0, 'action':'SET_STATE','args': [1]})
+    dut.add_cmd({'cmd': 'show boot', 'state':1, 'action':'PRINT','args': output_1})
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    d.open()
+    assert (os.path.exists(release_file) == True)
+    d.system.update(release_file, certificate_url)
+    d.close()
+
+    if (dut.mode == 'emulated'):
+        os.remove(release_file)
+
+
 def test_ping2(dut, log_level):
     setup_dut(dut)
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)

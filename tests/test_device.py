@@ -53,17 +53,23 @@ Build type : RELEASE
  """]})
 
 
-def setup_test_software_upgrade(dut, release_file):
+def setup_test_software_upgrade(dut, release_file, release_cert=''):
     if (dut.mode == 'emulated'):
         if (os.path.exists(release_file) == False):
             myfile = open(release_file, 'w')
             myfile.write('1')
             myfile.close()
+        if ((release_cert != '') and (os.path.exists(release_cert) == False)):
+            myfile = open(release_cert, 'w')
+            myfile.write('eccd-6d7e-18c3, 545-x210, /HE4ijJOkInZb4pBXwwf5wOl52kR229Bq9Aq2cb4A4rZ/++')
+            myfile.close()
 
 
-def clean_test_software_upgrade(dut, release_file):
+def clean_test_software_upgrade(dut, release_file, release_cert=''):
     if (dut.mode == 'emulated'):
         os.remove(release_file)
+        if ((release_cert != '') and (os.path.exists(release_cert) == True)):
+            os.remove(release_cert)
 
 
 def test_open_close1(dut, log_level):
@@ -358,7 +364,7 @@ Backup  boot config: flash:/backup.cfg (file not found)
     assert (os.path.exists(release_file) == True)
     assert (os.path.exists(false_release_file) == False)
 
-    update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{2}'.format(socket.gethostbyname(socket.getfqdn()), release_file, release_file)
+    update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{1}'.format(socket.gethostbyname(socket.getfqdn()), release_file)
     dut.add_cmd({'cmd': 'show boot', 'state':0, 'action':'PRINT','args': output_0})
     dut.add_cmd({'cmd': update_cmd , 'state':0, 'action':'SET_STATE','args': [1]})
     dut.add_cmd({'cmd': 'show boot', 'state':1, 'action':'PRINT','args': output_1})
@@ -376,7 +382,7 @@ Backup  boot config: flash:/backup.cfg (file not found)
     clean_test_software_upgrade(dut, release_file)
 
 
-def test_software_upgrade_certificated(dut, log_level):
+def test_licensed_software_upgrade(dut, log_level):
     output_0 = ["""
 Boot configuration
 ----------------------------------------------------------------
@@ -397,14 +403,16 @@ Default boot config: flash:/default.cfg
 Current boot config: flash:/my.cfg (file exists)
 Backup  boot config: flash:/backup.cfg (file not found)
 """]
+    release_cert = 'x210-demo.csv'
     release_file = 'x210-5.4.5-1.0.rel'
 
     setup_dut(dut)
-    setup_test_software_upgrade(dut, release_file)
+    setup_test_software_upgrade(dut, release_file, release_cert)
+    assert (os.path.exists(release_cert) == True)
     assert (os.path.exists(release_file) == True)
 
     update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{2}'.format(socket.gethostbyname(socket.getfqdn()), release_file, release_file)
-    certificate_url = 'tftp://172.16.1.121/certificate.txt'
+    certificate_url = 'tftp://{0}/{1}'.format(socket.gethostbyname(socket.getfqdn()), release_cert)
     dut.add_cmd({'cmd': 'show boot', 'state':0, 'action':'PRINT','args': output_0})
     dut.add_cmd({'cmd': update_cmd , 'state':0, 'action':'SET_STATE','args': [1]})
     dut.add_cmd({'cmd': 'show boot', 'state':1, 'action':'PRINT','args': output_1})
@@ -413,7 +421,7 @@ Backup  boot config: flash:/backup.cfg (file not found)
     d.system.update(release_file, certificate_url)
     d.close()
 
-    clean_test_software_upgrade(dut, release_file)
+    clean_test_software_upgrade(dut, release_file, release_cert)
 
 
 def test_ping2(dut, log_level):

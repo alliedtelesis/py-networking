@@ -190,9 +190,14 @@ Unit  Image  Filename   Version    Date                    Status
     dut.add_cmd({'cmd': 'show bootvar', 'state':1, 'action':'PRINT','args': output_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level,connection_timeout=300)
     d.open()
+    old_active_bank = d.system._get_stand_by_bank()
     with pytest.raises(KeyError) as excinfo:
         d.system.update(name=false_image_name, port=dut.tftp_port)
     d.system.update(name=image_name, port=dut.tftp_port)
+    if (dut.mode == 'emulated'):
+        # real devices will be rebooting here
+        new_active_bank = d.system._get_stand_by_bank()
+        assert old_active_bank != new_active_bank
     d.close()
 
     clean_test_software_upgrade(dut, image_name)

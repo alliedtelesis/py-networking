@@ -53,12 +53,17 @@ Build type : RELEASE
  """]})
 
 
-def setup_release_file(dut, release_file):
+def setup_test_software_upgrade(dut, release_file):
     if (dut.mode == 'emulated'):
         if (os.path.exists(release_file) == False):
             myfile = open(release_file, 'w')
             myfile.write('1')
             myfile.close()
+
+
+def clean_test_software_upgrade(dut, release_file):
+    if (dut.mode == 'emulated'):
+        os.remove(release_file)
 
 
 def test_open_close1(dut, log_level):
@@ -347,17 +352,18 @@ Backup  boot config: flash:/backup.cfg (file not found)
     release_file = 'x210-5.4.3-2.7.rel'
     false_release_file = 'x211-5.4.3-2.7.rel'
     bad_name_release_file = 'x210-5.4.3-2.7.rol'
+
     setup_dut(dut)
-    setup_release_file(dut, release_file)
-    local_http_server = socket.gethostbyname(socket.getfqdn())
-    update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{2}'.format(local_http_server, release_file, release_file)
+    setup_test_software_upgrade(dut, release_file)
+    assert (os.path.exists(release_file) == True)
+    assert (os.path.exists(false_release_file) == False)
+
+    update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{2}'.format(socket.gethostbyname(socket.getfqdn()), release_file, release_file)
     dut.add_cmd({'cmd': 'show boot', 'state':0, 'action':'PRINT','args': output_0})
     dut.add_cmd({'cmd': update_cmd , 'state':0, 'action':'SET_STATE','args': [1]})
     dut.add_cmd({'cmd': 'show boot', 'state':1, 'action':'PRINT','args': output_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
-    assert (os.path.exists(release_file) == True)
-    assert (os.path.exists(false_release_file) == False)
     with pytest.raises(KeyError) as excinfo:
         d.system.update(false_release_file)
     with pytest.raises(KeyError) as excinfo:
@@ -367,8 +373,7 @@ Backup  boot config: flash:/backup.cfg (file not found)
     d.system.update(release_file)
     d.close()
 
-    if (dut.mode == 'emulated'):
-        os.remove(release_file)
+    clean_test_software_upgrade(dut, release_file)
 
 
 def test_software_upgrade_certificated(dut, log_level):
@@ -393,22 +398,22 @@ Current boot config: flash:/my.cfg (file exists)
 Backup  boot config: flash:/backup.cfg (file not found)
 """]
     release_file = 'x210-5.4.5-1.0.rel'
+
     setup_dut(dut)
-    setup_release_file(dut, release_file)
-    local_http_server = socket.gethostbyname(socket.getfqdn())
+    setup_test_software_upgrade(dut, release_file)
+    assert (os.path.exists(release_file) == True)
+
+    update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{2}'.format(socket.gethostbyname(socket.getfqdn()), release_file, release_file)
     certificate_url = 'tftp://172.16.1.121/certificate.txt'
-    update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{2}'.format(local_http_server, release_file, release_file)
     dut.add_cmd({'cmd': 'show boot', 'state':0, 'action':'PRINT','args': output_0})
     dut.add_cmd({'cmd': update_cmd , 'state':0, 'action':'SET_STATE','args': [1]})
     dut.add_cmd({'cmd': 'show boot', 'state':1, 'action':'PRINT','args': output_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
-    assert (os.path.exists(release_file) == True)
     d.system.update(release_file, certificate_url)
     d.close()
 
-    if (dut.mode == 'emulated'):
-        os.remove(release_file)
+    clean_test_software_upgrade(dut, release_file)
 
 
 def test_ping2(dut, log_level):

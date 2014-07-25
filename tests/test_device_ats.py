@@ -54,7 +54,7 @@ def tftp_server_for_ever(port):
         server.listen(ip_address, port, timeout=20)
 
 
-def setup_tftp_server(dut, image_name):
+def setup_test_software_upgrade(dut, image_name):
     dut.tftp_port = 69
     if (dut.mode == 'emulated'):
         if (getpass.getuser() != 'root'):
@@ -67,6 +67,15 @@ def setup_tftp_server(dut, image_name):
     dut.tftp_server_thread = threading.Thread(target=tftp_server_for_ever, args=(dut.tftp_port,))
     dut.tftp_server_thread.daemon = True
     dut.tftp_server_thread.start()
+
+
+def clean_test_software_upgrade(dut, image_name):
+    if (dut.mode == 'emulated'):
+        os.remove('tftp_client_dir/image')
+        os.remove(image_name)
+    os.rmdir('tftp_client_dir')
+    os.remove('tftp_server_dir/' + image_name)
+    os.rmdir('tftp_server_dir')
 
 
 def test_save_config(dut, log_level):
@@ -169,25 +178,21 @@ Unit  Image  Filename   Version    Date                    Status
 """]
     image_name = '8000s-5.4.3-3.9.rel'
     false_image_name = '8001s-5.4.3-3.9.rel'
+
     setup_dut(dut)
-    setup_tftp_server(dut, image_name)
-    local_tftp_server = socket.gethostbyname(socket.getfqdn())
-    update_cmd = 'copy tftp://{0}/test_file_2.cfg image'.format(local_tftp_server)
+    setup_test_software_upgrade(dut, image_name)
+    assert (os.path.exists(image_name) == True)
+    assert (os.path.exists(false_image_name) == False)
+
+    update_cmd = 'copy\s+tftp://{0}/{1}\s+image'.format(socket.gethostbyname(socket.getfqdn()), image_name)
     dut.add_cmd({'cmd': 'show bootvar', 'state':0, 'action':'PRINT','args': output_0})
     dut.add_cmd({'cmd': update_cmd    , 'state':0, 'action':'SET_STATE','args': [1]})
     dut.add_cmd({'cmd': 'show bootvar', 'state':1, 'action':'PRINT','args': output_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level,connection_timeout=300)
     d.open()
-    assert (os.path.exists(image_name) == True)
-    assert (os.path.exists(false_image_name) == False)
     with pytest.raises(KeyError) as excinfo:
         d.system.update(name=false_image_name, port=dut.tftp_port)
     d.system.update(name=image_name, port=dut.tftp_port)
     d.close()
 
-    if (dut.mode == 'emulated'):
-        os.remove('tftp_client_dir/image')
-        os.remove(image_name)
-    os.rmdir('tftp_client_dir')
-    os.remove('tftp_server_dir/' + image_name)
-    os.rmdir('tftp_server_dir')
+    clean_test_software_upgrade(dut, image_name)

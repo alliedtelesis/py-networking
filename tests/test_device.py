@@ -334,7 +334,7 @@ end
     d.close()
 
 
-def test_software_upgrade_1(dut, log_level):
+def test_software_upgrade_543(dut, log_level):
     output_0 = ["""
 Boot configuration
 ----------------------------------------------------------------
@@ -376,15 +376,119 @@ Backup  boot config: flash:/backup.cfg (file not found)
         d.system.update(bad_name_release_file)
     with pytest.raises(KeyError) as excinfo:
         d.system.update('x210-5.4.3-2.6.rel')
-    with pytest.raises(KeyError) as excinfo:
-        d.system.update(release_file, 'cert.csv')
     d.system.update(release_file)
     d.close()
 
     clean_test_software_upgrade(dut, release_file)
 
 
-def test_software_upgrade_2(dut, log_level):
+def test_software_upgrade_544_notsupported(dut, log_level):
+    output_show_boot = ["""
+Boot configuration
+----------------------------------------------------------------
+Current software   : x210-5.4.4-1.4.rel
+Current boot image : flash:/x210-5.4.4-1.4.rel
+Backup  boot image : flash:/x210-5.4.4-1.4.rel
+Default boot config: flash:/default.cfg
+Current boot config: flash:/my.cfg (file exists)
+Backup  boot config: flash:/backup.cfg (file not found)
+"""]
+    output_show_mac = ["""
+                   ^
+% Invalid input detected at '^' marker.
+
+"""]
+    output_show_version= ["""
+AlliedWare Plus (TM) 5.4.4 07/25/14 17:51:44
+
+Build name : x600-5.4.4-3.15.rel
+Build date : Fri Jul 25 17:51:4 NZST 2014
+Build type : RELEASE
+ NET-SNMP SNMP agent software
+ (c) 1996, 1998-2000 The Regents of the University of California.
+     All rights reserved;
+ (c) 2001-2003, Networks Associates Technology, Inc. All rights reserved;
+ (c) 2001-2003, Cambridge Broadband Ltd. All rights reserved;
+"""]
+
+    release_file = 'x210-5.4.4-1.5.rel'
+
+    setup_dut(dut)
+    setup_test_software_upgrade(dut, release_file)
+    assert (os.path.exists(release_file) == True)
+
+    update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{2}'.format(socket.gethostbyname(socket.getfqdn()), release_file, release_file)
+    dut.add_cmd({'cmd': 'show boot'                 , 'state':0, 'action':'PRINT','args': output_show_boot})
+    dut.add_cmd({'cmd': 'show system mac license'   , 'state':0, 'action':'PRINT','args': output_show_mac})
+    dut.add_cmd({'cmd': 'show version'              , 'state':0, 'action':'PRINT','args': output_show_version})
+    dut.add_cmd({'cmd': update_cmd                  , 'state':0, 'action':'SET_STATE','args': [1]})
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    d.open()
+    d.system.update(release_file)
+    d.close()
+
+    clean_test_software_upgrade(dut, release_file)
+
+
+def test_software_upgrade_544_unlicensed(dut, log_level):
+    output_show_boot = ["""
+Boot configuration
+----------------------------------------------------------------
+Current software   : x210-5.4.4-1.4.rel
+Current boot image : flash:/x210-5.4.4-1.4.rel
+Backup  boot image : flash:/x210-5.4.4-1.4.rel
+Default boot config: flash:/default.cfg
+Current boot config: flash:/my.cfg (file exists)
+Backup  boot config: flash:/backup.cfg (file not found)
+"""]
+    output_show_license= ["""
+OEM Territory : ATI USA
+Software Release Licenses
+---------------------------------------------------------------------
+Index License name    Quantity     Customer name
+      Type            Version      Period
+---------------------------------------------------------------------
+"""]
+    output_show_mac = ["""
+MAC address for licensing:
+
+eccd.6d9d.4eed
+"""]
+    output_show_version= ["""
+AlliedWare Plus (TM) 5.4.4 07/25/14 17:51:44
+
+Build name : x600-5.4.4-3.15.rel
+Build date : Fri Jul 25 17:51:4 NZST 2014
+Build type : RELEASE
+ NET-SNMP SNMP agent software
+ (c) 1996, 1998-2000 The Regents of the University of California.
+     All rights reserved;
+ (c) 2001-2003, Networks Associates Technology, Inc. All rights reserved;
+ (c) 2001-2003, Cambridge Broadband Ltd. All rights reserved;
+"""]
+
+    release_file = 'x210-5.4.4-1.5.rel'
+
+    setup_dut(dut)
+    setup_test_software_upgrade(dut, release_file)
+    assert (os.path.exists(release_file) == True)
+
+    update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{2}'.format(socket.gethostbyname(socket.getfqdn()), release_file, release_file)
+    dut.add_cmd({'cmd': 'show boot'                 , 'state':0, 'action':'PRINT','args': output_show_boot})
+    dut.add_cmd({'cmd': 'show license release brief', 'state':0, 'action':'PRINT','args': output_show_license})
+    dut.add_cmd({'cmd': 'show system mac license'   , 'state':0, 'action':'PRINT','args': output_show_mac})
+    dut.add_cmd({'cmd': 'show version'              , 'state':0, 'action':'PRINT','args': output_show_version})
+    dut.add_cmd({'cmd': update_cmd                  , 'state':0, 'action':'SET_STATE','args': [1]})
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    d.open()
+    with pytest.raises(KeyError) as excinfo:
+        d.system.update(release_file)
+    d.close()
+
+    clean_test_software_upgrade(dut, release_file)
+
+
+def test_software_upgrade_544_licensed(dut, log_level):
     output_show_boot_0 = ["""
 Boot configuration
 ----------------------------------------------------------------
@@ -398,14 +502,14 @@ Backup  boot config: flash:/backup.cfg (file not found)
     output_show_boot_1 = ["""
 Boot configuration
 ----------------------------------------------------------------
-Current software   : x210-5.4.4-1.4.rel
+Current software   : x210-5.4.4-1.5.rel
 Current boot image : flash:/x210-5.4.5-1.0.rel
 Backup  boot image : flash:/x210-5.4.4-1.4.rel
 Default boot config: flash:/default.cfg
 Current boot config: flash:/my.cfg (file exists)
 Backup  boot config: flash:/backup.cfg (file not found)
 """]
-    output_license= ["""
+    output_show_license= ["""
 OEM Territory : ATI USA
 Software Release Licenses
 ---------------------------------------------------------------------
@@ -415,8 +519,12 @@ Index License name    Quantity     Customer name
 1     544             -            ABC Consulting
       Trial           5.4.4        N/A
 """]
+    output_show_mac = ["""
+MAC address for licensing:
 
-    output_version= ["""
+eccd.6d9d.4eed
+"""]
+    output_show_version= ["""
 AlliedWare Plus (TM) 5.4.4 07/25/14 17:51:44
 
 Build name : x600-5.4.4-3.15.rel
@@ -429,29 +537,25 @@ Build type : RELEASE
  (c) 2001-2003, Cambridge Broadband Ltd. All rights reserved;
 """]
 
-    release_cert = 'x210-demo.csv'
-    release_file = 'x210-5.4.5-1.0.rel'
+    release_file = 'x210-5.4.4-1.5.rel'
 
     setup_dut(dut)
-    setup_test_software_upgrade(dut, release_file, release_cert)
-    assert (os.path.exists(release_cert) == True)
+    setup_test_software_upgrade(dut, release_file)
     assert (os.path.exists(release_file) == True)
 
     update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{2}'.format(socket.gethostbyname(socket.getfqdn()), release_file, release_file)
-    certificate_url = 'tftp://{0}/{1}'.format(socket.gethostbyname(socket.getfqdn()), release_cert)
     dut.add_cmd({'cmd': 'show boot'                 , 'state':0, 'action':'PRINT','args': output_show_boot_0})
-    dut.add_cmd({'cmd': 'show license release brief', 'state':0, 'action':'PRINT','args': output_license})
-    dut.add_cmd({'cmd': 'show version'              , 'state':0, 'action':'PRINT','args': output_version})
+    dut.add_cmd({'cmd': 'show license release brief', 'state':0, 'action':'PRINT','args': output_show_license})
+    dut.add_cmd({'cmd': 'show system mac license'   , 'state':0, 'action':'PRINT','args': output_show_mac})
+    dut.add_cmd({'cmd': 'show version'              , 'state':0, 'action':'PRINT','args': output_show_version})
     dut.add_cmd({'cmd': update_cmd                  , 'state':0, 'action':'SET_STATE','args': [1]})
     dut.add_cmd({'cmd': 'show boot'                 , 'state':1, 'action':'PRINT','args': output_show_boot_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
-    with pytest.raises(KeyError) as excinfo:
-        d.system.update(release_file)
-    d.system.update(release_file, certificate_url)
+    d.system.update(release_file)
     d.close()
 
-    clean_test_software_upgrade(dut, release_file, release_cert)
+    clean_test_software_upgrade(dut, release_file)
 
 
 def test_ping2(dut, log_level):

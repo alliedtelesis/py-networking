@@ -51,7 +51,7 @@ class awp_system(object):
         self._d.cmd(cmds, cache=False, flush_cache=True)
         self._d.load_system()
  
-    def update(self, name, certificate=''):
+    def update(self, name):
         self._d.log_info("software upgrade with {0}".format(name))
 
         if (self._check_running_software(name) == True):

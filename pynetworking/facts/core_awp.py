@@ -46,17 +46,23 @@ def core_awp(dev):
         ret['serial_number'] = m.group(3)
 
     # Release license
-    if (ret['build_name'].split('-')[1] < '5.4.4'):
-        ret['release_license_mode'] = 'not supported'
-    else:
-        cmds = {'cmds':[{'cmd': 'terminal length 0'         , 'prompt':'\>'},
-                        {'cmd': 'show license release brief', 'prompt':'\>'},
+    ret['release_license_mode'] = 'not supported'
+    if (ret['build_name'].split('-')[1] >= '5.4.4'):
+        cmds = {'cmds':[{'cmd': 'terminal length 0'      , 'prompt':'\>'},
+                        {'cmd': 'show system mac license', 'prompt':'\>'},
                        ]}
         out = dev.cmd(cmds)
 
-        ret['release_license_mode'] = 'unlicensed'
-        m = re.search('\d+\s+\d+\s+([\w\-\/]+)\s+([\w\-\/]+)',out)
-        if m:
-            ret['release_license_mode'] = 'licensed'
+        if (out.find('MAC address for licensing:') > 0):
+            cmds = {'cmds':[{'cmd': 'terminal length 0'         , 'prompt':'\>'},
+                            {'cmd': 'show license release brief', 'prompt':'\>'},
+                           ]}
+            out = dev.cmd(cmds)
+
+            m = re.search('\d+\s+\d+\s+([\w\-\/]+)\s+([\w\-\/]+)',out)
+            if m:
+                ret['release_license_mode'] = 'licensed'
+            else:
+                ret['release_license_mode'] = 'unlicensed'
 
     return ret

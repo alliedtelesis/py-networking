@@ -53,23 +53,17 @@ Build type : RELEASE
  """]})
 
 
-def setup_test_software_upgrade(dut, release_file, release_cert=''):
+def setup_test_software_upgrade(dut, release_file):
     if (dut.mode == 'emulated'):
         if (os.path.exists(release_file) == False):
             myfile = open(release_file, 'w')
             myfile.write('1')
             myfile.close()
-        if ((release_cert != '') and (os.path.exists(release_cert) == False)):
-            myfile = open(release_cert, 'w')
-            myfile.write('eccd-6d7e-18c3, 545-x210, /HE4ijJOkInZb4pBXwwf5wOl52kR229Bq9Aq2cb4A4rZ/++')
-            myfile.close()
 
 
-def clean_test_software_upgrade(dut, release_file, release_cert=''):
+def clean_test_software_upgrade(dut, release_file):
     if (dut.mode == 'emulated'):
         os.remove(release_file)
-        if ((release_cert != '') and (os.path.exists(release_cert) == True)):
-            os.remove(release_cert)
 
 
 def test_open_close1(dut, log_level):

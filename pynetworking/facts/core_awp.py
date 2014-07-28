@@ -22,6 +22,7 @@ def core_awp(dev):
     m = re.search("Build\s+name\s+:\s+([^\r\n\s]+)",out)
     if m:
         ret['build_name'] = m.group(1)
+        ret['sw_release'] = ret['build_name'].split('-')[1]
 
     # Build date : Wed Sep 25 12:57:26 NZST 2013
     m = re.search('Build\s+date\s+:\s+([^\n\r]+)',out)
@@ -43,5 +44,19 @@ def core_awp(dev):
         ret['model'] = m.group(1)
         ret['hardware_rev'] = m.group(2)
         ret['serial_number'] = m.group(3)
+
+    # Release license
+    if (ret['build_name'].split('-')[1] < '5.4.4'):
+        ret['release_license_mode'] = 'not supported'
+    else:
+        cmds = {'cmds':[{'cmd': 'terminal length 0'         , 'prompt':'\>'},
+                        {'cmd': 'show license release brief', 'prompt':'\>'},
+                       ]}
+        out = dev.cmd(cmds)
+
+        ret['release_license_mode'] = 'unlicensed'
+        m = re.search('\d+\s+\d+\s+([\w\-\/]+)\s+([\w\-\/]+)',out)
+        if m:
+            ret['release_license_mode'] = 'licensed'
 
     return ret

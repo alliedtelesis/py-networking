@@ -334,7 +334,7 @@ end
     d.close()
 
 
-def test_software_upgrade(dut, log_level):
+def test_software_upgrade_1(dut, log_level):
     output_0 = ["""
 Boot configuration
 ----------------------------------------------------------------
@@ -370,6 +370,7 @@ Backup  boot config: flash:/backup.cfg (file not found)
     dut.add_cmd({'cmd': 'show boot', 'state':1, 'action':'PRINT','args': output_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
+    assert d.facts['release_license_mode'] == 'not supported'
     with pytest.raises(KeyError) as excinfo:
         d.system.update(false_release_file)
     with pytest.raises(KeyError) as excinfo:
@@ -382,8 +383,8 @@ Backup  boot config: flash:/backup.cfg (file not found)
     clean_test_software_upgrade(dut, release_file)
 
 
-def test_licensed_software_upgrade(dut, log_level):
-    output_0 = ["""
+def test_software_upgrade_2(dut, log_level):
+    output_show_boot_0 = ["""
 Boot configuration
 ----------------------------------------------------------------
 Current software   : x210-5.4.4-1.4.rel
@@ -393,7 +394,7 @@ Default boot config: flash:/default.cfg
 Current boot config: flash:/my.cfg (file exists)
 Backup  boot config: flash:/backup.cfg (file not found)
 """]
-    output_1 = ["""
+    output_show_boot_1 = ["""
 Boot configuration
 ----------------------------------------------------------------
 Current software   : x210-5.4.4-1.4.rel
@@ -403,6 +404,30 @@ Default boot config: flash:/default.cfg
 Current boot config: flash:/my.cfg (file exists)
 Backup  boot config: flash:/backup.cfg (file not found)
 """]
+    output_license= ["""
+OEM Territory : ATI USA
+Software Release Licenses
+---------------------------------------------------------------------
+Index License name    Quantity     Customer name
+      Type            Version      Period
+---------------------------------------------------------------------
+1     544             -            ABC Consulting
+      Trial           5.4.4        N/A
+"""]
+
+    output_version= ["""
+AlliedWare Plus (TM) 5.4.4 07/25/14 17:51:44
+
+Build name : x600-5.4.4-3.15.rel
+Build date : Fri Jul 25 17:51:4 NZST 2014
+Build type : RELEASE
+ NET-SNMP SNMP agent software
+ (c) 1996, 1998-2000 The Regents of the University of California.
+     All rights reserved;
+ (c) 2001-2003, Networks Associates Technology, Inc. All rights reserved;
+ (c) 2001-2003, Cambridge Broadband Ltd. All rights reserved;
+"""]
+
     release_cert = 'x210-demo.csv'
     release_file = 'x210-5.4.5-1.0.rel'
 
@@ -413,11 +438,14 @@ Backup  boot config: flash:/backup.cfg (file not found)
 
     update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{2}'.format(socket.gethostbyname(socket.getfqdn()), release_file, release_file)
     certificate_url = 'tftp://{0}/{1}'.format(socket.gethostbyname(socket.getfqdn()), release_cert)
-    dut.add_cmd({'cmd': 'show boot', 'state':0, 'action':'PRINT','args': output_0})
-    dut.add_cmd({'cmd': update_cmd , 'state':0, 'action':'SET_STATE','args': [1]})
-    dut.add_cmd({'cmd': 'show boot', 'state':1, 'action':'PRINT','args': output_1})
+    dut.add_cmd({'cmd': 'show boot'                 , 'state':0, 'action':'PRINT','args': output_show_boot_0})
+    dut.add_cmd({'cmd': 'show license release brief', 'state':0, 'action':'PRINT','args': output_license})
+    dut.add_cmd({'cmd': 'show version'              , 'state':0, 'action':'PRINT','args': output_version})
+    dut.add_cmd({'cmd': update_cmd                  , 'state':0, 'action':'SET_STATE','args': [1]})
+    dut.add_cmd({'cmd': 'show boot'                 , 'state':1, 'action':'PRINT','args': output_show_boot_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
+    assert d.facts['release_license_mode'] == 'licensed'
     d.system.update(release_file, certificate_url)
     d.close()
 

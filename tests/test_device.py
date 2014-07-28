@@ -370,13 +370,14 @@ Backup  boot config: flash:/backup.cfg (file not found)
     dut.add_cmd({'cmd': 'show boot', 'state':1, 'action':'PRINT','args': output_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
-    assert d.facts['release_license_mode'] == 'not supported'
     with pytest.raises(KeyError) as excinfo:
         d.system.update(false_release_file)
     with pytest.raises(KeyError) as excinfo:
         d.system.update(bad_name_release_file)
     with pytest.raises(KeyError) as excinfo:
         d.system.update('x210-5.4.3-2.6.rel')
+    with pytest.raises(KeyError) as excinfo:
+        d.system.update(release_file, 'cert.csv')
     d.system.update(release_file)
     d.close()
 
@@ -445,7 +446,8 @@ Build type : RELEASE
     dut.add_cmd({'cmd': 'show boot'                 , 'state':1, 'action':'PRINT','args': output_show_boot_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
-    assert d.facts['release_license_mode'] == 'licensed'
+    with pytest.raises(KeyError) as excinfo:
+        d.system.update(release_file)
     d.system.update(release_file, certificate_url)
     d.close()
 

@@ -60,6 +60,12 @@ class awp_system(object):
             raise KeyError('wrong extension ({0})'.format(name.split('.')[-1]))
         if (os.path.exists(name) == False):
             raise KeyError('software {0} not available'.format(name))
+        if (self._d.facts['release_license_mode'] == 'not supported'):
+            if (certificate != ''):
+                raise KeyError('certificate not supported')
+        else:
+            if (certificate == ''):
+                raise KeyError('certificate is mandatory')
 
         if (certificate != ''):
             cert_cmd = 'license certificate {0}'.format(certificate)

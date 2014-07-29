@@ -395,7 +395,7 @@ Backup  boot config: flash:/backup.cfg (file not found)
     output_show_version= ["""
 AlliedWare Plus (TM) 5.4.4 07/25/14 17:51:44
 
-Build name : x600-5.4.4-3.15.rel
+Build name : x210-5.4.4-1.4.rel
 Build date : Fri Jul 25 17:51:4 NZST 2014
 Build type : RELEASE
  NET-SNMP SNMP agent software
@@ -428,9 +428,9 @@ def test_software_upgrade_544_unlicensed(dut, log_level):
     output_show_boot = ["""
 Boot configuration
 ----------------------------------------------------------------
-Current software   : x210-5.4.4-1.4.rel
-Current boot image : flash:/x210-5.4.4-1.4.rel
-Backup  boot image : flash:/x210-5.4.4-1.4.rel
+Current software   : x908-5.4.4-1.4.rel
+Current boot image : flash:/x908-5.4.4-1.4.rel
+Backup  boot image : flash:/x908-5.4.4-1.4.rel
 Default boot config: flash:/default.cfg
 Current boot config: flash:/my.cfg (file exists)
 Backup  boot config: flash:/backup.cfg (file not found)
@@ -451,7 +451,7 @@ eccd.6d9d.4eed
     output_show_version= ["""
 AlliedWare Plus (TM) 5.4.4 07/25/14 17:51:44
 
-Build name : x600-5.4.4-3.15.rel
+Build name : x908-5.4.4-1.4.rel
 Build date : Fri Jul 25 17:51:4 NZST 2014
 Build type : RELEASE
  NET-SNMP SNMP agent software
@@ -461,7 +461,7 @@ Build type : RELEASE
  (c) 2001-2003, Cambridge Broadband Ltd. All rights reserved;
 """]
 
-    release_file = 'x210-5.4.4-1.5.rel'
+    release_file = 'x908-5.4.4-1.5.rel'
 
     setup_dut(dut)
     setup_test_software_upgrade(dut, release_file)
@@ -486,9 +486,9 @@ def test_software_upgrade_544_licensed(dut, log_level):
     output_show_boot_0 = ["""
 Boot configuration
 ----------------------------------------------------------------
-Current software   : x210-5.4.4-1.4.rel
-Current boot image : flash:/x210-5.4.4-1.4.rel
-Backup  boot image : flash:/x210-5.4.4-1.4.rel
+Current software   : x908-5.4.4-1.4.rel
+Current boot image : flash:/x908-5.4.4-1.4.rel
+Backup  boot image : flash:/x908-5.4.4-1.4.rel
 Default boot config: flash:/default.cfg
 Current boot config: flash:/my.cfg (file exists)
 Backup  boot config: flash:/backup.cfg (file not found)
@@ -496,9 +496,9 @@ Backup  boot config: flash:/backup.cfg (file not found)
     output_show_boot_1 = ["""
 Boot configuration
 ----------------------------------------------------------------
-Current software   : x210-5.4.4-1.5.rel
-Current boot image : flash:/x210-5.4.5-1.0.rel
-Backup  boot image : flash:/x210-5.4.4-1.4.rel
+Current software   : x908-5.4.4-1.5.rel
+Current boot image : flash:/x908-5.4.5-1.0.rel
+Backup  boot image : flash:/x908-5.4.4-1.4.rel
 Default boot config: flash:/default.cfg
 Current boot config: flash:/my.cfg (file exists)
 Backup  boot config: flash:/backup.cfg (file not found)
@@ -521,7 +521,7 @@ eccd.6d9d.4eed
     output_show_version= ["""
 AlliedWare Plus (TM) 5.4.4 07/25/14 17:51:44
 
-Build name : x600-5.4.4-3.15.rel
+Build name : x908-5.4.4-1.5.rel
 Build date : Fri Jul 25 17:51:4 NZST 2014
 Build type : RELEASE
  NET-SNMP SNMP agent software
@@ -531,7 +531,7 @@ Build type : RELEASE
  (c) 2001-2003, Cambridge Broadband Ltd. All rights reserved;
 """]
 
-    release_file = 'x210-5.4.4-1.5.rel'
+    release_file = 'x908-5.4.4-1.5.rel'
 
     setup_dut(dut)
     setup_test_software_upgrade(dut, release_file)

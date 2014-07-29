@@ -34,7 +34,7 @@ Unit     Up time
  1     00,00:14:51
 
 Unit Number:   1
-Serial number:
+Serial number:   1122334455
     """]})
 
 
@@ -76,6 +76,37 @@ def clean_test_firmware_upgrade(dut, image_name):
     os.rmdir('tftp_client_dir')
     os.remove('tftp_server_dir/' + image_name)
     os.rmdir('tftp_server_dir')
+
+
+def test_core_ats_coverage(dut, log_level):
+    setup_dut(dut)
+    dut.add_cmd({'cmd':'copy r s', 'state':0, 'action':'SET_STATE','args':[1]})
+    dut.add_cmd({'cmd':'show version', 'state':1, 'action':'PRINT','args':["""
+
+        Unit             SW version         Boot version         HW version
+------------------- ------------------- ------------------- -------------------
+         1               3.0.0.44            1.0.1.07            00.01.00
+
+    """]})
+    dut.add_cmd({'cmd':'show system', 'state':1, 'action':'PRINT','args':["""
+
+Unit        Type
+---- -------------------
+ 1     
+
+
+Unit     Up time
+---- ---------------
+ 1     00,00:14:51
+
+Unit number:   1
+Serial Number:   1122334231
+    """]})
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    d.open()
+    d.system.save_config()
+    d._load_core_facts()
+    d.close()
 
 
 def test_save_config(dut, log_level):

@@ -46,7 +46,7 @@ def core_awp(dev):
         ret['serial_number'] = m.group(3)
 
     # Release license
-    if (ret['build_name'].split('-')[1] >= '5.4.4'):
+    if (ret['version'] >= '5.4.4'):
         cmds = {'cmds':[{'cmd': 'terminal length 0'      , 'prompt':'\>'},
                         {'cmd': 'show license release brief', 'prompt':'\>'}
                        ]}

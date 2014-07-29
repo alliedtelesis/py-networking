@@ -78,21 +78,15 @@ def clean_test_firmware_upgrade(dut, image_name):
     os.rmdir('tftp_server_dir')
 
 
-def test_core_ats_coverage(dut, log_level):
-    setup_dut(dut)
-    dut.add_cmd({'cmd':'copy r s', 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd':'show version', 'state':1, 'action':'PRINT','args':["""
+def test_facts_1(dut, log_level):
+    if dut.mode != 'emulated':
+        pytest.skip("only on emulated")
 
-        Unit             SW version         Boot version         HW version
-------------------- ------------------- ------------------- -------------------
-         1               3.0.0.44            1.0.1.07            00.01.00
-
-    """]})
-    dut.add_cmd({'cmd':'show system', 'state':1, 'action':'PRINT','args':["""
+    out_sys = """
 
 Unit        Type
 ---- -------------------
- 1     
+ 1
 
 
 Unit     Up time
@@ -101,11 +95,58 @@ Unit     Up time
 
 Unit number:   1
 Serial Number:   1122334231
-    """]})
+    """
+    out_ver = """
+
+        Unit             SW version         Boot version         HW version
+------------------- ------------------- ------------------- -------------------
+         1               3.0.0.44            1.0.1.07            00.01.00
+
+    """
+
+    setup_dut(dut)
+    dut.add_cmd({'cmd':'show system' , 'state':0, 'action':'PRINT','args':[out_sys]})
+    dut.add_cmd({'cmd':'show version', 'state':0, 'action':'PRINT','args':[out_ver]})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
-    d.system.save_config()
-    d._load_core_facts()
+    assert d.facts['model'] == 'not found'
+    assert d.facts['unit_number'] == 'not found'
+    assert d.facts['serial_number'] == 'not found'
+    d.close()
+
+
+def test_facts_2(dut, log_level):
+    if dut.mode != 'emulated':
+        pytest.skip("only on emulated")
+
+    out_sys = """
+
+unit        type
+---- -------------------
+ 1     AT-8000S/24
+
+
+unit     up time
+---- ---------------
+ 1     00,00:14:51
+
+unit number:   1
+serial nr:   1122334455
+    """
+    out_ver = """
+
+        unit             sw version         boot version         hw version
+------------------- ------------------- ------------------- -------------------
+         1               3.0.0.44            1.0.1.07            00.01.00
+
+    """
+
+    setup_dut(dut)
+    dut.add_cmd({'cmd':'show system' , 'state':0, 'action':'PRINT','args':[out_sys]})
+    dut.add_cmd({'cmd':'show version', 'state':0, 'action':'PRINT','args':[out_ver]})
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    with pytest.raises(DeviceException) as excinfo:
+        d.open()
     d.close()
 
 

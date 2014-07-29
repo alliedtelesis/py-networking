@@ -57,7 +57,7 @@ class awp_system(object):
         devfilename = filename.split('/')[-1]
         devfileext = devfilename.split('.')[-1]
         if (devfileext != 'rel'):
-            self._d.log_warning("firmware name {0} should have .rel extension".format(filename))
+            self._d.log_warn("firmware name {0} should have .rel extension".format(filename))
             devfilename = devfilename + '.rel'
 
         if (protocol != 'http'):

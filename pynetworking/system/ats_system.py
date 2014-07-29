@@ -57,13 +57,15 @@ class ats_system(object):
         self._d.log_info('ping')
         self._d.cmd('show version', use_cache=False)
 
-    def update(self, name, port=69, server=''):
-        self._d.log_info("software upgrade with {0}".format(name))
+    def update_firmware(self, filename, protocol='http', server='', port=69):
+        self._d.log_info("firmware upgrade with {0}".format(filename))
 
-        if (os.path.exists(name) == False):
-            raise KeyError('image {0} not available'.format(name))
+        if (os.path.exists(filename) == False):
+            raise KeyError('firmware {0} not available'.format(filename))
+        if (protocol != 'tftp'):
+            raise KeyError('protocol {0} not supported'.format(protocol))
 
-        self._d.file.create(name='image', port=port, filename=name, server=server)
+        self._d.file.create(name='image', port=port, filename=filename, server=server)
         boot_cmd = 'boot system image-{0}'.format(self._get_stand_by_bank())
         cmds = {'cmds': [{'cmd': boot_cmd, 'prompt': '\#'},
                          {'cmd': 'reload', 'prompt': ''  },

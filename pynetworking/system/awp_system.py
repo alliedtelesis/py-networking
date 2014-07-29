@@ -51,23 +51,26 @@ class awp_system(object):
         self._d.cmd(cmds, cache=False, flush_cache=True)
         self._d.load_system()
  
-    def update(self, name):
-        self._d.log_info("software upgrade with {0}".format(name))
+    def update_firmware(self, filename, protocol='http'):
+        self._d.log_info("firmware upgrade with {0}".format(filename))
 
-        if (self._check_running_software(name) == True):
-            raise KeyError('cannot overwrite running software ({0})'.format(name))
-        if (name.split('.')[-1] != 'rel'):
-            raise KeyError('wrong extension ({0})'.format(name.split('.')[-1]))
-        if (os.path.exists(name) == False):
-            raise KeyError('software {0} not available'.format(name))
+        devfilename = filename.split('/')[-1]
+        if (protocol != 'http'):
+            raise KeyError('protocol {0} not supported'.format(protocol))
+        if (self._check_running_software(devfilename) == True):
+            raise KeyError('cannot overwrite running firmware ({0})'.format(devfilename))
+        if (devfilename.split('.')[-1] != 'rel'):
+            raise KeyError('wrong extension ({0})'.format(devfilename.split('.')[-1]))
+        if (os.path.exists(filename) == False):
+            raise KeyError('firmware {0} not available'.format(filename))
         if ('licensed' in self._d.facts.keys()):
             if (self._d.facts['licensed'] == False):
                 raise KeyError('unlicensed software running')
             else:
                 self._d.log_info('licensed software running')
 
-        self._d.file.create(name=name, filename=name)
-        boot_cmd = 'boot system {0}'.format(name)
+        self._d.file.create(name=filename, filename=devfilename)
+        boot_cmd = 'boot system {0}'.format(devfilename)
         cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
                          {'cmd': 'conf t', 'prompt': '\(config\)\#'},
                          {'cmd': boot_cmd, 'prompt': '\(config\)\#', 'timeout' : 10000},

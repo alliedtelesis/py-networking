@@ -54,7 +54,7 @@ def tftp_server_for_ever(port):
         server.listen(ip_address, port, timeout=20)
 
 
-def setup_test_software_upgrade(dut, image_name):
+def setup_test_firmware_upgrade(dut, image_name):
     dut.tftp_port = 69
     if (dut.mode == 'emulated'):
         if (getpass.getuser() != 'root'):
@@ -69,7 +69,7 @@ def setup_test_software_upgrade(dut, image_name):
     dut.tftp_server_thread.start()
 
 
-def clean_test_software_upgrade(dut, image_name):
+def clean_test_firmware_upgrade(dut, image_name):
     if (dut.mode == 'emulated'):
         os.remove('tftp_client_dir/image')
         os.remove(image_name)
@@ -157,7 +157,7 @@ def test_ping1(dut, log_level):
     d.close()
 
 
-def test_software_upgrade(dut, log_level):
+def test_firmware_upgrade(dut, log_level):
     output_0 = ["""
 Unit  Image  Filename   Version    Date                    Status
 ----  -----  ---------  ---------  ---------------------   -----------
@@ -180,7 +180,7 @@ Unit  Image  Filename   Version    Date                    Status
     false_image_name = '8001s-5.4.3-3.9.rel'
 
     setup_dut(dut)
-    setup_test_software_upgrade(dut, image_name)
+    setup_test_firmware_upgrade(dut, image_name)
     assert (os.path.exists(image_name) == True)
     assert (os.path.exists(false_image_name) == False)
 
@@ -192,12 +192,14 @@ Unit  Image  Filename   Version    Date                    Status
     d.open()
     old_active_bank = d.system._get_stand_by_bank()
     with pytest.raises(KeyError) as excinfo:
-        d.system.update(name=false_image_name, port=dut.tftp_port)
-    d.system.update(name=image_name, port=dut.tftp_port)
+        d.system.update_firmware(filename=false_image_name, protocol='tftp', port=dut.tftp_port)
+    with pytest.raises(KeyError) as excinfo:
+        d.system.update_firmware(filename=image_name, port=dut.tftp_port)
+    d.system.update_firmware(filename=image_name, protocol='tftp', port=dut.tftp_port)
     if (dut.mode == 'emulated'):
         # real devices will be rebooting here
         new_active_bank = d.system._get_stand_by_bank()
         assert old_active_bank != new_active_bank
     d.close()
 
-    clean_test_software_upgrade(dut, image_name)
+    clean_test_firmware_upgrade(dut, image_name)

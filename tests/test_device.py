@@ -53,7 +53,7 @@ Build type : RELEASE
  """]})
 
 
-def setup_test_software_upgrade(dut, release_file):
+def setup_test_firmware_upgrade(dut, release_file):
     if (dut.mode == 'emulated'):
         if (os.path.exists(release_file) == False):
             myfile = open(release_file, 'w')
@@ -61,7 +61,7 @@ def setup_test_software_upgrade(dut, release_file):
             myfile.close()
 
 
-def clean_test_software_upgrade(dut, release_file):
+def clean_test_firmware_upgrade(dut, release_file):
     if (dut.mode == 'emulated'):
         os.remove(release_file)
 
@@ -328,7 +328,7 @@ end
     d.close()
 
 
-def test_software_upgrade_543(dut, log_level):
+def test_firmware_upgrade_543(dut, log_level):
     output_0 = ["""
 Boot configuration
 ----------------------------------------------------------------
@@ -354,7 +354,7 @@ Backup  boot config: flash:/backup.cfg (file not found)
     bad_name_release_file = 'x210-5.4.3-2.7.rol'
 
     setup_dut(dut)
-    setup_test_software_upgrade(dut, release_file)
+    setup_test_firmware_upgrade(dut, release_file)
     assert (os.path.exists(release_file) == True)
     assert (os.path.exists(false_release_file) == False)
 
@@ -365,18 +365,20 @@ Backup  boot config: flash:/backup.cfg (file not found)
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
     with pytest.raises(KeyError) as excinfo:
-        d.system.update(false_release_file)
+        d.system.update_firmware(false_release_file)
     with pytest.raises(KeyError) as excinfo:
-        d.system.update(bad_name_release_file)
+        d.system.update_firmware(bad_name_release_file)
     with pytest.raises(KeyError) as excinfo:
-        d.system.update('x210-5.4.3-2.6.rel')
-    d.system.update(release_file)
+        d.system.update_firmware('x210-5.4.3-2.6.rel')
+    with pytest.raises(KeyError) as excinfo:
+        d.system.update_firmware('x210-5.4.3-2.7.rel', protocol='tftp')
+    d.system.update_firmware(release_file)
     d.close()
 
-    clean_test_software_upgrade(dut, release_file)
+    clean_test_firmware_upgrade(dut, release_file)
 
 
-def test_software_upgrade_544(dut, log_level):
+def test_firmware_upgrade_544(dut, log_level):
     output_show_boot = ["""
 Boot configuration
 ----------------------------------------------------------------
@@ -403,7 +405,7 @@ Build type : RELEASE
     release_file = 'x210-5.4.4-1.5.rel'
 
     setup_dut(dut)
-    setup_test_software_upgrade(dut, release_file)
+    setup_test_firmware_upgrade(dut, release_file)
     assert (os.path.exists(release_file) == True)
 
     update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{2}'.format(socket.gethostbyname(socket.getfqdn()), release_file, release_file)
@@ -412,13 +414,13 @@ Build type : RELEASE
     dut.add_cmd({'cmd': update_cmd                  , 'state':0, 'action':'SET_STATE','args': [1]})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
-    d.system.update(release_file)
+    d.system.update_firmware(release_file)
     d.close()
 
-    clean_test_software_upgrade(dut, release_file)
+    clean_test_firmware_upgrade(dut, release_file)
 
 
-def test_software_upgrade_544_unlicensed(dut, log_level):
+def test_firmware_upgrade_544_unlicensed(dut, log_level):
     output_show_boot = ["""
 Boot configuration
 ----------------------------------------------------------------
@@ -453,7 +455,7 @@ Build type : RELEASE
     release_file = 'x908-5.4.4-1.5.rel'
 
     setup_dut(dut)
-    setup_test_software_upgrade(dut, release_file)
+    setup_test_firmware_upgrade(dut, release_file)
     assert (os.path.exists(release_file) == True)
 
     update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{2}'.format(socket.gethostbyname(socket.getfqdn()), release_file, release_file)
@@ -464,13 +466,13 @@ Build type : RELEASE
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
     with pytest.raises(KeyError) as excinfo:
-        d.system.update(release_file)
+        d.system.update_firmware(release_file)
     d.close()
 
-    clean_test_software_upgrade(dut, release_file)
+    clean_test_firmware_upgrade(dut, release_file)
 
 
-def test_software_upgrade_544_licensed(dut, log_level):
+def test_firmware_upgrade_544_licensed(dut, log_level):
     output_show_boot_0 = ["""
 Boot configuration
 ----------------------------------------------------------------
@@ -517,7 +519,7 @@ Build type : RELEASE
     release_file = 'x908-5.4.4-1.5.rel'
 
     setup_dut(dut)
-    setup_test_software_upgrade(dut, release_file)
+    setup_test_firmware_upgrade(dut, release_file)
     assert (os.path.exists(release_file) == True)
 
     update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{2}'.format(socket.gethostbyname(socket.getfqdn()), release_file, release_file)
@@ -528,10 +530,10 @@ Build type : RELEASE
     dut.add_cmd({'cmd': 'show boot'                 , 'state':1, 'action':'PRINT','args': output_show_boot_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
-    d.system.update(release_file)
+    d.system.update_firmware(release_file)
     d.close()
 
-    clean_test_software_upgrade(dut, release_file)
+    clean_test_firmware_upgrade(dut, release_file)
 
 
 def test_ping2(dut, log_level):

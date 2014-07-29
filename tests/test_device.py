@@ -376,7 +376,7 @@ Backup  boot config: flash:/backup.cfg (file not found)
     clean_test_software_upgrade(dut, release_file)
 
 
-def test_software_upgrade_544_notsupported(dut, log_level):
+def test_software_upgrade_544(dut, log_level):
     output_show_boot = ["""
 Boot configuration
 ----------------------------------------------------------------
@@ -386,11 +386,6 @@ Backup  boot image : flash:/x210-5.4.4-1.4.rel
 Default boot config: flash:/default.cfg
 Current boot config: flash:/my.cfg (file exists)
 Backup  boot config: flash:/backup.cfg (file not found)
-"""]
-    output_show_mac = ["""
-                   ^
-% Invalid input detected at '^' marker.
-
 """]
     output_show_version= ["""
 AlliedWare Plus (TM) 5.4.4 07/25/14 17:51:44
@@ -413,7 +408,6 @@ Build type : RELEASE
 
     update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{2}'.format(socket.gethostbyname(socket.getfqdn()), release_file, release_file)
     dut.add_cmd({'cmd': 'show boot'                 , 'state':0, 'action':'PRINT','args': output_show_boot})
-    dut.add_cmd({'cmd': 'show system mac license'   , 'state':0, 'action':'PRINT','args': output_show_mac})
     dut.add_cmd({'cmd': 'show version'              , 'state':0, 'action':'PRINT','args': output_show_version})
     dut.add_cmd({'cmd': update_cmd                  , 'state':0, 'action':'SET_STATE','args': [1]})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
@@ -443,11 +437,6 @@ Index License name    Quantity     Customer name
       Type            Version      Period
 ---------------------------------------------------------------------
 """]
-    output_show_mac = ["""
-MAC address for licensing:
-
-eccd.6d9d.4eed
-"""]
     output_show_version= ["""
 AlliedWare Plus (TM) 5.4.4 07/25/14 17:51:44
 
@@ -470,7 +459,6 @@ Build type : RELEASE
     update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{2}'.format(socket.gethostbyname(socket.getfqdn()), release_file, release_file)
     dut.add_cmd({'cmd': 'show boot'                 , 'state':0, 'action':'PRINT','args': output_show_boot})
     dut.add_cmd({'cmd': 'show license release brief', 'state':0, 'action':'PRINT','args': output_show_license})
-    dut.add_cmd({'cmd': 'show system mac license'   , 'state':0, 'action':'PRINT','args': output_show_mac})
     dut.add_cmd({'cmd': 'show version'              , 'state':0, 'action':'PRINT','args': output_show_version})
     dut.add_cmd({'cmd': update_cmd                  , 'state':0, 'action':'SET_STATE','args': [1]})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
@@ -513,11 +501,6 @@ Index License name    Quantity     Customer name
 1     544             -            ABC Consulting
       Trial           5.4.4        N/A
 """]
-    output_show_mac = ["""
-MAC address for licensing:
-
-eccd.6d9d.4eed
-"""]
     output_show_version= ["""
 AlliedWare Plus (TM) 5.4.4 07/25/14 17:51:44
 
@@ -540,7 +523,6 @@ Build type : RELEASE
     update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{2}'.format(socket.gethostbyname(socket.getfqdn()), release_file, release_file)
     dut.add_cmd({'cmd': 'show boot'                 , 'state':0, 'action':'PRINT','args': output_show_boot_0})
     dut.add_cmd({'cmd': 'show license release brief', 'state':0, 'action':'PRINT','args': output_show_license})
-    dut.add_cmd({'cmd': 'show system mac license'   , 'state':0, 'action':'PRINT','args': output_show_mac})
     dut.add_cmd({'cmd': 'show version'              , 'state':0, 'action':'PRINT','args': output_show_version})
     dut.add_cmd({'cmd': update_cmd                  , 'state':0, 'action':'SET_STATE','args': [1]})
     dut.add_cmd({'cmd': 'show boot'                 , 'state':1, 'action':'PRINT','args': output_show_boot_1})

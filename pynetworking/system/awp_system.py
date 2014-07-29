@@ -60,8 +60,11 @@ class awp_system(object):
             raise KeyError('wrong extension ({0})'.format(name.split('.')[-1]))
         if (os.path.exists(name) == False):
             raise KeyError('software {0} not available'.format(name))
-        if (self._d.facts['release_license_mode'] == 'unlicensed'):
-            raise KeyError('unlicensed software running')
+        if ('licensed' in self._d.facts.keys()):
+            if (self._d.facts['licensed'] == False):
+                raise KeyError('unlicensed software running')
+            else:
+                self._d.log_info('licensed software running')
 
         self._d.file.create(name=name, filename=name)
         boot_cmd = 'boot system {0}'.format(name)

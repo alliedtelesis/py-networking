@@ -55,12 +55,15 @@ class awp_system(object):
         self._d.log_info("firmware upgrade with {0}".format(filename))
 
         devfilename = filename.split('/')[-1]
+        devfileext = devfilename.split('.')[-1]
+        if (devfileext != 'rel'):
+            self._d.log_info("firmware name {0} should have .rel extension".format(filename))
+            devfilename = devfilename + '.rel'
+
         if (protocol != 'http'):
             raise KeyError('protocol {0} not supported'.format(protocol))
         if (self._check_running_software(devfilename) == True):
             raise KeyError('cannot overwrite running firmware ({0})'.format(devfilename))
-        if (devfilename.split('.')[-1] != 'rel'):
-            raise KeyError('wrong extension ({0})'.format(devfilename.split('.')[-1]))
         if (os.path.exists(filename) == False):
             raise KeyError('firmware {0} not available'.format(filename))
         if ('licensed' in self._d.facts.keys()):

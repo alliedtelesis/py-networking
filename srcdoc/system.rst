@@ -40,26 +40,19 @@ output stop waiting user input.
 
 **Description**: Returns a regular expression for the default prompt of the device.
 
-**update(name, port=None, server=None)**
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+**update_firmware(filename, protocol='http', server=None)**
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 **Mandatory**
 
-**Description**: Allows to upgrade the device software.
-The *name* parameter is the software name.
-It cannot be the current running software.
-The *port* parameter is the port used to upload the software on the device (if required).
-The *server* parameter is the address of the host where the server is running.
-If not given it's the library host one.
-Once the upload has terminated, the device is rebooted and the new software will be running.
+**Description**: Allows to upgrade the device firmware.
+The *filename* is the name of the file and its optional path that contains the device firmware.
+The *protocol* is the method used to upload the firmware to the device. Depending on the device capability can be set to http or tftp.
+In case of tftp it requires an external server that must be indicated in the *server* parameter.
 
 **Parameters**:
 
-    - *name*: string
-        Software release name
+   - *name*: string
+       Filename of the device firmware
 
-    - *port*: integer
-        Upload port
-
-    - *server*: string
-        Server IP address
-
+   - *server*: string
+       Server IP address or Hostname

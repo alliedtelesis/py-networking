@@ -378,6 +378,47 @@ Backup  boot config: flash:/backup.cfg (file not found)
     clean_test_firmware_upgrade(dut, release_file)
 
 
+def test_firmware_upgrade_full_path(dut, log_level):
+    output_0 = ["""
+Boot configuration
+----------------------------------------------------------------
+Current software   : x210-5.4.3-2.6.rel
+Current boot image : flash:/x210-5.4.3-2.6.rel
+Backup  boot image : flash:/x210-5.4.3-2.6.rel
+Default boot config: flash:/default.cfg
+Current boot config: flash:/my.cfg (file exists)
+Backup  boot config: flash:/backup.cfg (file not found)
+"""]
+    output_1 = ["""
+Boot configuration
+----------------------------------------------------------------
+Current software   : x210-5.4.3-2.6.rel
+Current boot image : flash:/x210-5.4.3-2.7.rel
+Backup  boot image : flash:/x210-5.4.3-2.6.rel
+Default boot config: flash:/default.cfg
+Current boot config: flash:/my.cfg (file exists)
+Backup  boot config: flash:/backup.cfg (file not found)
+"""]
+    image_file = 'x210-5.4.3-2.7.rel'
+    image_path = os.path.dirname(os.path.abspath(__file__)) + '/../examples/'
+    image_name = image_path + image_file
+
+    setup_dut(dut)
+    setup_test_firmware_upgrade(dut, image_name)
+    assert (os.path.exists(image_name) == True)
+
+    update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{1}'.format(socket.gethostbyname(socket.getfqdn()), image_file)
+    dut.add_cmd({'cmd': 'show boot', 'state':0, 'action':'PRINT','args': output_0})
+    dut.add_cmd({'cmd': update_cmd , 'state':0, 'action':'SET_STATE','args': [1]})
+    dut.add_cmd({'cmd': 'show boot', 'state':1, 'action':'PRINT','args': output_1})
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    d.open()
+    d.system.update_firmware(image_name)
+    d.close()
+
+    clean_test_firmware_upgrade(dut, image_name)
+
+
 def test_firmware_upgrade_544(dut, log_level):
     output_show_boot = ["""
 Boot configuration

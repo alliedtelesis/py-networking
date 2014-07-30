@@ -72,7 +72,7 @@ class awp_system(object):
             else:
                 self._d.log_info('licensed software running')
 
-        self._d.file.create(name=filename, filename=devfilename)
+        self._d.file.create(name=devfilename, filename=filename)
         boot_cmd = 'boot system {0}'.format(devfilename)
         cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
                          {'cmd': 'conf t', 'prompt': '\(config\)\#'},

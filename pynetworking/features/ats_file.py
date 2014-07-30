@@ -62,12 +62,12 @@ class ats_file(Feature):
         if (server == ''):
             server = socket.gethostbyname(socket.getfqdn())
         tftp_client = tftpy.TftpClient(server, port)
-        tftp_client.upload(filename, filename)
+        tftp_client.upload(filename.split('/')[-1], filename)
         self._tftp_port = port
 
         # device commands (timeout of 60 seconds for each MB)
         timeout = (os.path.getsize(filename)/1048576 + 1)*60000
-        create_cmd = 'copy tftp://{0}/{1} {2}'.format(server, filename, name)
+        create_cmd = 'copy tftp://{0}/{1} {2}'.format(server, filename.split('/')[-1], name)
         cmds = {'cmds':[{'cmd': create_cmd, 'prompt': '\#', 'timeout': timeout}]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._update_file()

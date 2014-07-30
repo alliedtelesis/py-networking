@@ -124,7 +124,6 @@ class Emulator(recvline.HistoricRecvLine):
             if (src.find('tftp://') == 0):
                 src_path = tftp_server_dir + '/' + src.split('/')[-1]
                 dst_path = tftp_client_dir + '/' + dst
-                shutil.copy2(src.split('/')[-1],src_path)
             else:
                 src_path = tftp_client_dir + '/' + src
                 dst_path = tftp_server_dir + '/' + dst.split('/')[-1]

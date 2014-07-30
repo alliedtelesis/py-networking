@@ -74,7 +74,7 @@ def clean_test_firmware_upgrade(dut, image_name):
         os.remove('tftp_client_dir/image')
         os.remove(image_name)
     os.rmdir('tftp_client_dir')
-    os.remove('tftp_server_dir/' + image_name)
+    os.remove('tftp_server_dir/' + image_name.split('/')[-1])
     os.rmdir('tftp_server_dir')
 
 
@@ -267,6 +267,50 @@ Unit  Image  Filename   Version    Date                    Status
         d.system.update_firmware(filename=false_image_name, protocol='tftp', port=dut.tftp_port)
     with pytest.raises(KeyError) as excinfo:
         d.system.update_firmware(filename=image_name, port=dut.tftp_port)
+    d.system.update_firmware(filename=image_name, protocol='tftp', port=dut.tftp_port)
+    if (dut.mode == 'emulated'):
+        # real devices will be rebooting here
+        new_active_bank = d.system._get_stand_by_bank()
+        assert old_active_bank != new_active_bank
+    d.close()
+
+    clean_test_firmware_upgrade(dut, image_name)
+
+
+def test_with_full_path(dut, log_level):
+    output_0 = ["""
+Unit  Image  Filename   Version    Date                    Status
+----  -----  ---------  ---------  ---------------------   -----------
+1     1      image-1    3.0.0.44   02-Oct-2011  13:29:54   Not active
+1     2      image-2    3.0.0.44   02-Oct-2011  13:29:54   Active*
+
+"*" designates that the image was selected for the next boot
+
+"""]
+    output_1 = ["""
+Unit  Image  Filename   Version    Date                    Status
+----  -----  ---------  ---------  ---------------------   -----------
+1     1      image-1    3.0.0.45   02-Oct-2011  13:31:37   Not active*
+1     2      image-2    3.0.0.44   02-Oct-2011  13:29:54   Active
+
+"*" designates that the image was selected for the next boot
+
+"""]
+    image_file = '8000s-5.4.3-3.9.rel'
+    image_path = os.path.dirname(os.path.abspath(__file__)) + '/../examples/'
+    image_name = image_path + image_file
+
+    setup_dut(dut)
+    setup_test_firmware_upgrade(dut, image_name)
+    assert (os.path.exists(image_name) == True)
+
+    update_cmd = 'copy\s+tftp://{0}/{1}\s+image'.format(socket.gethostbyname(socket.getfqdn()), image_file)
+    dut.add_cmd({'cmd': 'show bootvar', 'state':0, 'action':'PRINT','args': output_0})
+    dut.add_cmd({'cmd': update_cmd    , 'state':0, 'action':'SET_STATE','args': [1]})
+    dut.add_cmd({'cmd': 'show bootvar', 'state':1, 'action':'PRINT','args': output_1})
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level,connection_timeout=300)
+    d.open()
+    old_active_bank = d.system._get_stand_by_bank()
     d.system.update_firmware(filename=image_name, protocol='tftp', port=dut.tftp_port)
     if (dut.mode == 'emulated'):
         # real devices will be rebooting here

@@ -65,7 +65,7 @@ class ats_system(object):
         if (protocol != 'tftp'):
             raise KeyError('protocol {0} not supported'.format(protocol))
 
-        self._d.file.create(name='image', port=port, filename=filename, server=server)
+        self._d.file.create(name='image', protocol=protocol, filename=filename, server=server, port=port)
         boot_cmd = 'boot system image-{0}'.format(self._get_stand_by_bank())
         cmds = {'cmds': [{'cmd': boot_cmd, 'prompt': '\#'},
                          {'cmd': 'reload', 'prompt': ''  },

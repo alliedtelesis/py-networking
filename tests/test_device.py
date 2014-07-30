@@ -378,7 +378,7 @@ Backup  boot config: flash:/backup.cfg (file not found)
     clean_test_firmware_upgrade(dut, release_file)
 
 
-def test_firmware_upgrade_full_path(dut, log_level):
+def test_full_path_firmware_upgrade(dut, log_level):
     output_0 = ["""
 Boot configuration
 ----------------------------------------------------------------

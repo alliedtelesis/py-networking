@@ -33,7 +33,7 @@ class ats_file(Feature):
         self._d.log_info("loading config")
 
 
-    def create(self, name, port=69, text='', filename='', server=''):
+    def create(self, name, protocol='http', text='', filename='', server='', port=69):
         self._d.log_debug("User: {0}".format(getpass.getuser()))
         self._d.log_debug("Local IP address: {0}".format(socket.gethostbyname(socket.getfqdn())))
         self._d.log_debug("TFTP server: {0} (local IP address if missing)".format(server))
@@ -42,6 +42,8 @@ class ats_file(Feature):
 
         if name in self._d.file.keys():
             raise KeyError('file {0} is already existing'.format(name))
+        if (protocol != 'tftp'):
+            raise KeyError('protocol {0} not supported'.format(protocol))
         if (filename != '' and text != ''):
             raise KeyError('Cannot have both source device file name and host string not empty')
         if (filename == '' and server != ''):
@@ -67,18 +69,20 @@ class ats_file(Feature):
 
         # device commands (timeout of 60 seconds for each MB)
         timeout = (os.path.getsize(filename)/1048576 + 1)*60000
-        create_cmd = 'copy tftp://{0}/{1} {2}'.format(server, filename.split('/')[-1], name)
+        create_cmd = 'copy {0}://{1}/{2} {3}'.format(protocol, server, filename.split('/')[-1], name)
         cmds = {'cmds':[{'cmd': create_cmd, 'prompt': '\#', 'timeout': timeout}]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._update_file()
 
 
-    def update(self, name, port=69, filename='', text='', new_name='', server=''):
+    def update(self, name, protocol='http', filename='', text='', new_name='', server='', port=69):
         self._d.log_info("copying {0} from host to device".format(name))
         self._update_file()
 
         if name not in self._d.file.keys():
             raise KeyError('file {0} is not existing'.format(name))
+        if (protocol != 'tftp'):
+            raise KeyError('protocol {0} not supported'.format(protocol))
         if new_name in self._d.file.keys():
             raise KeyError('file {0} cannot be overwritten'.format(new_name))
         if (filename != '' and text != ''):
@@ -108,7 +112,7 @@ class ats_file(Feature):
         # device commands (timeout of 30 seconds for each MB)
         timeout = (os.path.getsize(file_2_copy_from)/1048576 + 1)*30000
         if (new_name == ''):
-            update_cmd = 'copy tftp://{0}/{1} {2}'.format(server, file_2_copy_from, name)
+            update_cmd = 'copy {0}://{1}/{2} {3}'.format(protocol, server, file_2_copy_from, name)
             cmds = {'cmds': [{'cmd': update_cmd, 'prompt': ''  },
                              {'cmd': 'y'       , 'prompt': '\#', 'timeout' : timeout}
                             ]}

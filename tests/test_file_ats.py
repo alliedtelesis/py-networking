@@ -100,13 +100,15 @@ ip ssh server
     d.open()
     assert 'startup-config' in d.file.keys()
     with pytest.raises(KeyError) as excinfo:
-        d.file.create(name='startup-config', text=host_text)
+        d.file.create(name='startup-config', protocol='tftp', text=host_text)
     with pytest.raises(KeyError) as excinfo:
-        d.file.create(name='test_file.cfg', text=host_text, filename='startup-config')
+        d.file.create(name='test_file.cfg', protocol='tftp', text=host_text, filename='startup-config')
     with pytest.raises(KeyError) as excinfo:
-        d.file.create(name='test_file.cfg', text=host_text, server='10.17.90.1')
+        d.file.create(name='test_file.cfg', protocol='tftp', server='10.17.90.1')
     with pytest.raises(KeyError) as excinfo:
-        d.file.create(name='test_file.cfg', server='10.17.90.1')
+        d.file.create(name='test_file.cfg', protocol='tftp', server='10.17.90.1')
+    with pytest.raises(KeyError) as excinfo:
+        d.file.create(name='test_file.cfg', protocol='http', text=host_text, server=socket.gethostbyname(socket.getfqdn()))
     with pytest.raises(KeyError) as excinfo:
         d.file['video-3.cfg']
     d.close()
@@ -154,17 +156,19 @@ ip ssh server
     d.open()
     assert 'startup-config' in d.file.keys()
     with pytest.raises(KeyError) as excinfo:
-        d.file.update(name='test_file_3.cfg', text=host_text)
+        d.file.update(name='test_file_3.cfg', protocol='tftp', text=host_text)
     with pytest.raises(KeyError) as excinfo:
-        d.file.update(name='test_file_1.cfg', text=host_text, new_name='startup-config')
+        d.file.update(name='test_file_1.cfg', protocol='tftp', text=host_text, new_name='startup-config')
     with pytest.raises(KeyError) as excinfo:
-        d.file.update(name='test_file_1.cfg')
+        d.file.update(name='test_file_1.cfg', protocol='tftp')
     with pytest.raises(KeyError) as excinfo:
-        d.file.update(name='test_file_1.cfg', filename='host_temp.cfg', text=host_text)
+        d.file.update(name='test_file_1.cfg', protocol='tftp', filename='host_temp.cfg', text=host_text)
     with pytest.raises(KeyError) as excinfo:
-        d.file.update(name='test_file_1.cfg', text=host_text, server='10.17.90.1')
+        d.file.update(name='test_file_1.cfg', protocol='tftp', text=host_text, server='10.17.90.1')
     with pytest.raises(KeyError) as excinfo:
-        d.file.update(name='test_file_1.cfg', server='10.17.90.1')
+        d.file.update(name='test_file_1.cfg', protocol='tftp', server='10.17.90.1')
+    with pytest.raises(KeyError) as excinfo:
+        d.file.update(name='test_file_1.cfg', protocol='http', server=socket.gethostbyname(socket.getfqdn()))
     d.close()
 
 
@@ -320,10 +324,10 @@ ip ssh server
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'test_file_1.cfg' not in d.file.keys()
-    d.file.create(name='test_file_1.cfg', port=dut.tftp_port, filename='temp_1.cfg',server=local_tftp_server)
+    d.file.create(name='test_file_1.cfg', protocol='tftp', port=dut.tftp_port, filename='temp_1.cfg',server=local_tftp_server)
     assert 'test_file_1.cfg' in d.file.keys()
     assert d.file['test_file_1.cfg']['content'] == host_text_1
-    d.file.update(name='test_file_1.cfg', port=dut.tftp_port, filename='temp_2.cfg',server=local_tftp_server)
+    d.file.update(name='test_file_1.cfg', protocol='tftp', port=dut.tftp_port, filename='temp_2.cfg',server=local_tftp_server)
     assert 'test_file_1.cfg' in d.file.keys()
     assert d.file['test_file_1.cfg']['content'] == host_text_2
     d.file.delete('test_file_1.cfg')
@@ -449,10 +453,10 @@ ip ssh server
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'test_file_2.cfg' not in d.file.keys()
-    d.file.create(name='test_file_2.cfg', port=dut.tftp_port, text=host_text_1)
+    d.file.create(name='test_file_2.cfg', protocol='tftp', port=dut.tftp_port, text=host_text_1)
     assert 'test_file_2.cfg' in d.file.keys()
     assert d.file['test_file_2.cfg']['content'] == host_text_1
-    d.file.update(name='test_file_2.cfg', port=dut.tftp_port, text=host_text_2)
+    d.file.update(name='test_file_2.cfg', protocol='tftp', port=dut.tftp_port, text=host_text_2)
     assert 'test_file_2.cfg' in d.file.keys()
     assert d.file['test_file_2.cfg']['content'] == host_text_2
     d.file.delete('test_file_2.cfg')
@@ -558,12 +562,12 @@ ip ssh server
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'test_file_3.cfg' not in d.file.keys()
-    d.file.create(name='test_file_3.cfg', port=dut.tftp_port)
+    d.file.create(name='test_file_3.cfg', protocol='tftp', port=dut.tftp_port)
     assert 'test_file_3.cfg' in d.file.keys()
     mmdate = d.file['test_file_3.cfg']['mdate']
     mmtime = d.file['test_file_3.cfg']['mtime']
     assert ('test_file_3.cfg', {'size': '1', 'mdate': mmdate, 'permission': 'rw', 'mtime': mmtime}) in d.file.items()
-    d.file.update(name='test_file_3.cfg', port=dut.tftp_port, text=host_text, new_name='test_file_4.cfg')
+    d.file.update(name='test_file_3.cfg', protocol='tftp', port=dut.tftp_port, text=host_text, new_name='test_file_4.cfg')
     assert 'test_file_3.cfg' not in d.file.keys()
     assert 'test_file_4.cfg' in d.file.keys()
     assert d.file['test_file_4.cfg']['content'] == host_text

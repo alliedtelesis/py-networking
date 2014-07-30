@@ -277,7 +277,7 @@ Unit  Image  Filename   Version    Date                    Status
     clean_test_firmware_upgrade(dut, image_name)
 
 
-def test_with_full_path(dut, log_level):
+def test_full_path_firmware_upgrade(dut, log_level):
     output_0 = ["""
 Unit  Image  Filename   Version    Date                    Status
 ----  -----  ---------  ---------  ---------------------   -----------

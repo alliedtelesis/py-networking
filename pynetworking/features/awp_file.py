@@ -56,12 +56,14 @@ class awp_file(Feature):
         self._d.log_info("loading config")
 
 
-    def create(self, name, text='', filename=''):
+    def create(self, name, protocol='http', text='', filename=''):
         self._d.log_info("create file {0}".format(name))
         self._update_file()
 
         if name in self._d.file.keys():
             raise KeyError('file {0} is already existing'.format(name))
+        if (protocol != 'http'):
+            raise KeyError('protocol {0} not supported'.format(protocol))
         if (filename != '' and text != ''):
             raise KeyError('Cannot have both source device file name and host string not empty')
 
@@ -83,7 +85,7 @@ class awp_file(Feature):
         # device commands (timeout of 10 seconds for each MB)
         host_ip_address = socket.gethostbyname(socket.getfqdn())
         timeout = (os.path.getsize(filename)/1048576 + 1)*10000
-        create_cmd = 'copy http://{0}:{1}/{2} {3}'.format(host_ip_address, port, filename, name)
+        create_cmd = 'copy {0}://{1}:{2}/{3} {4}'.format(protocol, host_ip_address, port, filename, name)
         cmds = {'cmds':[{'cmd': 'enable'    , 'prompt':'\#'},
                         {'cmd': create_cmd  , 'prompt':'\#', 'timeout': timeout}
                        ]}
@@ -95,12 +97,14 @@ class awp_file(Feature):
             os.remove(filename)
 
 
-    def update(self, name, filename='', text='', new_name=''):
+    def update(self, name, protocol='http', filename='', text='', new_name=''):
         self._d.log_info("copying {0} from host to device".format(name))
         self._update_file()
 
         if name not in self._d.file.keys():
             raise KeyError('file {0} is not existing'.format(name))
+        if (protocol != 'http'):
+            raise KeyError('protocol {0} not supported'.format(protocol))
         if new_name in self._d.file.keys():
             raise KeyError('file {0} cannot be overwritten'.format(new_name))
         if (filename != '' and text != ''):
@@ -131,7 +135,7 @@ class awp_file(Feature):
         host_ip_address = socket.gethostbyname(socket.getfqdn())
 
         if (new_name == ''):
-            update_cmd = 'copy http://{0}:{1}/{2} {3}'.format(host_ip_address, port, file_2_copy_from, name)
+            update_cmd = 'copy {0}://{1}:{2}/{3} {4}'.format(protocol, host_ip_address, port, file_2_copy_from, name)
             delete_cmd = 'delete {0}'.format(name)
             cmds = {'cmds': [{'cmd': 'enable'  , 'prompt': '\#'},
                              {'cmd': delete_cmd, 'prompt': ''  },

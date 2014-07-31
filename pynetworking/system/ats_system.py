@@ -21,7 +21,6 @@ class ats_system(object):
     """
     def __init__(self, device):
         self._d =  device
-        self._image = {}
         self._old_boot_bank = 0
         self._new_boot_bank = 0
         self._stand_by_bank = 0
@@ -71,7 +70,7 @@ class ats_system(object):
         if (protocol != 'tftp'):
             raise KeyError('protocol {0} not supported'.format(protocol))
 
-        self._update_image()
+        self._update_bank_data()
         boot_cmd = 'boot system image-{0}'.format(self._get_stand_by_bank())
         self._d.file.create(name='image', protocol=protocol, filename=filename, server=server, port=port)
         cmds = {'cmds': [{'cmd': boot_cmd, 'prompt': '\#'},
@@ -80,9 +79,7 @@ class ats_system(object):
                         ]}
         self._d.cmd(cmds, cache=False, flush_cache=True)
 
-    def _update_image(self):
-        self._image = OrderedDict()
-
+    def _update_bank_data(self):
         # 1     1      image-1    3.0.0.44   02-Oct-2011  13:29:54   Not active
         ifre = re.compile('(?P<unit>\d+)\s+'
                           '(?P<image>\d+)\s+'
@@ -95,49 +92,21 @@ class ats_system(object):
             m = ifre.match(line)
             self._d.log_debug("read {0}".format(line))
             if m:
-                active_bank = False
-                next_boot = False
-                key = m.group('file_name')
-
                 if (m.group('status')[:6] == 'Active'):
-                    active_bank = True
+                    self._d.log_debug("active bank is {0}".format(m.group('image')))
                 else:
-                    active_bank = False
                     self._stand_by_bank = m.group('image')
                 if (line.find('*') > 0):
                     self._old_boot_bank = self._new_boot_bank
                     self._new_boot_bank = m.group('image')
-                    next_boot = True
-                else:
-                    next_boot = False
-
-                self._image[key] = {'unit': m.group('unit'),
-                                    'image': m.group('image'),
-                                    'name': key,
-                                    'version': m.group('version'),
-                                    'mdate': m.group('date'),
-                                    'mtime': m.group('time'),
-                                    'active': active_bank,
-                                    'nextboot': next_boot
-                                   }
-
-        self._d.log_debug("Image {0}".format(pformat(json.dumps(self._image))))
 
     def _get_stand_by_bank(self):
-        self._d.log_info("_get_stand_by_bank")
-        # stand_by_bank = 0
-        #
-        # for key in self._image:
-        #     if self._image[key]['active'] == False:
-        #         stand_by_bank = self._image[key]['image']
-        #         break
-        #
         self._d.log_debug("stand by bank is {0}".format(self._stand_by_bank))
         return self._stand_by_bank
 
     def _is_boot_bank_changed(self):
         is_changed = False
-        self._update_image()
+        self._update_bank_data()
         self._d.log_debug("old boot bank is {0}".format(self._old_boot_bank))
         self._d.log_debug("new boot bank is {0}".format(self._new_boot_bank))
         if (self._old_boot_bank != self._new_boot_bank):

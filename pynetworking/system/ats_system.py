@@ -24,6 +24,7 @@ class ats_system(object):
         self._image = {}
         self._old_boot_bank = 0
         self._new_boot_bank = 0
+        self._stand_by_bank = 0
 
     def get_config(self):
         self._d.log_info('getting device configuration')
@@ -102,6 +103,7 @@ class ats_system(object):
                     active_bank = True
                 else:
                     active_bank = False
+                    self._stand_by_bank = m.group('image')
                 if (line.find('*') > 0):
                     self._old_boot_bank = self._new_boot_bank
                     self._new_boot_bank = m.group('image')
@@ -123,21 +125,21 @@ class ats_system(object):
 
     def _get_stand_by_bank(self):
         self._d.log_info("_get_stand_by_bank")
-        stand_by_bank = 0
+        # stand_by_bank = 0
+        #
+        # for key in self._image:
+        #     if self._image[key]['active'] == False:
+        #         stand_by_bank = self._image[key]['image']
+        #         break
+        #
+        self._d.log_debug("stand by bank is {0}".format(self._stand_by_bank))
+        return self._stand_by_bank
 
-        for key in self._image:
-            if self._image[key]['active'] == False:
-                stand_by_bank = self._image[key]['image']
-                break
-
-        self._d.log_debug("stand by bank is {0}".format(stand_by_bank))
-        return stand_by_bank
-
-    def _get_old_boot_bank(self):
-        self._d.log_debug("old boot bank is {0}".format(self._old_boot_bank))
-        return self._old_boot_bank
-
-    def _get_new_boot_bank(self):
+    def _is_boot_bank_changed(self):
+        is_changed = False
         self._update_image()
+        self._d.log_debug("old boot bank is {0}".format(self._old_boot_bank))
         self._d.log_debug("new boot bank is {0}".format(self._new_boot_bank))
-        return self._new_boot_bank
+        if (self._old_boot_bank != self._new_boot_bank):
+            is_changed = True
+        return is_changed

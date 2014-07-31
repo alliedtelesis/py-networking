@@ -277,7 +277,7 @@ Unit  Image  Filename   Version    Date                    Status
     d.system.update_firmware(filename=image_name, protocol='tftp', port=dut.tftp_port, dontwait=dut.dontwait)
     if (dut.mode == 'emulated'):
         # Real devices will be rebooting here
-        assert d.system._get_new_boot_bank() !=  d.system._get_old_boot_bank()
+        assert d.system._is_boot_bank_changed() == True
     d.close()
 
     clean_test_firmware_upgrade(dut, image_name)
@@ -287,8 +287,8 @@ def test_full_path_firmware_upgrade(dut, log_level):
     output_0 = ["""
 Unit  Image  Filename   Version    Date                    Status
 ----  -----  ---------  ---------  ---------------------   -----------
-1     1      image-1    3.0.0.44   02-Oct-2011  13:29:54   Not active
-1     2      image-2    3.0.0.44   02-Oct-2011  13:29:54   Active*
+1     1      image-1    3.0.0.44   02-Oct-2011  13:29:54   Active*
+1     2      image-2    3.0.0.44   02-Oct-2011  13:29:54   Not active
 
 "*" designates that the image was selected for the next boot
 
@@ -296,8 +296,8 @@ Unit  Image  Filename   Version    Date                    Status
     output_1 = ["""
 Unit  Image  Filename   Version    Date                    Status
 ----  -----  ---------  ---------  ---------------------   -----------
-1     1      image-1    3.0.0.45   02-Oct-2011  13:31:37   Not active*
-1     2      image-2    3.0.0.44   02-Oct-2011  13:29:54   Active
+1     1      image-1    3.0.0.45   02-Oct-2011  13:31:37   Active
+1     2      image-2    3.0.0.44   02-Oct-2011  13:29:54   Not active*
 
 "*" designates that the image was selected for the next boot
 
@@ -319,7 +319,7 @@ Unit  Image  Filename   Version    Date                    Status
     d.system.update_firmware(filename=image_name, protocol='tftp', port=dut.tftp_port, dontwait=dut.dontwait)
     if (dut.mode == 'emulated'):
         # Real devices will be rebooting here
-        assert d.system._get_new_boot_bank() !=  d.system._get_old_boot_bank()
+        assert d.system._is_boot_bank_changed() == True
     d.close()
 
     clean_test_firmware_upgrade(dut, image_name)

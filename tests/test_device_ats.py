@@ -57,12 +57,20 @@ def tftp_server_for_ever(port):
 def setup_test_firmware_upgrade(dut, image_name):
     dut.tftp_port = 69
     if (dut.mode == 'emulated'):
+        # Wait an answer from the device in case of reboot during emulation.
+        dut.dontwait = False
+        # Only root users can access port 69, that is mandatory for TFTP upload.
+        # Normal users like Travis can rely on other ports but greater than 1024.
         if (getpass.getuser() != 'root'):
             dut.tftp_port = 20069
+        # Create a dummy image file to be uploaded.
         myfile = open(image_name, 'w')
         myfile.write('1')
         myfile.close()
     else:
+        # Don't wait an answer from the device in case of reboot.
+        dut.dontwait = True
+        # Only root users can access port 69, that is mandatory for TFTP upload.
         assert 'root' == getpass.getuser()
     dut.tftp_server_thread = threading.Thread(target=tftp_server_for_ever, args=(dut.tftp_port,))
     dut.tftp_server_thread.daemon = True
@@ -262,16 +270,14 @@ Unit  Image  Filename   Version    Date                    Status
     dut.add_cmd({'cmd': 'show bootvar', 'state':1, 'action':'PRINT','args': output_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level,connection_timeout=300)
     d.open()
-    old_active_bank = d.system._get_stand_by_bank()
     with pytest.raises(KeyError) as excinfo:
         d.system.update_firmware(filename=false_image_name, protocol='tftp', port=dut.tftp_port)
     with pytest.raises(KeyError) as excinfo:
         d.system.update_firmware(filename=image_name, port=dut.tftp_port)
-    d.system.update_firmware(filename=image_name, protocol='tftp', port=dut.tftp_port)
+    d.system.update_firmware(filename=image_name, protocol='tftp', port=dut.tftp_port, dontwait=dut.dontwait)
     if (dut.mode == 'emulated'):
-        # real devices will be rebooting here
-        new_active_bank = d.system._get_stand_by_bank()
-        assert old_active_bank != new_active_bank
+        # Real devices will be rebooting here
+        assert d.system._get_new_boot_bank() !=  d.system._get_old_boot_bank()
     d.close()
 
     clean_test_firmware_upgrade(dut, image_name)
@@ -310,12 +316,10 @@ Unit  Image  Filename   Version    Date                    Status
     dut.add_cmd({'cmd': 'show bootvar', 'state':1, 'action':'PRINT','args': output_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level,connection_timeout=300)
     d.open()
-    old_active_bank = d.system._get_stand_by_bank()
-    d.system.update_firmware(filename=image_name, protocol='tftp', port=dut.tftp_port)
+    d.system.update_firmware(filename=image_name, protocol='tftp', port=dut.tftp_port, dontwait=dut.dontwait)
     if (dut.mode == 'emulated'):
-        # real devices will be rebooting here
-        new_active_bank = d.system._get_stand_by_bank()
-        assert old_active_bank != new_active_bank
+        # Real devices will be rebooting here
+        assert d.system._get_new_boot_bank() !=  d.system._get_old_boot_bank()
     d.close()
 
     clean_test_firmware_upgrade(dut, image_name)

@@ -21,6 +21,9 @@ class ats_system(object):
     """
     def __init__(self, device):
         self._d =  device
+        self._image = {}
+        self._old_boot_bank = 0
+        self._new_boot_bank = 0
 
     def get_config(self):
         self._d.log_info('getting device configuration')
@@ -57,7 +60,9 @@ class ats_system(object):
         self._d.log_info('ping')
         self._d.cmd('show version', use_cache=False)
 
-    def update_firmware(self, filename, protocol='http', server='', port=69):
+    def update_firmware(self, filename, protocol='http', server='', port=69, dontwait=True):
+        # Port and dontwait parameters are used only to get emulation working.
+        # They are ignored by a normal PN user.
         self._d.log_info("firmware upgrade with {0}".format(filename))
 
         if (os.path.exists(filename) == False):
@@ -65,18 +70,17 @@ class ats_system(object):
         if (protocol != 'tftp'):
             raise KeyError('protocol {0} not supported'.format(protocol))
 
-        self._d.file.create(name='image', protocol=protocol, filename=filename, server=server, port=port)
+        self._update_image()
         boot_cmd = 'boot system image-{0}'.format(self._get_stand_by_bank())
+        self._d.file.create(name='image', protocol=protocol, filename=filename, server=server, port=port)
         cmds = {'cmds': [{'cmd': boot_cmd, 'prompt': '\#'},
                          {'cmd': 'reload', 'prompt': ''  },
-                         {'cmd': 'y'     , 'prompt': ''   , 'dontwait': True}
+                         {'cmd': 'y'     , 'prompt': ''   , 'dontwait': dontwait}
                         ]}
         self._d.cmd(cmds, cache=False, flush_cache=True)
 
-    def _get_stand_by_bank(self):
-        self._d.log_info("_get_stand_by_bank")
+    def _update_image(self):
         self._image = OrderedDict()
-        stand_by_bank = 1
 
         # 1     1      image-1    3.0.0.44   02-Oct-2011  13:29:54   Not active
         ifre = re.compile('(?P<unit>\d+)\s+'
@@ -91,14 +95,20 @@ class ats_system(object):
             self._d.log_debug("read {0}".format(line))
             if m:
                 active_bank = False
+                next_boot = False
+                key = m.group('file_name')
+
                 if (m.group('status')[:6] == 'Active'):
                     active_bank = True
                 else:
-                    stand_by_bank = m.group('image')
-                next_boot = False
+                    active_bank = False
                 if (line.find('*') > 0):
+                    self._old_boot_bank = self._new_boot_bank
+                    self._new_boot_bank = m.group('image')
                     next_boot = True
-                key = m.group('file_name')
+                else:
+                    next_boot = False
+
                 self._image[key] = {'unit': m.group('unit'),
                                     'image': m.group('image'),
                                     'name': key,
@@ -111,4 +121,23 @@ class ats_system(object):
 
         self._d.log_debug("Image {0}".format(pformat(json.dumps(self._image))))
 
+    def _get_stand_by_bank(self):
+        self._d.log_info("_get_stand_by_bank")
+        stand_by_bank = 0
+
+        for key in self._image:
+            if self._image[key]['active'] == False:
+                stand_by_bank = self._image[key]['image']
+                break
+
+        self._d.log_debug("stand by bank is {0}".format(stand_by_bank))
         return stand_by_bank
+
+    def _get_old_boot_bank(self):
+        self._d.log_debug("old boot bank is {0}".format(self._old_boot_bank))
+        return self._old_boot_bank
+
+    def _get_new_boot_bank(self):
+        self._update_image()
+        self._d.log_debug("new boot bank is {0}".format(self._new_boot_bank))
+        return self._new_boot_bank

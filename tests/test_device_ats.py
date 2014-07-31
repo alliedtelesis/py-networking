@@ -83,9 +83,6 @@ def clean_test_firmware_upgrade(dut, image_name):
         os.remove(image_name)
     os.rmdir('tftp_client_dir')
     os.remove('tftp_server_dir/' + image_name.split('/')[-1])
-
-
-def clean_all():
     os.rmdir('tftp_server_dir')
 
 
@@ -326,5 +323,3 @@ Unit  Image  Filename   Version    Date                    Status
     d.close()
 
     clean_test_firmware_upgrade(dut, image_name)
-    clean_all()
-

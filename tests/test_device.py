@@ -55,10 +55,13 @@ Build type : RELEASE
 
 def setup_test_firmware_upgrade(dut, release_file):
     if (dut.mode == 'emulated'):
+        dut.dontwait = False
         if (os.path.exists(release_file) == False):
             myfile = open(release_file, 'w')
             myfile.write('1')
             myfile.close()
+    else:
+        dut.dontwait = True
 
 
 def clean_test_firmware_upgrade(dut, release_file):
@@ -372,7 +375,10 @@ Backup  boot config: flash:/backup.cfg (file not found)
         d.system.update_firmware('x210-5.4.3-2.6.rel')
     with pytest.raises(KeyError) as excinfo:
         d.system.update_firmware('x210-5.4.3-2.7.rel', protocol='tftp')
-    d.system.update_firmware(release_file)
+    d.system.update_firmware(release_file, dontwait=dut.dontwait)
+    if (dut.mode == 'emulated'):
+        # real devices will be rebooting here
+        assert(d.system._get_boot_image() == release_file)
     d.close()
 
     clean_test_firmware_upgrade(dut, release_file)
@@ -413,18 +419,31 @@ Backup  boot config: flash:/backup.cfg (file not found)
     dut.add_cmd({'cmd': 'show boot', 'state':1, 'action':'PRINT','args': output_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
-    d.system.update_firmware(image_name)
+    d.system.update_firmware(image_name, dontwait=dut.dontwait)
+    if (dut.mode == 'emulated'):
+        # real devices will be rebooting here
+        assert(d.system._get_boot_image() == image_file)
     d.close()
 
     clean_test_firmware_upgrade(dut, image_name)
 
 
 def test_firmware_upgrade_544(dut, log_level):
-    output_show_boot = ["""
+    output_0 = ["""
 Boot configuration
 ----------------------------------------------------------------
 Current software   : x210-5.4.4-1.4.rel
 Current boot image : flash:/x210-5.4.4-1.4.rel
+Backup  boot image : flash:/x210-5.4.4-1.4.rel
+Default boot config: flash:/default.cfg
+Current boot config: flash:/my.cfg (file exists)
+Backup  boot config: flash:/backup.cfg (file not found)
+"""]
+    output_1 = ["""
+Boot configuration
+----------------------------------------------------------------
+Current software   : x210-5.4.4-1.4.rel
+Current boot image : flash:/x210-5.4.4-1.5.rel
 Backup  boot image : flash:/x210-5.4.4-1.4.rel
 Default boot config: flash:/default.cfg
 Current boot config: flash:/my.cfg (file exists)
@@ -450,12 +469,16 @@ Build type : RELEASE
     assert (os.path.exists(release_file) == True)
 
     update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{2}'.format(socket.gethostbyname(socket.getfqdn()), release_file, release_file)
-    dut.add_cmd({'cmd': 'show boot'                 , 'state':0, 'action':'PRINT','args': output_show_boot})
+    dut.add_cmd({'cmd': 'show boot'                 , 'state':0, 'action':'PRINT','args': output_0})
     dut.add_cmd({'cmd': 'show version'              , 'state':0, 'action':'PRINT','args': output_show_version})
     dut.add_cmd({'cmd': update_cmd                  , 'state':0, 'action':'SET_STATE','args': [1]})
+    dut.add_cmd({'cmd': 'show boot'                 , 'state':1, 'action':'PRINT','args': output_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
-    d.system.update_firmware(release_file)
+    d.system.update_firmware(release_file, dontwait=dut.dontwait)
+    if (dut.mode == 'emulated'):
+        # real devices will be rebooting here
+        assert(d.system._get_boot_image() == release_file)
     d.close()
 
     clean_test_firmware_upgrade(dut, release_file)
@@ -527,8 +550,8 @@ Backup  boot config: flash:/backup.cfg (file not found)
     output_show_boot_1 = ["""
 Boot configuration
 ----------------------------------------------------------------
-Current software   : x908-5.4.4-1.5.rel
-Current boot image : flash:/x908-5.4.5-1.0.rel
+Current software   : x908-5.4.4-1.4.rel
+Current boot image : flash:/x908-5.4.4-1.5.rel
 Backup  boot image : flash:/x908-5.4.4-1.4.rel
 Default boot config: flash:/default.cfg
 Current boot config: flash:/my.cfg (file exists)
@@ -547,7 +570,7 @@ Index License name    Quantity     Customer name
     output_show_version= ["""
 AlliedWare Plus (TM) 5.4.4 07/25/14 17:51:44
 
-Build name : x908-5.4.4-1.5.rel
+Build name : x908-5.4.4-1.4.rel
 Build date : Fri Jul 25 17:51:4 NZST 2014
 Build type : RELEASE
  NET-SNMP SNMP agent software
@@ -571,7 +594,10 @@ Build type : RELEASE
     dut.add_cmd({'cmd': 'show boot'                 , 'state':1, 'action':'PRINT','args': output_show_boot_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
-    d.system.update_firmware(release_file)
+    d.system.update_firmware(release_file, dontwait=dut.dontwait)
+    if (dut.mode == 'emulated'):
+        # real devices will be rebooting here
+        assert(d.system._get_boot_image() == release_file)
     d.close()
 
     clean_test_firmware_upgrade(dut, release_file)

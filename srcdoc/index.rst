@@ -9,6 +9,7 @@ Contents
     facts
     file
     interface
+    license
     user
     vlan
     cookbook

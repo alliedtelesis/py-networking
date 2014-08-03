@@ -24,7 +24,7 @@ Methods
 """""""""""""""
 **Mandatory**
 
-**Description**: Permits to save the running configuration in the flash memory, so to survive in case of reboot.
+**Description**: Allows to save the running configuration in the flash memory, so to survive in case of reboot.
 
 **shell_init**
 """"""""""""""
@@ -40,4 +40,19 @@ output stop waiting user input.
 
 **Description**: Returns a regular expression for the default prompt of the device.
 
+**update_firmware(filename, protocol='http', server=None)**
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+**Mandatory**
 
+**Description**: Allows to upgrade the device firmware.
+The *filename* is the name of the file and its optional path that contains the device firmware.
+The *protocol* is the method used to upload the firmware to the device. Depending on the device capability can be set to http or tftp.
+In case of tftp it requires an external server that must be indicated in the *server* parameter.
+
+**Parameters**:
+
+   - *name*: string
+       Filename of the device firmware
+
+   - *server*: string
+       Server IP address or Hostname

@@ -59,6 +59,8 @@ end
     with pytest.raises(KeyError) as excinfo:
         d.file.create(name='test_file.cfg', text=host_content, filename='default.cfg')
     with pytest.raises(KeyError) as excinfo:
+        d.file.create(name='test_file.cfg', protocol='tftp', text=host_content)
+    with pytest.raises(KeyError) as excinfo:
         d.file['video-3.cfg']
     d.close()
 
@@ -337,6 +339,8 @@ end
         d.file.update(name='test_file_1.cfg', text=host_text, new_name='default.cfg')
     with pytest.raises(KeyError) as excinfo:
         d.file.update(name='test_file_1.cfg')
+    with pytest.raises(KeyError) as excinfo:
+        d.file.update(name='test_file_1.cfg', protocol='tftp', filename='host_temp.cfg', text=host_text)
     with pytest.raises(KeyError) as excinfo:
         d.file.update(name='test_file_1.cfg', filename='host_temp.cfg', text=host_text)
     d.close()

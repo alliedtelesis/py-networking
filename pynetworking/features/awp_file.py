@@ -47,40 +47,23 @@ class awp_file(Feature):
     """
     def __init__(self, device, **kvargs):
         Feature.__init__(self, device, **kvargs)
-        self._file_config={}
         self._file={}
         self._d = device
         self._d.log_debug("loading feature")
 
+
     def load_config(self, config):
         self._d.log_info("loading config")
-        self._file_config = OrderedDict()
-
-        # 588 -rw- Jun 10 2014 12:38:10  michele.cfg
-        ifre = re.compile('\s+(?P<size>\d+)\s+'
-                          '(?P<permission>[^\s]+)\s+'
-                          '(?P<month>[^\s]+)\s+'
-                          '(?P<day>\d+)\s+'
-                          '(?P<year>\d+)\s+'
-                          '(?P<hhmmss>[^\s]+)\s+'
-                          '(?P<file_name>[^\s]+)')
-        for line in self._device.cmd("dir").split('\n'):
-            m = ifre.match(line)
-            if m:
-                self._file_config[m.group('file_name')] = {'size': m.group('size'),
-                                                           'permission': m.group('permission'),
-                                                           'mdate': m.group('day') + '-' + m.group('month') + '-' + m.group('year'),
-                                                           'mtime': m.group('hhmmss')
-                                                          }
-        self._d.log_info(self._file_config)
 
 
-    def create(self, name, port=80, text='', filename=''):
+    def create(self, name, protocol='http', text='', filename=''):
         self._d.log_info("create file {0}".format(name))
         self._update_file()
 
         if name in self._d.file.keys():
             raise KeyError('file {0} is already existing'.format(name))
+        if (protocol != 'http'):
+            raise KeyError('protocol {0} not supported'.format(protocol))
         if (filename != '' and text != ''):
             raise KeyError('Cannot have both source device file name and host string not empty')
 
@@ -99,27 +82,29 @@ class awp_file(Feature):
         server_thread.start()
         self._d.log_info("server running on {0}:{1}".format(ip, port))
 
-        # device commands
+        # device commands (timeout of 10 seconds for each MB)
         host_ip_address = socket.gethostbyname(socket.getfqdn())
-
-        create_cmd = 'copy http://{0}:{1}/{2} {3}'.format(host_ip_address, port, filename, name)
+        timeout = (os.path.getsize(filename)/1048576 + 1)*10000
+        create_cmd = 'copy {0}://{1}:{2}/{3} {4}'.format(protocol, host_ip_address, port, filename, name)
         cmds = {'cmds':[{'cmd': 'enable'    , 'prompt':'\#'},
-                        {'cmd': create_cmd  , 'prompt':'\#'}
+                        {'cmd': create_cmd  , 'prompt':'\#', 'timeout': timeout}
                        ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
-        self._device.load_system()
+        self._update_file()
 
         server.shutdown()
         if (text != ''):
             os.remove(filename)
 
 
-    def update(self, name, port=80, filename='', text='', new_name=''):
+    def update(self, name, protocol='http', filename='', text='', new_name=''):
         self._d.log_info("copying {0} from host to device".format(name))
         self._update_file()
 
         if name not in self._d.file.keys():
             raise KeyError('file {0} is not existing'.format(name))
+        if (protocol != 'http'):
+            raise KeyError('protocol {0} not supported'.format(protocol))
         if new_name in self._d.file.keys():
             raise KeyError('file {0} cannot be overwritten'.format(new_name))
         if (filename != '' and text != ''):
@@ -150,7 +135,7 @@ class awp_file(Feature):
         host_ip_address = socket.gethostbyname(socket.getfqdn())
 
         if (new_name == ''):
-            update_cmd = 'copy http://{0}:{1}/{2} {3}'.format(host_ip_address, port, file_2_copy_from, name)
+            update_cmd = 'copy {0}://{1}:{2}/{3} {4}'.format(protocol, host_ip_address, port, file_2_copy_from, name)
             delete_cmd = 'delete {0}'.format(name)
             cmds = {'cmds': [{'cmd': 'enable'  , 'prompt': '\#'},
                              {'cmd': delete_cmd, 'prompt': ''  },
@@ -166,7 +151,7 @@ class awp_file(Feature):
                              {'cmd': 'y'       , 'prompt': '\#'}
                             ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
-        self._device.load_system()
+        self._update_file()
 
         server.shutdown()
 
@@ -184,11 +169,11 @@ class awp_file(Feature):
         delete_cmd = 'delete {0}'.format(file_name)
         cmds = {'cmds':[{'cmd': 'enable'  , 'prompt':'\#'},
                         {'cmd': delete_cmd, 'prompt':''  },
-                        {'cmd': 'y'       , 'prompt':'\#'}
+                        {'cmd': 'y'       , 'prompt':'\#', 'timeout': 10000}
                        ]}
 
         self._device.cmd(cmds, cache=False, flush_cache=True)
-        self._device.load_system()
+        self._update_file()
 
 
     def items(self):
@@ -242,5 +227,4 @@ class awp_file(Feature):
                                    'mdate': m.group('day') + '-' + m.group('month') + '-' + m.group('year'),
                                    'mtime': m.group('hhmmss')
                                   }
-                self._file[key] = dict(self._file[key].items() + self._file_config[key].items())
         self._d.log_debug("File {0}".format(pformat(json.dumps(self._file))))

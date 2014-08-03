@@ -23,35 +23,17 @@ class ats_file(Feature):
     """
     def __init__(self, device, **kvargs):
         Feature.__init__(self, device, **kvargs)
-        self._file_config={}
         self._file={}
+        self._tftp_port=69
         self._d = device
         self._d.log_debug("loading feature")
 
+
     def load_config(self, config):
         self._d.log_info("loading config")
-        self._file_config = OrderedDict()
-
-        # starts                  rw       524288      982     01-Oct-2006 01:12:44
-        ifre = re.compile('(?P<file_name>[^\s]+)\s+'
-                          '(?P<permission>[^\s]+)\s+'
-                          '(?P<flash_size>\d+)\s+'
-                          '(?P<data_size>\d+)\s+'
-                          '(?P<date>[^\s]+)\s+'
-                          '(?P<time>[^\s]+)\s+')
-        for line in self._device.cmd("dir").split('\n'):
-            m = ifre.match(line)
-            self._d.log_info("read {0}".format(line))
-            if m:
-                self._file_config[m.group('file_name')] = {'size': m.group('data_size'),
-                                                           'permission': m.group('permission'),
-                                                           'mdate': m.group('date'),
-                                                           'mtime': m.group('time')
-                                                          }
-        self._d.log_info(self._file_config)
 
 
-    def create(self, name, port=69, text='', filename='', server=''):
+    def create(self, name, protocol='http', text='', filename='', server='', port=69):
         self._d.log_debug("User: {0}".format(getpass.getuser()))
         self._d.log_debug("Local IP address: {0}".format(socket.gethostbyname(socket.getfqdn())))
         self._d.log_debug("TFTP server: {0} (local IP address if missing)".format(server))
@@ -60,6 +42,8 @@ class ats_file(Feature):
 
         if name in self._d.file.keys():
             raise KeyError('file {0} is already existing'.format(name))
+        if (protocol != 'tftp'):
+            raise KeyError('protocol {0} not supported'.format(protocol))
         if (filename != '' and text != ''):
             raise KeyError('Cannot have both source device file name and host string not empty')
         if (filename == '' and server != ''):
@@ -80,22 +64,25 @@ class ats_file(Feature):
         if (server == ''):
             server = socket.gethostbyname(socket.getfqdn())
         tftp_client = tftpy.TftpClient(server, port)
-        tftp_client.upload(filename, filename)
-        self._update_port(port)
+        tftp_client.upload(filename.split('/')[-1], filename)
+        self._tftp_port = port
 
-        # device commands
-        create_cmd = 'copy tftp://{0}/{1} {2}'.format(server, filename, name)
-        cmds = {'cmds':[{'cmd': create_cmd  , 'prompt':'\#'}]}
+        # device commands (timeout of 60 seconds for each MB)
+        timeout = (os.path.getsize(filename)/1048576 + 1)*60000
+        create_cmd = 'copy {0}://{1}/{2} {3}'.format(protocol, server, filename.split('/')[-1], name)
+        cmds = {'cmds':[{'cmd': create_cmd, 'prompt': '\#', 'timeout': timeout}]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
-        self._device.load_system()
+        self._update_file()
 
 
-    def update(self, name, port=69, filename='', text='', new_name='', server=''):
+    def update(self, name, protocol='http', filename='', text='', new_name='', server='', port=69):
         self._d.log_info("copying {0} from host to device".format(name))
         self._update_file()
 
         if name not in self._d.file.keys():
             raise KeyError('file {0} is not existing'.format(name))
+        if (protocol != 'tftp'):
+            raise KeyError('protocol {0} not supported'.format(protocol))
         if new_name in self._d.file.keys():
             raise KeyError('file {0} cannot be overwritten'.format(new_name))
         if (filename != '' and text != ''):
@@ -120,23 +107,24 @@ class ats_file(Feature):
             server = socket.gethostbyname(socket.getfqdn())
         tftp_client = tftpy.TftpClient(server, port)
         tftp_client.upload(file_2_copy_from, file_2_copy_from)
-        self._update_port(port)
+        self._tftp_port = port
 
-        # device commands
+        # device commands (timeout of 30 seconds for each MB)
+        timeout = (os.path.getsize(file_2_copy_from)/1048576 + 1)*30000
         if (new_name == ''):
-            update_cmd = 'copy tftp://{0}/{1} {2}'.format(server, file_2_copy_from, name)
+            update_cmd = 'copy {0}://{1}/{2} {3}'.format(protocol, server, file_2_copy_from, name)
             cmds = {'cmds': [{'cmd': update_cmd, 'prompt': ''  },
-                             {'cmd': 'y'       , 'prompt': '\#'}
+                             {'cmd': 'y'       , 'prompt': '\#', 'timeout' : timeout}
                             ]}
         else:
             update_cmd = 'copy tftp://{0}/{1} {2}'.format(server, file_2_copy_from, new_name)
             delete_cmd = 'delete {0}'.format(name)
-            cmds = {'cmds': [{'cmd': update_cmd, 'prompt': '\#'},
+            cmds = {'cmds': [{'cmd': update_cmd, 'prompt': '\#', 'timeout': timeout},
                              {'cmd': delete_cmd, 'prompt': ''  },
-                             {'cmd': 'y'       , 'prompt': '\#'}
+                             {'cmd': 'y'       , 'prompt': '\#', 'timeout': timeout}
                              ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
-        self._device.load_system()
+        self._update_file()
 
         if (text != ''):
             os.remove(file_2_copy_from)
@@ -151,11 +139,11 @@ class ats_file(Feature):
 
         delete_cmd = 'delete {0}'.format(file_name)
         cmds = {'cmds':[{'cmd': delete_cmd, 'prompt':''  },
-                        {'cmd': 'y'       , 'prompt':'\#'}
+                        {'cmd': 'y'       , 'prompt':'\#', 'timeout': 10000}
                        ]}
 
         self._device.cmd(cmds, cache=False, flush_cache=True)
-        self._device.load_system()
+        self._update_file()
 
 
     def items(self):
@@ -176,22 +164,14 @@ class ats_file(Feature):
         raise KeyError('file {0} does not exist'.format(filename))
 
 
-    def _get_port(self):
-        myfile = open('tftp_port_number', 'r')
-        port = int(myfile.read())
-        myfile.close()
-        return port
-
-
     def _update_file_content(self, filename):
         self._d.log_info("Read file {0} content".format(filename))
         read_cmd = 'copy {0} tftp://{1}/{0}'.format(filename, socket.gethostbyname(socket.getfqdn()))
         cmds = {'cmds':[{'cmd': read_cmd, 'prompt':'\#'}]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
-        self._device.load_system()
-        temp, temp_file_name = mkstemp()
 
-        client = tftpy.TftpClient(socket.gethostbyname(socket.getfqdn()), self._get_port())
+        temp, temp_file_name = mkstemp()
+        client = tftpy.TftpClient(socket.gethostbyname(socket.getfqdn()), self._tftp_port)
         client.download(filename, temp_file_name)
 
         read_output = ''
@@ -223,15 +203,6 @@ class ats_file(Feature):
                                    'mdate': m.group('date'),
                                    'mtime': m.group('time')
                                   }
-                self._file[key] = dict(self._file[key].items() + self._file_config[key].items())
         self._d.log_debug("File {0}".format(pformat(json.dumps(self._file))))
 
-
-    def _update_port(self, port):
-        if (os.path.exists('tftp_port_number') == False):
-            self._d.log_info("_update_port {0}".format(port))
-            myfile = open('tftp_port_number', 'w')
-            str_port = '{0}'.format(port)
-            myfile.write(str_port)
-            myfile.close()
 

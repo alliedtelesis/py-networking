@@ -20,33 +20,31 @@ class ats_user(Feature):
         self._d = device
         self._d.log_debug("loading feature")
 
-    def load_config(self, config):
+    def load_config(self, config=''):
         self._d.log_info("loading config")
         self._user_config = OrderedDict()
 
         # username manager password $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0 level 15 encrypted
-        ifre = re.compile('username\s+'
+        ifre1 = re.compile('username\s+'
                           '(?P<user_name>[^\s]+)\s+'
                           'password\s+'
                           '(?P<password>[^\s]+)\s+'
                           'level\s+'
                           '(?P<privilege_level>\d+)\s+'
                           'encrypted')
-        for line in self._device.cmd("show running-config").split('\n'):
-            m = ifre.match(line)
-            if m:
-                self._user_config[m.group('user_name')] = {'privilege_level': m.group('privilege_level'),
-                                                           'password': m.group('password')
-                                                          }
-
         # username operator password $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0  encrypted
-        ifre = re.compile('username\s+'
+        ifre2 = re.compile('username\s+'
                           '(?P<user_name>[^\s]+)\s+'
                           'password\s+'
                           '(?P<password>[^\s]+)\s+\s+'
                           'encrypted')
         for line in self._device.cmd("show running-config").split('\n'):
-            m = ifre.match(line)
+            m = ifre1.match(line)
+            if m:
+                self._user_config[m.group('user_name')] = {'privilege_level': m.group('privilege_level'),
+                                                           'password': m.group('password')
+                                                          }
+            m = ifre2.match(line)
             if m:
                 self._user_config[m.group('user_name')] = {'privilege_level': '1',
                                                            'password': m.group('password')
@@ -73,7 +71,7 @@ class ats_user(Feature):
         cmds['cmds'].append({'cmd': chr(26)   , 'prompt':'\#'})
 
         self._device.cmd(cmds, cache=False, flush_cache=True)
-        self._device.load_system()
+        self.load_config()
 
 
     def delete(self, user_name):
@@ -87,7 +85,7 @@ class ats_user(Feature):
         cmds['cmds'].append({'cmd': chr(26)   , 'prompt':'\#'})
 
         self._device.cmd(cmds, cache=False, flush_cache=True)
-        self._device.load_system()
+        self.load_config()
 
 
     def update(self, user_name, **kwargs):
@@ -121,7 +119,7 @@ class ats_user(Feature):
         if run_cmd:
             cmds['cmds'].append({'cmd': chr(26)   , 'prompt':'\#'})
             self._device.cmd(cmds, cache=False, flush_cache=True)
-            self._device.load_system()
+            self.load_config()
 
 
     def items(self):

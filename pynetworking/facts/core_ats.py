@@ -59,7 +59,7 @@ def core_ats(dev):
         ret['unit_number'] = 'not found'
         dev.log_warn("cannot capture unit number")
 
-    m = re.search("\nSerial\s+Number:\s+(?P<unit_number>[^\s]*)\s*\n", out)
+    m = re.search("\nSerial\s+number:\s+(?P<serial_number>[^\s]*)\s*\n", out)
     if m:
         ret['serial_number'] = m.group('serial_number')
     else:

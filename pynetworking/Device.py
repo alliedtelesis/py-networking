@@ -117,12 +117,15 @@ class Device(object):
             self._proxy.join(10)
 
     def cmd(self, cmd, use_cache=True, cache=False, flush_cache=False):
+        timeout=12000
         if type(cmd) is str:
              self.log_info("executing command '{0}'".format(cmd))
              cmd = {'cmds':[{'cmd':cmd,'prompt': self.system.shell_prompt()}]}
         else:
              for c in cmd['cmds']:
                  self.log_info("executing command '{0}' and wait for {1}".format(c['cmd'],repr(c['prompt'])))
+                 if ('timeout' in c.keys()):
+                     timeout += c['timeout']
 
         if not cmd['cmds'][0]['cmd'].startswith('_'):
             self.log_info("adding shell initialization commands")
@@ -145,7 +148,7 @@ class Device(object):
 
             poller = zmq.Poller()
             poller.register(skt, zmq.POLLIN)
-            if len(poller.poll(12000)) == 0:
+            if len(poller.poll(timeout)) == 0:
                 self.log_warn("timeout on cmd ({0})".format(self._proxy.exitcode))
                 raise DeviceException('proxy exited with error ({0})'.format(self._proxy.exitcode))
 

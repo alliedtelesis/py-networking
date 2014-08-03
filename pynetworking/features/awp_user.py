@@ -20,31 +20,30 @@ class awp_user(Feature):
         self._d = device
         self._d.log_debug("loading feature")
 
-    def load_config(self, config):
+    def load_config(self, config=''):
         self._d.log_info("loading config")
         self._user_config = OrderedDict()
 
         # username manager privilege 15 password 8 $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0
-        ifre = re.compile('username\s+'
+        ifre1 = re.compile('username\s+'
                           '(?P<user_name>[^\s]+)\s+'
                           'privilege\s+'
                           '(?P<privilege_level>\d+)\s+'
                           'password\s+8\s+'
                           '(?P<password>[^\s]+)\s+')
+        # username operator password 8 $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0
+        ifre2 = re.compile('username\s+'
+                          '(?P<user_name>[^\s]+)\s+'
+                          'password\s+8\s+'
+                          '(?P<password>[^\s]+)\s+')
+
         for line in self._device.cmd("show running-config").split('\n'):
-            m = ifre.match(line)
+            m = ifre1.match(line)
             if m:
                 self._user_config[m.group('user_name')] = {'privilege_level': m.group('privilege_level'),
                                                            'password': m.group('password')
                                                           }
-
-        # username operator password 8 $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0
-        ifre = re.compile('username\s+'
-                          '(?P<user_name>[^\s]+)\s+'
-                          'password\s+8\s+'
-                          '(?P<password>[^\s]+)\s+')
-        for line in self._device.cmd("show running-config").split('\n'):
-            m = ifre.match(line)
+            m = ifre2.match(line)
             if m:
                 self._user_config[m.group('user_name')] = {'privilege_level': '1',
                                                            'password': m.group('password')
@@ -68,7 +67,7 @@ class awp_user(Feature):
         cmds['cmds'].append({'cmd': chr(26)   , 'prompt':'\#'})
 
         self._device.cmd(cmds, cache=False, flush_cache=True)
-        self._device.load_system()
+        self.load_config()
 
 
     def delete(self, user_name):
@@ -83,7 +82,7 @@ class awp_user(Feature):
         cmds['cmds'].append({'cmd': chr(26)   , 'prompt':'\#'})
 
         self._device.cmd(cmds, cache=False, flush_cache=True)
-        self._device.load_system()
+        self.load_config()
 
 
     def update(self, user_name, **kwargs):
@@ -117,7 +116,7 @@ class awp_user(Feature):
         if run_cmd:
             cmds['cmds'].append({'cmd': chr(26)   , 'prompt':'\#'})
             self._device.cmd(cmds, cache=False, flush_cache=True)
-            self._device.load_system()
+            self.load_config()
 
 
     def items(self):

@@ -148,11 +148,18 @@ def SSHProxy(device):
                         raise CacheMissException
                 except CacheMissException:
                     for c in cmd['cmds']:
+                        if ('timeout' in c.keys()):
+                            ttimeout = c['timeout']/1000
+                            chan.settimeout(ttimeout)
+                        else:
+                            chan.settimeout(5)
                         device.log_info("sending command '{0}' to device".format(c['cmd']))
                         if c['cmd'] == chr(26):
                             chan.send(c['cmd'])
                         else:
                             chan.send(c['cmd']+'\n')
+                        if (('dontwait' in c.keys()) and (c['dontwait'] == True)):
+                            break
                         out += _get_reply(device, chan, c['prompt'])
                 if cmd['flush_cache']:
                     device.log_info("flush cache")

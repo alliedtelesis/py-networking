@@ -17,16 +17,21 @@ class awp_license(Feature):
     def __init__(self, device, **kvargs):
         Feature.__init__(self, device, **kvargs)
         self._d = device
+        self._license = {}
 
 
     def set_license(self, label='', key='', certificate=''):
         self._d.log_info("set license")
         self._update_license()
 
-        if not ((label == '' and key == '' and certificate != "") or (label != '' and key != '' and certificate == "")):
+        if not ((label == '' and key == '' and certificate != '') or (label != '' and key != '' and certificate == '')):
             raise KeyError('Either label and key or certificate must be given')
 
-        set_cmd = 'copy {0}://{1}:{2}/{3} {4}'.format(protocol, host_ip_address, port, filename, name)
+        if (certificate == ''):
+            set_cmd = 'license {0} {1}'.format(label, key)
+        else:
+            set_cmd = 'license certificate {0}'.format(certificate)
+
         cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
                         {'cmd': set_cmd , 'prompt':'\#'}
                        ]}
@@ -38,10 +43,10 @@ class awp_license(Feature):
         self._d.log_info("remove license {0}".format(label))
         self._update_license()
 
-        if file_name not in self._d.file.keys():
-            raise KeyError('file {0} is not existing'.format(file_name))
+        if label not in self._d.license.keys():
+            raise KeyError('label {0} is not existing'.format(label))
 
-        delete_cmd = 'delete {0}'.format(file_name)
+        delete_cmd = 'no license {0}'.format(label)
         cmds = {'cmds':[{'cmd': 'enable'  , 'prompt':'\#'},
                         {'cmd': delete_cmd, 'prompt':''  },
                         {'cmd': 'y'       , 'prompt':'\#', 'timeout': 10000}
@@ -95,24 +100,31 @@ class awp_license(Feature):
         # Release                       : 5.4.4
 
         ifre = re.compile('\s+(?P<index>\d+)\s+'
-                          '\s+License\s+name\s+:\s+(?P<license>[^\s]+)\s+'
+                          '\s+License\s+name\s+:\s+(?P<name>[^\s]+)\s+'
                           '\s+Customer\s+name\s+:\s+(?P<customer>[^\s]+)\s+'
                           '\s+Quantity\s+of\s+licenses\s+:\s+(?P<quantity>[^\s]+)\s+'
                           '\s+Type\s+of\s+license\s+:\s+(?P<type>[^\s]+)\s+'
                           '\s+License\s+issue\s+date\s+:\s+(?P<issue>[^\s]+)\s+'
                           '\s+License\s+expiry\s+date\s+:\s+(?P<expire>[^\s]+)\s+'
+                          '\s+(?P<kind>[^\s]+)\s+'
                          )
         for line in self._device.cmd("show license").split('Index                         :'):
             m = ifre.match(line)
             self._d.log_debug("\nLine {0}".format(line))
             if m:
-                key = m.group('index')
-                self._license[key] = {'index': m.group('index'),
-                                      'license': m.group('license'),
-                                      'customer': m.group('customer'),
+                key = m.group('name')
+                features = False
+                releases = False
+                if (m.group('kind') == 'Release'):
+                    releases = True
+                if (m.group('kind') == 'Features'):
+                    features = True
+                self._license[key] = {'customer': m.group('customer'),
                                       'quantity': m.group('quantity'),
                                       'type': m.group('type'),
                                       'issue_date': m.group('issue'),
                                       'expire_date': m.group('expire'),
+                                      'features': features,
+                                      'releases': releases
                                      }
         self._d.log_debug("License {0}".format(pformat(json.dumps(self._license))))

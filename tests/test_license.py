@@ -59,6 +59,19 @@ OEM Territory : ATI USA
 Software Licenses
 ------------------------------------------------------------------------
 Index                         : 1
+License name                  : 5.4.4-rl
+Customer name                 : ABC
+Quantity of licenses          : -
+Type of license               : Full
+License issue date            : 01-Oct-2013
+License expiry date           : N/A
+Release                       : 5.4.4
+"""]
+    output_1 = ["""
+OEM Territory : ATI USA
+Software Licenses
+------------------------------------------------------------------------
+Index                         : 1
 License name                  : Base
 Customer name                 : ABC
 Quantity of licenses          : 1
@@ -79,14 +92,33 @@ Release                       : 5.4.4
 """]
 
     setup_dut(dut)
+    label = 'Base'
+    key = '1234567890'
+    set_cmd = 'license {0} {1}'.format(label, key)
+    delete_cmd = 'no license {0}'.format(label)
 
-    # update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{1}'.format(socket.gethostbyname(socket.getfqdn()), '')
     dut.add_cmd({'cmd': 'show license', 'state':0, 'action':'PRINT','args': output_0})
-    # dut.add_cmd({'cmd': update_cmd , 'state':0, 'action':'SET_STATE','args': [1]})
-    # dut.add_cmd({'cmd': 'show boot', 'state':1, 'action':'PRINT','args': output_1})
+    dut.add_cmd({'cmd': set_cmd       , 'state':0, 'action':'SET_STATE','args': [1]})
+    dut.add_cmd({'cmd': 'show license', 'state':1, 'action':'PRINT','args': output_1})
+    dut.add_cmd({'cmd': delete_cmd    , 'state':1, 'action':'SET_STATE','args': [2]})
+    dut.add_cmd({'cmd': 'show license', 'state':2, 'action':'PRINT','args': output_0})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
-    print(d.license.items())
+    with pytest.raises(KeyError) as excinfo:
+        d.license.set_license(label='', key=key)
+    with pytest.raises(KeyError) as excinfo:
+        d.license.set_license(label=label, key='')
+    with pytest.raises(KeyError) as excinfo:
+        d.license['Bbase']
+    assert label not in d.license.keys()
+    d.license.set_license(label=label, key=key)
+    assert label in d.license.keys()
+    assert d.license[label]['features'] == True
+    assert (label, {'customer': d.license[label]['customer'], 'quantity': d.license[label]['quantity'], 'type': d.license[label]['type'], 'issue_date': d.license[label]['issue_date'], 'expire_date': d.license[label]['expire_date'], 'features' : True, 'releases' : False}) in d.license.items()
+    with pytest.raises(KeyError) as excinfo:
+        d.license.delete(label='Bbase')
+    d.license.delete(label=label)
+    assert label not in d.license.keys()
     d.close()
 
 

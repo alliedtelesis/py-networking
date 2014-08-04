@@ -72,21 +72,47 @@ class awp_license(Feature):
         self._d.log_info("_update_license")
         self._license = OrderedDict()
 
-        # 588 -rw- Jun 10 2014 12:38:10  michele.cfg
-        ifre = re.compile('\s+(?P<size>\d+)\s+'
-                          '(?P<permission>[^\s]+)\s+'
-                          '(?P<month>[^\s]+)\s+'
-                          '(?P<day>\d+)\s+'
-                          '(?P<year>\d+)\s+'
-                          '(?P<hhmmss>[^\s]+)\s+'
-                          '(?P<file_name>[^\s]+)')
-        for line in self._device.cmd("show license").split('\n'):
+        # OEM Territory : ATI USA
+        # Software Licenses
+        # ------------------------------------------------------------------------
+        # Index                         : 1
+        # License name                  : Base License
+        # Customer name                 : ABC Consulting
+        # Quantity of licenses          : 1
+        # Type of license               : Full
+        # License issue date            : 10-Dec-2013
+        # License expiry date           : N/A
+        # Features included             : EPSR-MASTER, IPv6Basic, MLDSnoop, OSPF-64,
+        #                                 RADIUS-100, RIP, VRRP
+        #
+        # Index                         : 2
+        # License name                  : 5.4.4-rl
+        # Customer name                 : ABC Consulting
+        # Quantity of licenses          : -
+        # Type of license               : Full
+        # License issue date            : 01-Oct-2013
+        # License expiry date           : N/A
+        # Release                       : 5.4.4
+
+        ifre = re.compile('\s+(?P<index>\d+)\s+'
+                          '\s+License\s+name\s+:\s+(?P<license>[^\s]+)\s+'
+                          '\s+Customer\s+name\s+:\s+(?P<customer>[^\s]+)\s+'
+                          '\s+Quantity\s+of\s+licenses\s+:\s+(?P<quantity>[^\s]+)\s+'
+                          '\s+Type\s+of\s+license\s+:\s+(?P<type>[^\s]+)\s+'
+                          '\s+License\s+issue\s+date\s+:\s+(?P<issue>[^\s]+)\s+'
+                          '\s+License\s+expiry\s+date\s+:\s+(?P<expire>[^\s]+)\s+'
+                         )
+        for line in self._device.cmd("show license").split('Index                         :'):
             m = ifre.match(line)
+            self._d.log_debug("\nLine {0}".format(line))
             if m:
-                key = m.group('file_name')
-                self._license[key] = {'size': m.group('size'),
-                                   'permission': m.group('permission'),
-                                   'mdate': m.group('day') + '-' + m.group('month') + '-' + m.group('year'),
-                                   'mtime': m.group('hhmmss')
-                                  }
-        self._d.log_debug("File {0}".format(pformat(json.dumps(self._license))))
+                key = m.group('index')
+                self._license[key] = {'index': m.group('index'),
+                                      'license': m.group('license'),
+                                      'customer': m.group('customer'),
+                                      'quantity': m.group('quantity'),
+                                      'type': m.group('type'),
+                                      'issue_date': m.group('issue'),
+                                      'expire_date': m.group('expire'),
+                                     }
+        self._d.log_debug("License {0}".format(pformat(json.dumps(self._license))))

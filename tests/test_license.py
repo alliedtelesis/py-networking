@@ -55,34 +55,38 @@ Build type : RELEASE
 
 def test_feature_license(dut, log_level):
     output_0 = ["""
-Boot configuration
-----------------------------------------------------------------
-Current software   : x210-5.4.3-2.6.rel
-Current boot image : flash:/x210-5.4.3-2.6.rel
-Backup  boot image : flash:/x210-5.4.3-2.6.rel
-Default boot config: flash:/default.cfg
-Current boot config: flash:/my.cfg (file exists)
-Backup  boot config: flash:/backup.cfg (file not found)
-"""]
-    output_1 = ["""
-Boot configuration
-----------------------------------------------------------------
-Current software   : x210-5.4.3-2.6.rel
-Current boot image : flash:/x210-5.4.3-2.7.rel
-Backup  boot image : flash:/x210-5.4.3-2.6.rel
-Default boot config: flash:/default.cfg
-Current boot config: flash:/my.cfg (file exists)
-Backup  boot config: flash:/backup.cfg (file not found)
+OEM Territory : ATI USA
+Software Licenses
+------------------------------------------------------------------------
+Index                         : 1
+License name                  : Base
+Customer name                 : ABC
+Quantity of licenses          : 1
+Type of license               : Full
+License issue date            : 10-Dec-2013
+License expiry date           : N/A
+Features included             : EPSR-MASTER, IPv6Basic, MLDSnoop, OSPF-64,
+                                RADIUS-100, RIP, VRRP
+
+Index                         : 2
+License name                  : 5.4.4-rl
+Customer name                 : ABC
+Quantity of licenses          : -
+Type of license               : Full
+License issue date            : 01-Oct-2013
+License expiry date           : N/A
+Release                       : 5.4.4
 """]
 
     setup_dut(dut)
 
-    update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{1}'.format(socket.gethostbyname(socket.getfqdn()), '')
-    dut.add_cmd({'cmd': 'show boot', 'state':0, 'action':'PRINT','args': output_0})
-    dut.add_cmd({'cmd': update_cmd , 'state':0, 'action':'SET_STATE','args': [1]})
-    dut.add_cmd({'cmd': 'show boot', 'state':1, 'action':'PRINT','args': output_1})
+    # update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{1}'.format(socket.gethostbyname(socket.getfqdn()), '')
+    dut.add_cmd({'cmd': 'show license', 'state':0, 'action':'PRINT','args': output_0})
+    # dut.add_cmd({'cmd': update_cmd , 'state':0, 'action':'SET_STATE','args': [1]})
+    # dut.add_cmd({'cmd': 'show boot', 'state':1, 'action':'PRINT','args': output_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
+    print(d.license.items())
     d.close()
 
 

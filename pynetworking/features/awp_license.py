@@ -4,6 +4,7 @@ from pprint import pformat
 import re
 import json
 import os
+import socket
 try:
     from collections import OrderedDict
 except ImportError: #pragma: no cover
@@ -29,12 +30,38 @@ class awp_license(Feature):
 
         if (certificate == ''):
             set_cmd = 'license {0} {1}'.format(label, key)
-        else:
-            set_cmd = 'license certificate {0}'.format(certificate)
 
-        cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
-                        {'cmd': set_cmd , 'prompt':'\#'}
-                       ]}
+            cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
+                            {'cmd': set_cmd , 'prompt':'\#'}
+                           ]}
+        else:
+            prot = certificate.split('://')[0]
+            if (prot != certificate):
+                # Certificate file is on a TFTP server
+                if (prot != 'tftp'):
+                    raise KeyError('Protocol {0} not supported', prot)
+                else:
+                    self._d.log_debug("Certificate file url given")
+                    set_cmd = 'license certificate {0}'.format(certificate)
+
+                    cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
+                                    {'cmd': set_cmd , 'prompt':'\#'}
+                                   ]}
+            else:
+                # Certificate file has to be copied on board
+                if (os.path.exists(certificate) == False):
+                    raise KeyError('Certificate file {0} is unexisting', certificate)
+                filename = certificate.split('/')[-1]
+                if (certificate[0] == '/'):
+                    certificate = certificate[1:]
+                # cpy_cmd = 'copy http://{0}/{1} {2}'.format(socket.gethostbyname(socket.getfqdn()), filename, filename)
+                set_cmd = 'license certificate {0}'.format(filename)
+
+                cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
+                                # {'cmd': cpy_cmd , 'prompt':'\#'},
+                                {'cmd': set_cmd , 'prompt':'\#'}
+                               ]}
+
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._update_license()
 

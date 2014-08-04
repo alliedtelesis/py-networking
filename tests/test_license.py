@@ -53,6 +53,13 @@ Build type : RELEASE
  """]})
 
 
+def setup_test_release_license(dut, cert_file):
+    if (os.path.exists(cert_file) == False):
+        myfile = open(cert_file, 'w')
+        myfile.write('1')
+        myfile.close()
+
+
 def test_feature_license(dut, log_level):
     output_0 = ["""
 OEM Territory : ATI USA
@@ -144,12 +151,26 @@ Current boot config: flash:/my.cfg (file exists)
 Backup  boot config: flash:/backup.cfg (file not found)
 """]
 
-    setup_dut(dut)
+    cert_file = 'demo.csv'
+    cert_path = os.path.dirname(os.path.abspath(__file__)) + '/../examples/'
+    cert_name = cert_path + cert_file
+    false_cert_file = 'demo1.csv'
+    false_cert_url = 'http://10.17.90.17/demo1.csv'
 
-    update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{1}'.format(socket.gethostbyname(socket.getfqdn()), '')
-    dut.add_cmd({'cmd': 'show boot', 'state':0, 'action':'PRINT','args': output_0})
-    dut.add_cmd({'cmd': update_cmd , 'state':0, 'action':'SET_STATE','args': [1]})
-    dut.add_cmd({'cmd': 'show boot', 'state':1, 'action':'PRINT','args': output_1})
+    setup_dut(dut)
+    setup_test_release_license(dut, cert_name)
+
+    set_cmd = 'license certificate {0}'.format(cert_name)
+    dut.add_cmd({'cmd': 'show license', 'state':0, 'action':'PRINT','args': output_0})
+    dut.add_cmd({'cmd': set_cmd       , 'state':0, 'action':'SET_STATE','args': [1]})
+    dut.add_cmd({'cmd': 'show license', 'state':1, 'action':'PRINT','args': output_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
+    with pytest.raises(KeyError) as excinfo:
+        d.license.set_license(certificate=false_cert_file)
+    with pytest.raises(KeyError) as excinfo:
+        d.license.set_license(certificate=false_cert_url)
+    d.license.set_license(certificate=cert_name)
     d.close()
+
+    os.remove(cert_name)

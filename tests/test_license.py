@@ -54,6 +54,7 @@ Build type : RELEASE
 
 
 def setup_test_release_license(dut, cert_file):
+    # TO BE ADDED: tftp server part
     if (os.path.exists(cert_file) == False):
         myfile = open(cert_file, 'w')
         myfile.write('1')
@@ -197,3 +198,65 @@ Release                       : 5.4.4
     d.close()
 
     os.remove(cert_name)
+
+
+def test_release_license_tftp(dut, log_level):
+    output_0 = ["""
+OEM Territory : ATI USA
+Software Licenses
+------------------------------------------------------------------------
+Index                         : 1
+License name                  : Base
+Customer name                 : ABC
+Quantity of licenses          : 1
+Type of license               : Full
+License issue date            : 10-Dec-2013
+License expiry date           : N/A
+Features included             : EPSR-MASTER, IPv6Basic, MLDSnoop, OSPF-64,
+                                RADIUS-100, RIP, VRRP
+"""]
+    output_1 = ["""
+OEM Territory : ATI USA
+Software Licenses
+------------------------------------------------------------------------
+Index                         : 1
+License name                  : Base
+Customer name                 : ABC
+Quantity of licenses          : 1
+Type of license               : Full
+License issue date            : 10-Dec-2013
+License expiry date           : N/A
+Features included             : EPSR-MASTER, IPv6Basic, MLDSnoop, OSPF-64,
+                                RADIUS-100, RIP, VRRP
+
+Index                         : 2
+License name                  : 5.4.4-rl
+Customer name                 : ABC
+Quantity of licenses          : -
+Type of license               : Full
+License issue date            : 01-Oct-2013
+License expiry date           : N/A
+Release                       : 5.4.4
+"""]
+
+    cert_file = 'demo.csv'
+    cert_url = 'tftp://{0}/{1}'.format(socket.gethostbyname(socket.getfqdn()), cert_file)
+    name = '5.4.4-rl'
+
+    setup_dut(dut)
+    setup_test_release_license(dut, cert_file)
+
+    set_cmd = 'license certificate {0}'.format(cert_url)
+    dut.add_cmd({'cmd': 'show license', 'state':0, 'action':'PRINT','args': output_0})
+    dut.add_cmd({'cmd': set_cmd       , 'state':0, 'action':'SET_STATE','args': [1]})
+    dut.add_cmd({'cmd': 'show license', 'state':1, 'action':'PRINT','args': output_1})
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    d.open()
+    assert name not in d.license.keys()
+    d.license.set_license(certificate=cert_url)
+    assert name in d.license.keys()
+    assert d.license[name]['features'] == ''
+    assert d.license[name]['releases'] != ''
+    d.close()
+
+    os.remove(cert_file)

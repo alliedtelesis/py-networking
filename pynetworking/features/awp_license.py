@@ -38,6 +38,7 @@ class awp_license(Feature):
             prot = certificate.split('://')[0]
             if (prot != certificate):
                 # Certificate file is on a TFTP server
+                # TO BE ADDED: certificate upload
                 if (prot != 'tftp'):
                     raise KeyError('Protocol {0} not supported', prot)
                 else:
@@ -48,7 +49,8 @@ class awp_license(Feature):
                                     {'cmd': set_cmd , 'prompt':'\#'}
                                    ]}
             else:
-                # Certificate file has to be copied on board
+                # Certificate file on board
+                # TO BE ADDED: certificate copy
                 if (os.path.exists(certificate) == False):
                     raise KeyError('Certificate file {0} is unexisting', certificate)
                 filename = certificate.split('/')[-1]

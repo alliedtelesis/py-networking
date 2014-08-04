@@ -120,8 +120,9 @@ Release                       : 5.4.4
     assert label not in d.license.keys()
     d.license.set_license(label=label, key=key)
     assert label in d.license.keys()
-    assert d.license[label]['features'] == True
-    assert (label, {'customer': d.license[label]['customer'], 'quantity': d.license[label]['quantity'], 'type': d.license[label]['type'], 'issue_date': d.license[label]['issue_date'], 'expire_date': d.license[label]['expire_date'], 'features' : True, 'releases' : False}) in d.license.items()
+    assert d.license[label]['features'] != ''
+    assert d.license[label]['releases'] == ''
+    assert (label, {'customer': d.license[label]['customer'], 'quantity': d.license[label]['quantity'], 'type': d.license[label]['type'], 'issue_date': d.license[label]['issue_date'], 'expire_date': d.license[label]['expire_date'], 'features' : d.license[label]['features'], 'releases' : ''}) in d.license.items()
     with pytest.raises(KeyError) as excinfo:
         d.license.delete(label='Bbase')
     d.license.delete(label=label)
@@ -131,24 +132,41 @@ Release                       : 5.4.4
 
 def test_release_license(dut, log_level):
     output_0 = ["""
-Boot configuration
-----------------------------------------------------------------
-Current software   : x210-5.4.3-2.6.rel
-Current boot image : flash:/x210-5.4.3-2.6.rel
-Backup  boot image : flash:/x210-5.4.3-2.6.rel
-Default boot config: flash:/default.cfg
-Current boot config: flash:/my.cfg (file exists)
-Backup  boot config: flash:/backup.cfg (file not found)
+OEM Territory : ATI USA
+Software Licenses
+------------------------------------------------------------------------
+Index                         : 1
+License name                  : Base
+Customer name                 : ABC
+Quantity of licenses          : 1
+Type of license               : Full
+License issue date            : 10-Dec-2013
+License expiry date           : N/A
+Features included             : EPSR-MASTER, IPv6Basic, MLDSnoop, OSPF-64,
+                                RADIUS-100, RIP, VRRP
 """]
     output_1 = ["""
-Boot configuration
-----------------------------------------------------------------
-Current software   : x210-5.4.3-2.6.rel
-Current boot image : flash:/x210-5.4.3-2.7.rel
-Backup  boot image : flash:/x210-5.4.3-2.6.rel
-Default boot config: flash:/default.cfg
-Current boot config: flash:/my.cfg (file exists)
-Backup  boot config: flash:/backup.cfg (file not found)
+OEM Territory : ATI USA
+Software Licenses
+------------------------------------------------------------------------
+Index                         : 1
+License name                  : Base
+Customer name                 : ABC
+Quantity of licenses          : 1
+Type of license               : Full
+License issue date            : 10-Dec-2013
+License expiry date           : N/A
+Features included             : EPSR-MASTER, IPv6Basic, MLDSnoop, OSPF-64,
+                                RADIUS-100, RIP, VRRP
+
+Index                         : 2
+License name                  : 5.4.4-rl
+Customer name                 : ABC
+Quantity of licenses          : -
+Type of license               : Full
+License issue date            : 01-Oct-2013
+License expiry date           : N/A
+Release                       : 5.4.4
 """]
 
     cert_file = 'demo.csv'
@@ -156,11 +174,12 @@ Backup  boot config: flash:/backup.cfg (file not found)
     cert_name = cert_path + cert_file
     false_cert_file = 'demo1.csv'
     false_cert_url = 'http://10.17.90.17/demo1.csv'
+    name = '5.4.4-rl'
 
     setup_dut(dut)
     setup_test_release_license(dut, cert_name)
 
-    set_cmd = 'license certificate {0}'.format(cert_name)
+    set_cmd = 'license certificate {0}'.format(cert_file)
     dut.add_cmd({'cmd': 'show license', 'state':0, 'action':'PRINT','args': output_0})
     dut.add_cmd({'cmd': set_cmd       , 'state':0, 'action':'SET_STATE','args': [1]})
     dut.add_cmd({'cmd': 'show license', 'state':1, 'action':'PRINT','args': output_1})
@@ -170,7 +189,11 @@ Backup  boot config: flash:/backup.cfg (file not found)
         d.license.set_license(certificate=false_cert_file)
     with pytest.raises(KeyError) as excinfo:
         d.license.set_license(certificate=false_cert_url)
+    assert name not in d.license.keys()
     d.license.set_license(certificate=cert_name)
+    assert name in d.license.keys()
+    assert d.license[name]['features'] == ''
+    assert d.license[name]['releases'] != ''
     d.close()
 
     os.remove(cert_name)

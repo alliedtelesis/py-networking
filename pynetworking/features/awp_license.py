@@ -56,7 +56,6 @@ class awp_license(Feature):
                     certificate = certificate[1:]
                 # cpy_cmd = 'copy http://{0}/{1} {2}'.format(socket.gethostbyname(socket.getfqdn()), filename, filename)
                 set_cmd = 'license certificate {0}'.format(filename)
-
                 cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
                                 # {'cmd': cpy_cmd , 'prompt':'\#'},
                                 {'cmd': set_cmd , 'prompt':'\#'}
@@ -126,32 +125,48 @@ class awp_license(Feature):
         # License expiry date           : N/A
         # Release                       : 5.4.4
 
-        ifre = re.compile('\s+(?P<index>\d+)\s+'
-                          '\s+License\s+name\s+:\s+(?P<name>[^\s]+)\s+'
-                          '\s+Customer\s+name\s+:\s+(?P<customer>[^\s]+)\s+'
-                          '\s+Quantity\s+of\s+licenses\s+:\s+(?P<quantity>[^\s]+)\s+'
-                          '\s+Type\s+of\s+license\s+:\s+(?P<type>[^\s]+)\s+'
-                          '\s+License\s+issue\s+date\s+:\s+(?P<issue>[^\s]+)\s+'
-                          '\s+License\s+expiry\s+date\s+:\s+(?P<expire>[^\s]+)\s+'
-                          '\s+(?P<kind>[^\s]+)\s+'
-                         )
+        ifre1 = re.compile('\s+(?P<index>\d+)\s+'
+                           '\s+License\s+name\s+:\s+(?P<name>[^\s]+)\s+'
+                           '\s+Customer\s+name\s+:\s+(?P<customer>[^\s]+)\s+'
+                           '\s+Quantity\s+of\s+licenses\s+:\s+(?P<quantity>[^\s]+)\s+'
+                           '\s+Type\s+of\s+license\s+:\s+(?P<type>[^\s]+)\s+'
+                           '\s+License\s+issue\s+date\s+:\s+(?P<issue>[^\s]+)\s+'
+                           '\s+License\s+expiry\s+date\s+:\s+(?P<expire>[^\s]+)\s+'
+                           '\s+Features\s+included\s+:\s+(?P<list>[^\s]+)\s+'
+                          )
+        ifre2 = re.compile('\s+(?P<index>\d+)\s+'
+                           '\s+License\s+name\s+:\s+(?P<name>[^\s]+)\s+'
+                           '\s+Customer\s+name\s+:\s+(?P<customer>[^\s]+)\s+'
+                           '\s+Quantity\s+of\s+licenses\s+:\s+(?P<quantity>[^\s]+)\s+'
+                           '\s+Type\s+of\s+license\s+:\s+(?P<type>[^\s]+)\s+'
+                           '\s+License\s+issue\s+date\s+:\s+(?P<issue>[^\s]+)\s+'
+                           '\s+License\s+expiry\s+date\s+:\s+(?P<expire>[^\s]+)\s+'
+                           '\s+Release\s+:\s+(?P<version>[^\s]+)\s+'
+                          )
         for line in self._device.cmd("show license").split('Index                         :'):
-            m = ifre.match(line)
             self._d.log_debug("\nLine {0}".format(line))
+            m = ifre1.match(line)
             if m:
                 key = m.group('name')
-                features = False
-                releases = False
-                if (m.group('kind') == 'Release'):
-                    releases = True
-                if (m.group('kind') == 'Features'):
-                    features = True
                 self._license[key] = {'customer': m.group('customer'),
                                       'quantity': m.group('quantity'),
                                       'type': m.group('type'),
                                       'issue_date': m.group('issue'),
                                       'expire_date': m.group('expire'),
-                                      'features': features,
-                                      'releases': releases
+                                      'features': m.group('list'),
+                                      'releases': ''
+                                     }
+            m = ifre2.match(line)
+            if m:
+                key = m.group('name')
+                features = False
+                releases = True
+                self._license[key] = {'customer': m.group('customer'),
+                                      'quantity': m.group('quantity'),
+                                      'type': m.group('type'),
+                                      'issue_date': m.group('issue'),
+                                      'expire_date': m.group('expire'),
+                                      'features': '',
+                                      'releases': m.group('version')
                                      }
         self._d.log_debug("License {0}".format(pformat(json.dumps(self._license))))

@@ -35,12 +35,11 @@ class awp_license(Feature):
                             {'cmd': set_cmd , 'prompt':'\#'}
                            ]}
         else:
-            prot = certificate.split('://')[0]
-            if (prot != certificate):
+            protocol = certificate.split('://')[0]
+            if (protocol != certificate):
                 # Certificate file is on a TFTP server
-                # TO BE ADDED: certificate upload
-                if (prot != 'tftp'):
-                    raise KeyError('Protocol {0} not supported', prot)
+                if (protocol != 'tftp'):
+                    raise KeyError('Protocol {0} not supported', protocol)
                 else:
                     self._d.log_debug("Certificate file url given")
                     set_cmd = 'license certificate {0}'.format(certificate)
@@ -50,16 +49,12 @@ class awp_license(Feature):
                                    ]}
             else:
                 # Certificate file on board
-                # TO BE ADDED: certificate copy
                 if (os.path.exists(certificate) == False):
                     raise KeyError('Certificate file {0} is unexisting', certificate)
                 filename = certificate.split('/')[-1]
-                if (certificate[0] == '/'):
-                    certificate = certificate[1:]
-                # cpy_cmd = 'copy http://{0}/{1} {2}'.format(socket.gethostbyname(socket.getfqdn()), filename, filename)
+                self._d.file.create(name=filename, filename=certificate)
                 set_cmd = 'license certificate {0}'.format(filename)
                 cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
-                                # {'cmd': cpy_cmd , 'prompt':'\#'},
                                 {'cmd': set_cmd , 'prompt':'\#'}
                                ]}
 

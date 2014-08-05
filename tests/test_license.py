@@ -54,11 +54,17 @@ Build type : RELEASE
 
 
 def setup_test_release_license(dut, cert_file):
-    # TO BE ADDED: tftp server part
+    # TO BE ADDED: tftp server start
     if (os.path.exists(cert_file) == False):
         myfile = open(cert_file, 'w')
         myfile.write('1')
         myfile.close()
+
+
+def clean_test_release_license(dut, cert_file):
+    # TO BE ADDED: tftp server stop
+    if (os.path.exists(cert_file) == True):
+        os.remove(cert_file)
 
 
 def test_feature_license(dut, log_level):
@@ -131,7 +137,7 @@ Release                       : 5.4.4
     d.close()
 
 
-def test_release_license(dut, log_level):
+def test_release_license_path(dut, log_level):
     output_0 = ["""
 OEM Territory : ATI USA
 Software Licenses
@@ -174,7 +180,6 @@ Release                       : 5.4.4
     cert_path = os.path.dirname(os.path.abspath(__file__)) + '/../examples/'
     cert_name = cert_path + cert_file
     false_cert_file = 'demo1.csv'
-    false_cert_url = 'http://10.17.90.17/demo1.csv'
     name = '5.4.4-rl'
 
     setup_dut(dut)
@@ -188,8 +193,6 @@ Release                       : 5.4.4
     d.open()
     with pytest.raises(KeyError) as excinfo:
         d.license.set_license(certificate=false_cert_file)
-    with pytest.raises(KeyError) as excinfo:
-        d.license.set_license(certificate=false_cert_url)
     assert name not in d.license.keys()
     d.license.set_license(certificate=cert_name)
     assert name in d.license.keys()
@@ -197,7 +200,7 @@ Release                       : 5.4.4
     assert d.license[name]['releases'] != ''
     d.close()
 
-    os.remove(cert_name)
+    clean_test_release_license(dut, cert_name)
 
 
 def test_release_license_tftp(dut, log_level):
@@ -241,8 +244,10 @@ Release                       : 5.4.4
 
     cert_file = 'demo.csv'
     cert_url = 'tftp://{0}/{1}'.format(socket.gethostbyname(socket.getfqdn()), cert_file)
+    false_cert_url = 'http://{0}/demo1.csv'.format(socket.gethostbyname(socket.getfqdn()))
     name = '5.4.4-rl'
 
+    # TO BE ADDED: certificate upload on local TFTP server
     setup_dut(dut)
     setup_test_release_license(dut, cert_file)
 
@@ -252,6 +257,8 @@ Release                       : 5.4.4
     dut.add_cmd({'cmd': 'show license', 'state':1, 'action':'PRINT','args': output_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
+    with pytest.raises(KeyError) as excinfo:
+        d.license.set_license(certificate=false_cert_url)
     assert name not in d.license.keys()
     d.license.set_license(certificate=cert_url)
     assert name in d.license.keys()
@@ -259,4 +266,4 @@ Release                       : 5.4.4
     assert d.license[name]['releases'] != ''
     d.close()
 
-    os.remove(cert_file)
+    clean_test_release_license(dut, cert_file)

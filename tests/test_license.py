@@ -2,6 +2,9 @@ import pytest
 import logging
 import os
 import socket
+import tftpy
+import threading
+import getpass
 from pynetworking import Device, DeviceException
 from time import sleep
 from paramiko.rsakey import RSAKey
@@ -53,18 +56,58 @@ Build type : RELEASE
  """]})
 
 
-def setup_test_release_license(dut, cert_file):
-    # TO BE ADDED: tftp server start
-    if (os.path.exists(cert_file) == False):
-        myfile = open(cert_file, 'w')
-        myfile.write('1')
-        myfile.close()
+def setup_test_release_license(dut, cert_file, tftp_server=False):
+    if (dut.mode == 'emulated'):
+        if (os.path.exists(cert_file) == False):
+            myfile = open(cert_file, 'w')
+            myfile.write('# certificate file facsimile\n')
+            myfile.write('# feature licenses\n')
+            myfile.write('000C-25A4-00F0,license_for_IPv6,1234567890abcdefghijklmnopqrstuvwxyz\n')
+            myfile.write('*,license_for_IPv6_bis,123+/=456+/=abcdefghijkl+/=mnopqrstuv+/=Qwxyz\n')
+            myfile.write('# release licenses\n')
+            myfile.write('000C-25A4-00F0,upgrade_to_544rl,ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890\n')
+            myfile.write('*,upgrade_to_544rl_bis,ABCDEFGHIJKLMNOPQRSTUVWXYZ=/+=/+=/+1234567890\n')
+            myfile.close()
+
+    if (tftp_server == True):
+        if (dut.mode != 'emulated'):
+            assert 'root' == getpass.getuser()
+        dut.tftp_port = 69
+        if (getpass.getuser() != 'root'):
+            dut.tftp_port = 20069
+        dut.tftp_server_thread = threading.Thread(target=tftp_server_for_ever, args=(dut.tftp_port,))
+        dut.tftp_server_thread.daemon = True
+        dut.tftp_server_thread.start()
+
+        tftp_client = tftpy.TftpClient(socket.gethostbyname(socket.getfqdn()), dut.tftp_port)
+        tftp_client.upload(cert_file.split('/')[-1], cert_file)
+
+
+def tftp_server_for_ever(port):
+    tftp_client_dir = './tftp_client_dir'
+    if (os.path.exists(tftp_client_dir) == False):
+        os.mkdir(tftp_client_dir)
+    tftp_server_dir = './tftp_server_dir'
+    if (os.path.exists(tftp_server_dir) == False):
+        os.mkdir(tftp_server_dir)
+        ip_address = socket.gethostbyname(socket.getfqdn())
+        server = tftpy.TftpServer(tftp_server_dir)
+        server.listen(ip_address, port)
 
 
 def clean_test_release_license(dut, cert_file):
-    # TO BE ADDED: tftp server stop
-    if (os.path.exists(cert_file) == True):
-        os.remove(cert_file)
+    if (dut.mode == 'emulated'):
+        if (os.path.exists(cert_file) == True):
+            os.remove(cert_file)
+    tftp_client_dir = './tftp_client_dir'
+    if (os.path.exists(tftp_client_dir) == True):
+        os.rmdir(tftp_client_dir)
+    tftp_server_dir = './tftp_server_dir'
+    tftp_server_file = tftp_server_dir + '/' +cert_file
+    if (os.path.exists(tftp_server_file) == True):
+        os.remove(tftp_server_file)
+    if (os.path.exists(tftp_server_dir) == True):
+        os.rmdir(tftp_server_dir)
 
 
 def test_feature_license(dut, log_level):
@@ -247,9 +290,8 @@ Release                       : 5.4.4
     false_cert_url = 'http://{0}/demo1.csv'.format(socket.gethostbyname(socket.getfqdn()))
     name = '5.4.4-rl'
 
-    # TO BE ADDED: certificate upload on local TFTP server
     setup_dut(dut)
-    setup_test_release_license(dut, cert_file)
+    setup_test_release_license(dut, cert_file, tftp_server=True)
 
     set_cmd = 'license certificate {0}'.format(cert_url)
     dut.add_cmd({'cmd': 'show license', 'state':0, 'action':'PRINT','args': output_0})

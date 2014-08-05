@@ -38,20 +38,21 @@ Serial number:   1122334455
     """]})
 
 
-def tftp_server_for_ever(port):
-    tftp_client_dir = './tftp_client_dir'
+def tftp_make_dir(tftp_client_dir, tftp_server_dir):
     if (os.path.exists(tftp_client_dir) == False):
         os.mkdir(tftp_client_dir)
-    tftp_server_dir = './tftp_server_dir'
     if (os.path.exists(tftp_server_dir) == False):
         os.mkdir(tftp_server_dir)
-        ip_address = socket.gethostbyname(socket.getfqdn())
-        server = tftpy.TftpServer(tftp_server_dir)
-        # log_level = logging.DEBUG
-        log_level = logging.WARNING
-        log = logging.getLogger('tftpy')
-        log.setLevel(log_level)
-        server.listen(ip_address, port, timeout=20)
+
+
+def tftp_server_for_ever(port, tftp_server_dir):
+    ip_address = socket.gethostbyname(socket.getfqdn())
+    server = tftpy.TftpServer(tftp_server_dir)
+    # log_level = logging.DEBUG
+    log_level = logging.WARNING
+    log = logging.getLogger('tftpy')
+    log.setLevel(log_level)
+    server.listen(ip_address, port, timeout=20)
 
 
 def setup_test_firmware_upgrade(dut, image_name):
@@ -72,9 +73,14 @@ def setup_test_firmware_upgrade(dut, image_name):
         dut.dontwait = True
         # Only root users can access port 69, that is mandatory for TFTP upload.
         assert 'root' == getpass.getuser()
-    dut.tftp_server_thread = threading.Thread(target=tftp_server_for_ever, args=(dut.tftp_port,))
-    dut.tftp_server_thread.daemon = True
-    dut.tftp_server_thread.start()
+
+    client_dir = './tftp_client_dir'
+    server_dir = './tftp_server_dir'
+    tftp_make_dir(client_dir, server_dir)
+    if not hasattr(dut, 'tftp_server_thread'):
+        dut.tftp_server_thread = threading.Thread(target=tftp_server_for_ever, args=(dut.tftp_port, server_dir, ))
+        dut.tftp_server_thread.daemon = True
+        dut.tftp_server_thread.start()
 
 
 def clean_test_firmware_upgrade(dut, image_name):

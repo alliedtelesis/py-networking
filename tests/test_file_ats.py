@@ -10,17 +10,14 @@ from time import sleep
 from paramiko.rsakey import RSAKey
 
 
-def tftp_dir():
-    tftp_client_dir = './tftp_client_dir'
+def tftp_make_dir(tftp_client_dir, tftp_server_dir):
     if (os.path.exists(tftp_client_dir) == False):
         os.mkdir(tftp_client_dir)
-    tftp_server_dir = './tftp_server_dir'
     if (os.path.exists(tftp_server_dir) == False):
         os.mkdir(tftp_server_dir)
 
 
-def tftp_server_for_ever(port):
-    tftp_server_dir = './tftp_server_dir'
+def tftp_server_for_ever(port, tftp_server_dir):
     ip_address = socket.gethostbyname(socket.getfqdn())
     server = tftpy.TftpServer(tftp_server_dir)
     server.listen(ip_address, port)
@@ -55,9 +52,12 @@ Serial number:
     dut.tftp_port = 69
     if (getpass.getuser() != 'root'):
         dut.tftp_port = 20069
-    tftp_dir()
+
+    client_dir = './tftp_client_dir'
+    server_dir = './tftp_server_dir'
+    tftp_make_dir(client_dir, server_dir)
     if not hasattr(dut, 'tftp_server_thread'):
-        dut.tftp_server_thread = threading.Thread(target=tftp_server_for_ever, args=(dut.tftp_port,))
+        dut.tftp_server_thread = threading.Thread(target=tftp_server_for_ever, args=(dut.tftp_port, server_dir,))
         dut.tftp_server_thread.daemon = True
         dut.tftp_server_thread.start()
 

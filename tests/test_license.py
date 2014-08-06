@@ -118,45 +118,49 @@ def clean_test_release_license(dut, cert_file):
 
 def test_feature_license(dut, log_level):
     output_0 = ["""
-OEM Territory : ATI USA
+OEM Territory : Global
 Software Licenses
 ------------------------------------------------------------------------
 Index                         : 1
-License name                  : 5.4.4-rl
-Customer name                 : ABC
-Quantity of licenses          : -
-Type of license               : Full
-License issue date            : 01-Oct-2013
-License expiry date           : N/A
-Release                       : 5.4.4
-"""]
-    output_1 = ["""
-OEM Territory : ATI USA
-Software Licenses
-------------------------------------------------------------------------
-Index                         : 1
-License name                  : Base
-Customer name                 : ABC
+License name                  : Base License
+Customer name                 : Base License
 Quantity of licenses          : 1
 Type of license               : Full
-License issue date            : 10-Dec-2013
+License issue date            : 06-Aug-2014
 License expiry date           : N/A
-Features included             : EPSR-MASTER, IPv6Basic, MLDSnoop, OSPF-64,
-                                RADIUS-100, RIP, VRRP
+Features included             : EPSR-MASTER, IPv6Basic, LAG-FULL, MLDSnoop,
+                                No-License-Lock, OSPF-64, RADIUS-100, RIP,
+                                VRRP
+"""]
+    output_1 = ["""
+OEM Territory : Global
+Software Licenses
+------------------------------------------------------------------------
+Index                         : 1
+License name                  : Base License
+Customer name                 : Base License
+Quantity of licenses          : 1
+Type of license               : Full
+License issue date            : 06-Aug-2014
+License expiry date           : N/A
+Features included             : EPSR-MASTER, IPv6Basic, LAG-FULL, MLDSnoop,
+                                No-License-Lock, OSPF-64, RADIUS-100, RIP,
+                                VRRP
 
 Index                         : 2
-License name                  : 5.4.4-rl
-Customer name                 : ABC
-Quantity of licenses          : -
+License name                  : AT-FL-x610-01
+Customer name                 : C.A.R.T. Elettronica srl
+Quantity of licenses          : 2
 Type of license               : Full
-License issue date            : 01-Oct-2013
+License issue date            : 29-Jan-2014
 License expiry date           : N/A
-Release                       : 5.4.4
+Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
+                                VRF-LITE, VRF-LITE-63
 """]
 
     setup_dut(dut)
-    label = 'Base'
-    key = '1234567890'
+    label = 'AT-FL-x610-01'
+    key = 'jkRaT0PvfUf/M7VhxAzdAZLB/RcX95VNU3xIOwW0aKi9FSOFtJ5otefLbZur0aAQ7xr2JT88N7U='
     set_cmd = 'license {0} {1}'.format(label, key)
     delete_cmd = 'no license {0}'.format(label)
 

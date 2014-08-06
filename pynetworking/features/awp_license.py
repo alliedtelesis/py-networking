@@ -32,7 +32,8 @@ class awp_license(Feature):
             set_cmd = 'license {0} {1}'.format(label, key)
 
             cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
-                            {'cmd': set_cmd , 'prompt':'\#'}
+                            {'cmd': set_cmd , 'prompt':''  },
+                            {'cmd': 'y'     , 'prompt':'\#'}
                            ]}
         else:
             protocol = certificate.split('://')[0]
@@ -45,7 +46,8 @@ class awp_license(Feature):
                     set_cmd = 'license certificate {0}'.format(certificate)
 
                     cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
-                                    {'cmd': set_cmd , 'prompt':'\#'}
+                                    {'cmd': set_cmd , 'prompt':''  },
+                                    {'cmd': 'y'     , 'prompt':'\#'}
                                    ]}
             else:
                 # Certificate file on board
@@ -55,7 +57,8 @@ class awp_license(Feature):
                 self._d.file.create(name=filename, filename=certificate)
                 set_cmd = 'license certificate {0}'.format(filename)
                 cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
-                                {'cmd': set_cmd , 'prompt':'\#'}
+                                {'cmd': set_cmd , 'prompt':''  },
+                                {'cmd': 'y'     , 'prompt':'\#'}
                                ]}
 
         self._device.cmd(cmds, cache=False, flush_cache=True)
@@ -72,7 +75,7 @@ class awp_license(Feature):
         delete_cmd = 'no license {0}'.format(label)
         cmds = {'cmds':[{'cmd': 'enable'  , 'prompt':'\#'},
                         {'cmd': delete_cmd, 'prompt':''  },
-                        {'cmd': 'y'       , 'prompt':'\#', 'timeout': 10000}
+                        {'cmd': 'y'       , 'prompt':'\#'}
                        ]}
 
         self._device.cmd(cmds, cache=False, flush_cache=True)

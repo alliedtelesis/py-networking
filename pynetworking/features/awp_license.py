@@ -126,22 +126,22 @@ class awp_license(Feature):
         # Release                       : 5.4.4
 
         ifre1 = re.compile('\s+(?P<index>\d+)\s+'
-                           '\s+License\s+name\s+:\s+(?P<name>[^\s]+)\s+'
-                           '\s+Customer\s+name\s+:\s+(?P<customer>[^\s]+)\s+'
+                           '\s+License\s+name\s+:\s+(?P<name>[^\n]+)\s+'
+                           '\s+Customer\s+name\s+:\s+(?P<customer>[^\n]+)\s+'
                            '\s+Quantity\s+of\s+licenses\s+:\s+(?P<quantity>[^\s]+)\s+'
                            '\s+Type\s+of\s+license\s+:\s+(?P<type>[^\s]+)\s+'
                            '\s+License\s+issue\s+date\s+:\s+(?P<issue>[^\s]+)\s+'
                            '\s+License\s+expiry\s+date\s+:\s+(?P<expire>[^\s]+)\s+'
-                           '\s+Features\s+included\s+:\s+(?P<list>[^\s]+)\s+'
+                           '\s+Features\s+included\s+:\s+(?P<list>[^\n]+)\s+'
                           )
         ifre2 = re.compile('\s+(?P<index>\d+)\s+'
-                           '\s+License\s+name\s+:\s+(?P<name>[^\s]+)\s+'
-                           '\s+Customer\s+name\s+:\s+(?P<customer>[^\s]+)\s+'
+                           '\s+License\s+name\s+:\s+(?P<name>[^\n]+)\s+'
+                           '\s+Customer\s+name\s+:\s+(?P<customer>[^\n]+)\s+'
                            '\s+Quantity\s+of\s+licenses\s+:\s+(?P<quantity>[^\s]+)\s+'
                            '\s+Type\s+of\s+license\s+:\s+(?P<type>[^\s]+)\s+'
                            '\s+License\s+issue\s+date\s+:\s+(?P<issue>[^\s]+)\s+'
                            '\s+License\s+expiry\s+date\s+:\s+(?P<expire>[^\s]+)\s+'
-                           '\s+Release\s+:\s+(?P<version>[^\s]+)\s+'
+                           '\s+Release\s+:\s+(?P<version>[^\n]+)\s+'
                           )
         for line in self._device.cmd("show license").split('Index                         :'):
             self._d.log_debug("\nLine {0}".format(line))

@@ -63,17 +63,16 @@ def tftp_server_for_ever(port, tftp_server_dir):
 
 
 def setup_test_release_license(dut, cert_file, tftp_server=False):
-    if (dut.mode == 'emulated'):
-        if (os.path.exists(cert_file) == False):
-            myfile = open(cert_file, 'w')
-            myfile.write('# certificate file facsimile\n')
-            myfile.write('# feature licenses\n')
-            myfile.write('000C-25A4-00F0,license_for_IPv6,1234567890abcdefghijklmnopqrstuvwxyz\n')
-            myfile.write('*,license_for_IPv6_bis,123+/=456+/=abcdefghijkl+/=mnopqrstuv+/=Qwxyz\n')
-            myfile.write('# release licenses\n')
-            myfile.write('000C-25A4-00F0,upgrade_to_544rl,ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890\n')
-            myfile.write('*,upgrade_to_544rl_bis,ABCDEFGHIJKLMNOPQRSTUVWXYZ=/+=/+=/+1234567890\n')
-            myfile.close()
+    if (os.path.exists(cert_file) == False):
+        myfile = open(cert_file, 'w')
+        myfile.write('# certificate file facsimile\n')
+        myfile.write('# feature licenses\n')
+        myfile.write('000C-25A4-00F0,license_for_IPv6,1234567890abcdefghijklmnopqrstuvwxyz\n')
+        myfile.write('*,license_for_IPv6_bis,123+/=456+/=abcdefghijkl+/=mnopqrstuv+/=Qwxyz\n')
+        myfile.write('# release licenses\n')
+        myfile.write('000C-25A4-00F0,upgrade_to_544rl,ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890\n')
+        myfile.write('*,upgrade_to_544rl_bis,ABCDEFGHIJKLMNOPQRSTUVWXYZ=/+=/+=/+1234567890\n')
+        myfile.close()
 
     if (tftp_server == True):
         if (dut.mode != 'emulated'):
@@ -244,9 +243,10 @@ Release                       : 5.4.4
         d.license.set_license(certificate=false_cert_file)
     assert name not in d.license.keys()
     d.license.set_license(certificate=cert_name)
-    assert name in d.license.keys()
-    assert d.license[name]['features'] == ''
-    assert d.license[name]['releases'] != ''
+    if (dut.mode == 'emulated'):
+        assert name in d.license.keys()
+        assert d.license[name]['features'] == ''
+        assert d.license[name]['releases'] != ''
     d.close()
 
     clean_test_release_license(dut, cert_name)
@@ -309,9 +309,10 @@ Release                       : 5.4.4
         d.license.set_license(certificate=false_cert_url)
     assert name not in d.license.keys()
     d.license.set_license(certificate=cert_url)
-    assert name in d.license.keys()
-    assert d.license[name]['features'] == ''
-    assert d.license[name]['releases'] != ''
+    if (dut.mode == 'emulated'):
+        assert name in d.license.keys()
+        assert d.license[name]['features'] == ''
+        assert d.license[name]['releases'] != ''
     d.close()
 
     clean_test_release_license(dut, cert_file)

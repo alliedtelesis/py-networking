@@ -56,6 +56,12 @@ Build type : RELEASE
  """]})
 
 
+def tftp_server_for_ever(port, tftp_server_dir):
+    ip_address = socket.gethostbyname(socket.getfqdn())
+    server = tftpy.TftpServer(tftp_server_dir)
+    server.listen(ip_address, port)
+
+
 def setup_test_release_license(dut, cert_file, tftp_server=False):
     if (dut.mode == 'emulated'):
         if (os.path.exists(cert_file) == False):
@@ -78,7 +84,10 @@ def setup_test_release_license(dut, cert_file, tftp_server=False):
 
         client_dir = './tftp_client_dir'
         server_dir = './tftp_server_dir'
-        tftp_make_dir(client_dir, server_dir)
+        if (os.path.exists(client_dir) == False):
+            os.mkdir(client_dir)
+        if (os.path.exists(server_dir) == False):
+            os.mkdir(server_dir)
         if not hasattr(dut, 'tftp_server_thread'):
             dut.tftp_server_thread = threading.Thread(target=tftp_server_for_ever, args=(dut.tftp_port, server_dir,))
             dut.tftp_server_thread.daemon = True
@@ -86,19 +95,6 @@ def setup_test_release_license(dut, cert_file, tftp_server=False):
 
         tftp_client = tftpy.TftpClient(socket.gethostbyname(socket.getfqdn()), dut.tftp_port)
         tftp_client.upload(cert_file.split('/')[-1], cert_file)
-
-
-def tftp_make_dir(tftp_client_dir, tftp_server_dir):
-    if (os.path.exists(tftp_client_dir) == False):
-        os.mkdir(tftp_client_dir)
-    if (os.path.exists(tftp_server_dir) == False):
-        os.mkdir(tftp_server_dir)
-
-
-def tftp_server_for_ever(port, tftp_server_dir):
-    ip_address = socket.gethostbyname(socket.getfqdn())
-    server = tftpy.TftpServer(tftp_server_dir)
-    server.listen(ip_address, port)
 
 
 def clean_test_release_license(dut, cert_file):

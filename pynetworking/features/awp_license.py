@@ -159,8 +159,6 @@ class awp_license(Feature):
             m = ifre2.match(line)
             if m:
                 key = m.group('name')
-                features = False
-                releases = True
                 self._license[key] = {'customer': m.group('customer'),
                                       'quantity': m.group('quantity'),
                                       'type': m.group('type'),

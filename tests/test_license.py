@@ -62,16 +62,16 @@ def tftp_server_for_ever(port, tftp_server_dir):
     server.listen(ip_address, port)
 
 
-def setup_test_release_license(dut, cert_file, tftp_server=False):
+def setup_test_certificate(dut, cert_file, label, key, tftp_server=False):
     if (os.path.exists(cert_file) == False):
+        license_entry = '*,{0},{1}\n'.format(label,key)
         myfile = open(cert_file, 'w')
         myfile.write('# certificate file facsimile\n')
         myfile.write('# feature licenses\n')
         myfile.write('000C-25A4-00F0,license_for_IPv6,1234567890abcdefghijklmnopqrstuvwxyz\n')
-        myfile.write('*,license_for_IPv6_bis,123+/=456+/=abcdefghijkl+/=mnopqrstuv+/=Qwxyz\n')
+        myfile.write(license_entry)
         myfile.write('# release licenses\n')
         myfile.write('000C-25A4-00F0,upgrade_to_544rl,ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890\n')
-        myfile.write('*,upgrade_to_544rl_bis,ABCDEFGHIJKLMNOPQRSTUVWXYZ=/+=/+=/+1234567890\n')
         myfile.close()
 
     if (tftp_server == True):
@@ -96,7 +96,7 @@ def setup_test_release_license(dut, cert_file, tftp_server=False):
         tftp_client.upload(cert_file.split('/')[-1], cert_file)
 
 
-def clean_test_release_license(dut, cert_file):
+def clean_test_environment(dut, cert_file):
     if (dut.mode == 'emulated'):
         if (os.path.exists(cert_file) == True):
             os.remove(cert_file)
@@ -111,7 +111,7 @@ def clean_test_release_license(dut, cert_file):
         os.rmdir(tftp_server_dir)
 
 
-def test_feature_license(dut, log_level):
+def test_feature_license_label_key(dut, log_level):
     output_0 = ["""
 OEM Territory : Global
 Software Licenses
@@ -153,9 +153,11 @@ Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
                                 VRF-LITE, VRF-LITE-63
 """]
 
-    setup_dut(dut)
     label = 'AT-FL-x610-01'
     key = 'jkRaT0PvfUf/M7VhxAzdAZLB/RcX95VNU3xIOwW0aKi9FSOFtJ5otefLbZur0aAQ7xr2JT88N7U='
+
+    setup_dut(dut)
+
     set_cmd = 'license {0} {1}'.format(label, key)
     delete_cmd = 'no license {0}'.format(label)
 
@@ -185,74 +187,158 @@ Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
     d.close()
 
 
-def test_release_license_path(dut, log_level):
+def test_feature_license_path(dut, log_level):
     output_0 = ["""
-OEM Territory : ATI USA
+OEM Territory : Global
 Software Licenses
 ------------------------------------------------------------------------
 Index                         : 1
-License name                  : Base
-Customer name                 : ABC
+License name                  : Base License
+Customer name                 : Base License
 Quantity of licenses          : 1
 Type of license               : Full
-License issue date            : 10-Dec-2013
+License issue date            : 06-Aug-2014
 License expiry date           : N/A
-Features included             : EPSR-MASTER, IPv6Basic, MLDSnoop, OSPF-64,
-                                RADIUS-100, RIP, VRRP
+Features included             : EPSR-MASTER, IPv6Basic, LAG-FULL, MLDSnoop,
+                                No-License-Lock, OSPF-64, RADIUS-100, RIP,
+                                VRRP
 """]
     output_1 = ["""
-OEM Territory : ATI USA
+OEM Territory : Global
 Software Licenses
 ------------------------------------------------------------------------
 Index                         : 1
-License name                  : Base
-Customer name                 : ABC
+License name                  : Base License
+Customer name                 : Base License
 Quantity of licenses          : 1
 Type of license               : Full
-License issue date            : 10-Dec-2013
+License issue date            : 06-Aug-2014
 License expiry date           : N/A
-Features included             : EPSR-MASTER, IPv6Basic, MLDSnoop, OSPF-64,
-                                RADIUS-100, RIP, VRRP
+Features included             : EPSR-MASTER, IPv6Basic, LAG-FULL, MLDSnoop,
+                                No-License-Lock, OSPF-64, RADIUS-100, RIP,
+                                VRRP
 
 Index                         : 2
-License name                  : 5.4.4-rl
-Customer name                 : ABC
-Quantity of licenses          : -
+License name                  : AT-FL-x610-01
+Customer name                 : C.A.R.T. Elettronica srl
+Quantity of licenses          : 2
 Type of license               : Full
-License issue date            : 01-Oct-2013
+License issue date            : 29-Jan-2014
 License expiry date           : N/A
-Release                       : 5.4.4
+Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
+                                VRF-LITE, VRF-LITE-63
 """]
 
     cert_file = 'demo.csv'
     cert_path = os.path.dirname(os.path.abspath(__file__)) + '/../examples/'
     cert_name = cert_path + cert_file
     false_cert_file = 'demo1.csv'
-    name = '5.4.4-rl'
+    label = 'AT-FL-x610-01'
+    key = 'jkRaT0PvfUf/M7VhxAzdAZLB/RcX95VNU3xIOwW0aKi9FSOFtJ5otefLbZur0aAQ7xr2JT88N7U='
 
     setup_dut(dut)
-    setup_test_release_license(dut, cert_name)
 
+    setup_test_certificate(dut, cert_name, label, key)
     set_cmd = 'license certificate {0}'.format(cert_file)
+    delete_cmd = 'no license {0}'.format(label)
+
     dut.add_cmd({'cmd': 'show license', 'state':0, 'action':'PRINT','args': output_0})
     dut.add_cmd({'cmd': set_cmd       , 'state':0, 'action':'SET_STATE','args': [1]})
     dut.add_cmd({'cmd': 'show license', 'state':1, 'action':'PRINT','args': output_1})
+    dut.add_cmd({'cmd': delete_cmd    , 'state':1, 'action':'SET_STATE','args': [2]})
+    dut.add_cmd({'cmd': 'show license', 'state':2, 'action':'PRINT','args': output_0})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
     with pytest.raises(KeyError) as excinfo:
         d.license.set_license(certificate=false_cert_file)
-    assert name not in d.license.keys()
+    assert label not in d.license.keys()
     d.license.set_license(certificate=cert_name)
-    if (dut.mode == 'emulated'):
-        assert name in d.license.keys()
-        assert d.license[name]['features'] == ''
-        assert d.license[name]['releases'] != ''
+    assert label in d.license.keys()
+    assert d.license[label]['features'] != ''
+    assert d.license[label]['releases'] == ''
+    d.license.delete(label=label)
+    assert label not in d.license.keys()
     d.close()
 
-    clean_test_release_license(dut, cert_name)
+    clean_test_environment(dut, cert_name)
 
 
-def test_release_license_tftp(dut, log_level):
+def test_feature_license_tftp(dut, log_level):
+    output_0 = ["""
+OEM Territory : Global
+Software Licenses
+------------------------------------------------------------------------
+Index                         : 1
+License name                  : Base License
+Customer name                 : Base License
+Quantity of licenses          : 1
+Type of license               : Full
+License issue date            : 06-Aug-2014
+License expiry date           : N/A
+Features included             : EPSR-MASTER, IPv6Basic, LAG-FULL, MLDSnoop,
+                                No-License-Lock, OSPF-64, RADIUS-100, RIP,
+                                VRRP
+"""]
+    output_1 = ["""
+OEM Territory : Global
+Software Licenses
+------------------------------------------------------------------------
+Index                         : 1
+License name                  : Base License
+Customer name                 : Base License
+Quantity of licenses          : 1
+Type of license               : Full
+License issue date            : 06-Aug-2014
+License expiry date           : N/A
+Features included             : EPSR-MASTER, IPv6Basic, LAG-FULL, MLDSnoop,
+                                No-License-Lock, OSPF-64, RADIUS-100, RIP,
+                                VRRP
+
+Index                         : 2
+License name                  : AT-FL-x610-01
+Customer name                 : C.A.R.T. Elettronica srl
+Quantity of licenses          : 2
+Type of license               : Full
+License issue date            : 29-Jan-2014
+License expiry date           : N/A
+Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
+                                VRF-LITE, VRF-LITE-63
+"""]
+
+    cert_file = 'demo.csv'
+    cert_url = 'tftp://{0}/{1}'.format(socket.gethostbyname(socket.getfqdn()), cert_file)
+    false_cert_url = 'http://{0}/{1}'.format(socket.gethostbyname(socket.getfqdn()), cert_file)
+    label = 'AT-FL-x610-01'
+    key = 'jkRaT0PvfUf/M7VhxAzdAZLB/RcX95VNU3xIOwW0aKi9FSOFtJ5otefLbZur0aAQ7xr2JT88N7U='
+
+    setup_dut(dut)
+
+    setup_test_certificate(dut, cert_file, label, key, tftp_server=True)
+    set_cmd = 'license certificate {0}'.format(cert_url)
+    delete_cmd = 'no license {0}'.format(label)
+
+    dut.add_cmd({'cmd': 'show license', 'state':0, 'action':'PRINT','args': output_0})
+    dut.add_cmd({'cmd': set_cmd       , 'state':0, 'action':'SET_STATE','args': [1]})
+    dut.add_cmd({'cmd': 'show license', 'state':1, 'action':'PRINT','args': output_1})
+    dut.add_cmd({'cmd': delete_cmd    , 'state':1, 'action':'SET_STATE','args': [2]})
+    dut.add_cmd({'cmd': 'show license', 'state':2, 'action':'PRINT','args': output_0})
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    d.open()
+    with pytest.raises(KeyError) as excinfo:
+        d.license.set_license(certificate=false_cert_url)
+    assert label not in d.license.keys()
+    d.license.set_license(certificate=cert_url)
+    assert label in d.license.keys()
+    assert d.license[label]['features'] != ''
+    assert d.license[label]['releases'] == ''
+    d.license.delete(label=label)
+    assert label not in d.license.keys()
+    d.close()
+
+    clean_test_environment(dut, cert_file)
+
+
+def test_release_license(dut, log_level):
     output_0 = ["""
 OEM Territory : ATI USA
 Software Licenses
@@ -293,26 +379,25 @@ Release                       : 5.4.4
 
     cert_file = 'demo.csv'
     cert_url = 'tftp://{0}/{1}'.format(socket.gethostbyname(socket.getfqdn()), cert_file)
-    false_cert_url = 'http://{0}/demo1.csv'.format(socket.gethostbyname(socket.getfqdn()))
-    name = '5.4.4-rl'
+    label = '5.4.4-rl'
+    key = 'dummykeydummykeydummykeydummykeydummykeydummykeydummykeydummykeydummykeydumm'
 
     setup_dut(dut)
-    setup_test_release_license(dut, cert_file, tftp_server=True)
 
+    setup_test_certificate(dut, cert_file, label, key, tftp_server=True)
     set_cmd = 'license certificate {0}'.format(cert_url)
+
     dut.add_cmd({'cmd': 'show license', 'state':0, 'action':'PRINT','args': output_0})
     dut.add_cmd({'cmd': set_cmd       , 'state':0, 'action':'SET_STATE','args': [1]})
     dut.add_cmd({'cmd': 'show license', 'state':1, 'action':'PRINT','args': output_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
-    with pytest.raises(KeyError) as excinfo:
-        d.license.set_license(certificate=false_cert_url)
-    assert name not in d.license.keys()
+    assert label not in d.license.keys()
     d.license.set_license(certificate=cert_url)
     if (dut.mode == 'emulated'):
-        assert name in d.license.keys()
-        assert d.license[name]['features'] == ''
-        assert d.license[name]['releases'] != ''
+        assert label in d.license.keys()
+        assert d.license[label]['features'] == ''
+        assert d.license[label]['releases'] != ''
     d.close()
 
-    clean_test_release_license(dut, cert_file)
+    clean_test_environment(dut, cert_file)

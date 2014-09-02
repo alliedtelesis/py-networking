@@ -132,7 +132,7 @@ class awp_license(Feature):
                            '\s+Type\s+of\s+license\s+:\s+(?P<type>[^\s]+)\s+'
                            '\s+License\s+issue\s+date\s+:\s+(?P<issue>[^\s]+)\s+'
                            '\s+License\s+expiry\s+date\s+:\s+(?P<expire>[^\s]+)\s+'
-                           '\s+Features\s+included\s+:\s+(?P<list>[^\n]+)\s+'
+                           '\s+Features\s+included\s+:\s+(?P<list>[^\n\r]+)\s+'
                           )
         ifre2 = re.compile('\s+(?P<index>\d+)\s+'
                            '\s+License\s+name\s+:\s+(?P<name>[^\n]+)\s+'
@@ -141,19 +141,25 @@ class awp_license(Feature):
                            '\s+Type\s+of\s+license\s+:\s+(?P<type>[^\s]+)\s+'
                            '\s+License\s+issue\s+date\s+:\s+(?P<issue>[^\s]+)\s+'
                            '\s+License\s+expiry\s+date\s+:\s+(?P<expire>[^\s]+)\s+'
-                           '\s+Release\s+:\s+(?P<version>[^\n]+)\s+'
+                           '\s+Release\s+:\s+(?P<version>[^\n\r]+)\s+'
                           )
         for line in self._device.cmd("show license").split('Index                         :'):
             self._d.log_debug("\nLine {0}".format(line))
             m = ifre1.match(line)
             if m:
                 key = m.group('name')
+                fflist = line.split(': ')[-1]
+                fflist = fflist.replace(' ', '')
+                fflist = fflist.replace('\n', '')
+                fflist = fflist.replace('\r', '')
+                fflist = fflist.replace(',', ', ')
+                self._d.log_debug("\nSplitted is {0}\n".format(fflist))
                 self._license[key] = {'customer': m.group('customer'),
                                       'quantity': m.group('quantity'),
                                       'type': m.group('type'),
                                       'issue_date': m.group('issue'),
                                       'expire_date': m.group('expire'),
-                                      'features': m.group('list'),
+                                      'features': fflist,
                                       'releases': ''
                                      }
             m = ifre2.match(line)

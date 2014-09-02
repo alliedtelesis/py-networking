@@ -179,7 +179,7 @@ Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
     assert label not in d.license.keys()
     d.license.set_license(label=label, key=key)
     assert label in d.license.keys()
-    assert d.license[label]['features'] != ''
+    assert d.license[label]['features'] == 'BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT, VRF-LITE, VRF-LITE-63'
     assert d.license[label]['releases'] == ''
     assert (label, {'customer': d.license[label]['customer'], 'quantity': d.license[label]['quantity'], 'type': d.license[label]['type'], 'issue_date': d.license[label]['issue_date'], 'expire_date': d.license[label]['expire_date'], 'features' : d.license[label]['features'], 'releases' : ''}) in d.license.items()
     with pytest.raises(KeyError) as excinfo:
@@ -256,7 +256,7 @@ Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
     assert label not in d.license.keys()
     d.license.set_license(certificate=cert_name)
     assert label in d.license.keys()
-    assert d.license[label]['features'] != ''
+    assert d.license[label]['features'] == 'BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT, VRF-LITE, VRF-LITE-63'
     assert d.license[label]['releases'] == ''
     d.license.delete(label=label)
     assert label not in d.license.keys()
@@ -331,7 +331,7 @@ Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
     assert label not in d.license.keys()
     d.license.set_license(certificate=cert_url)
     assert label in d.license.keys()
-    assert d.license[label]['features'] != ''
+    assert d.license[label]['features'] == 'BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT, VRF-LITE, VRF-LITE-63'
     assert d.license[label]['releases'] == ''
     d.license.delete(label=label)
     assert label not in d.license.keys()
@@ -404,7 +404,7 @@ Release                       : 5.4.4
     if (dut.mode == 'emulated'):
         assert label in d.license.keys()
         assert d.license[label]['features'] == ''
-        assert d.license[label]['releases'] != ''
+        assert d.license[label]['releases'] == '5.4.4'
     d.close()
 
     clean_test_environment(dut, cert_file)

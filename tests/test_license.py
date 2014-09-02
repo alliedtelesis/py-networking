@@ -62,16 +62,18 @@ def tftp_server_for_ever(port, tftp_server_dir):
     server.listen(ip_address, port)
 
 
-def setup_test_certificate(dut, cert_file, label, key, tftp_server=False):
+def setup_test_certificate(dut, cert_file, label, key, mac='', tftp_server=False):
     if (os.path.exists(cert_file) == False):
-        license_entry = '*,{0},{1}\n'.format(label,key)
         myfile = open(cert_file, 'w')
-        myfile.write('# certificate file facsimile\n')
-        myfile.write('# feature licenses\n')
-        myfile.write('000C-25A4-00F0,license_for_IPv6,1234567890abcdefghijklmnopqrstuvwxyz\n')
-        myfile.write(license_entry)
-        myfile.write('# release licenses\n')
-        myfile.write('000C-25A4-00F0,upgrade_to_544rl,ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890\n')
+        myfile.write('# certificate file for tests\n')
+        if (mac == ''):
+           license_entry = '*,{0},{1}\n'.format(label, key)
+           myfile.write('# feature licenses\n')
+           myfile.write(license_entry)
+        else:
+           release_entry = '{0},{1},{2}\n'.format(mac, label, key)
+           myfile.write('# release licenses\n')
+           myfile.write(release_entry)
         myfile.close()
 
     if (tftp_server == True):
@@ -368,8 +370,8 @@ Features included             : EPSR-MASTER, IPv6Basic, MLDSnoop, OSPF-64,
                                 RADIUS-100, RIP, VRRP
 
 Index                         : 2
-License name                  : 5.4.4-rl
-Customer name                 : ABC
+License name                  : rel-544
+Customer name                 : Allied Telesis Int. - EMEA Service LAB - Milan
 Quantity of licenses          : -
 Type of license               : Full
 License issue date            : 01-Oct-2013
@@ -379,12 +381,17 @@ Release                       : 5.4.4
 
     cert_file = 'demo.csv'
     cert_url = 'tftp://{0}/{1}'.format(socket.gethostbyname(socket.getfqdn()), cert_file)
-    label = '5.4.4-rl'
-    key = 'dummykeydummykeydummykeydummykeydummykeydummykeydummykeydummykeydummykeydumm'
+    label = 'rel-544'
+    key = 'iRVj3gJbwguCAW4ueUYE6izn1OhPYxtcMnLXMd3BTw81OFKBQvwio4/aL09QheRGdHV2oglgTb+NGb19aNfQeKSvYceLeDTP'
+    mac_address = 'eccd-6d8d-16a9'
+
+    # Output of key tool:
+    # Certificate created on 2014-09-02 for Allied Telesis Int. - EMEA Service LAB - Milan
+    # eccd-6d8d-16a9, rel-544, iRVj3gJbwguCAW4ueUYE6izn1OhPYxtcMnLXMd3BTw81OFKBQvwio4/aL09QheRGdHV2oglgTb+NGb19aNfQeKSvYceLeDTP
 
     setup_dut(dut)
 
-    setup_test_certificate(dut, cert_file, label, key, tftp_server=True)
+    setup_test_certificate(dut, cert_file, label, key, mac=mac_address, tftp_server=True)
     set_cmd = 'license certificate {0}'.format(cert_url)
 
     dut.add_cmd({'cmd': 'show license', 'state':0, 'action':'PRINT','args': output_0})

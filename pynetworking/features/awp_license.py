@@ -153,7 +153,6 @@ class awp_license(Feature):
                 fflist = fflist.replace('\n', '')
                 fflist = fflist.replace('\r', '')
                 fflist = fflist.replace(',', ', ')
-                self._d.log_debug("\nSplitted is {0}\n".format(fflist))
                 self._license[key] = {'customer': m.group('customer'),
                                       'quantity': m.group('quantity'),
                                       'type': m.group('type'),

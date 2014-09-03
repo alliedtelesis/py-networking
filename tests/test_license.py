@@ -393,18 +393,22 @@ Release                       : 5.4.4
 
     setup_test_certificate(dut, cert_file, label, key, mac=mac_address, tftp_server=True)
     set_cmd = 'license certificate {0}'.format(cert_url)
+    delete_cmd = 'no license {0}'.format(label)
 
     dut.add_cmd({'cmd': 'show license', 'state':0, 'action':'PRINT','args': output_0})
     dut.add_cmd({'cmd': set_cmd       , 'state':0, 'action':'SET_STATE','args': [1]})
     dut.add_cmd({'cmd': 'show license', 'state':1, 'action':'PRINT','args': output_1})
+    dut.add_cmd({'cmd': delete_cmd    , 'state':1, 'action':'SET_STATE','args': [2]})
+    dut.add_cmd({'cmd': 'show license', 'state':2, 'action':'PRINT','args': output_0})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
     assert label not in d.license.keys()
     d.license.set_license(certificate=cert_url)
-    if (dut.mode == 'emulated'):
-        assert label in d.license.keys()
-        assert d.license[label]['features'] == ''
-        assert d.license[label]['releases'] == '5.4.4'
+    assert label in d.license.keys()
+    assert d.license[label]['features'] == ''
+    assert d.license[label]['releases'] == '5.4.4'
+    d.license.delete(label=label)
+    assert label not in d.license.keys()
     d.close()
 
     clean_test_environment(dut, cert_file)

@@ -42,7 +42,7 @@ class awp_mac(Feature):
             raise KeyError('MAC address {0} is already existing'.format(mac))
 
         fwd = 'forward'
-        if (fwd == False):
+        if (forward == False):
            fwd = 'discard'
         set_cmd = 'mac address-table static {0} {1} interface {2} vlan {3}'.format(mac, fwd, interface, vlan)
         cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
@@ -72,7 +72,7 @@ class awp_mac(Feature):
             raise KeyError('MAC address {0} is not existing'.format(mac))
 
         fwd = 'forward'
-        if (fwd == False):
+        if (forward == False):
            fwd = 'discard'
         set_cmd = 'mac address-table static {0} {1} interface {2} vlan {3}'.format(mac, fwd, interface, vlan)
         cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
@@ -137,6 +137,7 @@ class awp_mac(Feature):
         self._update_mac()
         if mac not in self._mac.keys():
             raise KeyError('MAC address {0} does not exist'.format(mac))
+        return self._mac[mac]
 
 
     def _update_mac(self):
@@ -145,7 +146,7 @@ class awp_mac(Feature):
 
         # 1    port1.0.1    0000.cd1d.7eb0   forward   dynamic
 
-        ifre = re.compile('\s+(?P<vlan>\d+)\s+'
+        ifre = re.compile('(?P<vlan>\d+)\s+'
                           '(?P<interface>[^\s]+)\s+'
                           '(?P<mac>[^\s]+)\s+'
                           '(?P<action>[^\s]+)\s+'

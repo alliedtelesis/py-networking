@@ -28,16 +28,7 @@ class awp_mac(Feature):
         self._d.log_info("create MAC address {0} entry".format(mac))
         self._update_mac()
 
-        if (re.match("[0-9a-f]{2}([-:])[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$", mac.lower()) or
-            re.match("[0-9a-f]{4}([.])[0-9a-f]{4}([.])[0-9a-f]{4}", mac.lower())  or
-            re.match("[0-9a-f]{12}", mac.lower())):
-            mac = mac.replace('-', '')
-            mac = mac.replace(':', '')
-            mac = mac.replace('.', '')
-            mac = mac[0:4] + '.' + mac[4:8] + '.' + mac[8:12]
-        else:
-            raise KeyError('MAC address {0} is not valid'.format(mac))
-
+        mac = self._get_dotted_mac(mac)
         if mac in self._d.mac.keys():
             raise KeyError('MAC address {0} is already existing'.format(mac))
 
@@ -58,16 +49,7 @@ class awp_mac(Feature):
         self._d.log_info("update MAC address {0} entry".format(mac))
         self._update_mac()
 
-        if (re.match("[0-9a-f]{2}([-:])[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$", mac.lower()) or
-            re.match("[0-9a-f]{4}([.])[0-9a-f]{4}([.])[0-9a-f]{4}", mac.lower())  or
-            re.match("[0-9a-f]{12}", mac.lower())):
-            mac = mac.replace('-', '')
-            mac = mac.replace(':', '')
-            mac = mac.replace('.', '')
-            mac = mac[0:4] + '.' + mac[4:8] + '.' + mac[8:12]
-        else:
-            raise KeyError('MAC address {0} is not valid'.format(mac))
-
+        mac = self._get_dotted_mac(mac)
         if mac not in self._d.mac.keys():
             raise KeyError('MAC address {0} is not existing'.format(mac))
 
@@ -90,36 +72,31 @@ class awp_mac(Feature):
         if (mac == ''):
             self._d.log_info("remove all the entries")
             del_cmd = 'clear mac address-table'
+            cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
+                            {'cmd': 'conf t', 'prompt':'\(config\)\#'},
+                            {'cmd': del_cmd , 'prompt':'\(config\)\#'},
+                            {'cmd': chr(26) , 'prompt':'\#'}
+                           ]}
+            self._device.cmd(cmds, cache=False, flush_cache=True)
         else:
             self._d.log_info("remove {0}".format(mac))
-            if (re.match("[0-9a-f]{2}([-:])[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$", mac.lower()) or
-                re.match("[0-9a-f]{4}([.])[0-9a-f]{4}([.])[0-9a-f]{4}", mac.lower())  or
-                re.match("[0-9a-f]{12}", mac.lower())):
-                mac = mac.replace('-', '')
-                mac = mac.replace(':', '')
-                mac = mac.replace('.', '')
-                mac = mac[0:4] + '.' + mac[4:8] + '.' + mac[8:12]
-            else:
-                raise KeyError('MAC address {0} is not valid'.format(mac))
+            mac = self._get_dotted_mac(mac)
             if mac not in self._d.mac.keys():
                 raise KeyError('mac {0} is not existing'.format(mac))
-            if self._d.mac[mac].type == 'dynamic':
+            if self._d.mac[mac]['type'] == 'dynamic':
                 raise KeyError('cannot remove a dynamic entry')
 
-            fwd = 'forward'
-            if self._d.mac[mac]['forward'] == False:
-                fwd = 'discard'
+            fwd = self._d.mac[mac]['action']
             interface = self._d.mac[mac]['interface']
             vlan = self._d.mac[mac]['vlan']
             del_cmd = 'no mac address-table static {0} {1} interface {2} vlan {3}'.format(mac, fwd, interface, vlan)
+            cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
+                            {'cmd': 'conf t', 'prompt':'\(config\)\#'},
+                            {'cmd': del_cmd , 'prompt':'\(config\)\#'},
+                            {'cmd': chr(26) , 'prompt':'\#'}
+                           ]}
+            self._device.cmd(cmds, cache=False, flush_cache=True)
 
-        cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
-                        {'cmd': 'conf t', 'prompt':'\(config\)\#'},
-                        {'cmd': del_cmd , 'prompt':'\(config\)\#'},
-                        {'cmd': chr(26) , 'prompt':'\#'}
-                       ]}
-
-        self._device.cmd(cmds, cache=False, flush_cache=True)
         self._update_mac()
 
 
@@ -135,9 +112,23 @@ class awp_mac(Feature):
 
     def __getitem__(self, mac):
         self._update_mac()
-        if mac not in self._mac.keys():
+        dotted_mac = self._get_dotted_mac(mac)
+        if dotted_mac not in self._mac.keys():
             raise KeyError('MAC address {0} does not exist'.format(mac))
-        return self._mac[mac]
+        return self._mac[dotted_mac]
+
+
+    def _get_dotted_mac(self, mac):
+        if (re.match("[0-9a-f]{2}([-:])[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$", mac.lower()) or
+            re.match("[0-9a-f]{4}([.])[0-9a-f]{4}([.])[0-9a-f]{4}", mac.lower())  or
+            re.match("[0-9a-f]{12}", mac.lower())):
+            mac = mac.replace('-', '')
+            mac = mac.replace(':', '')
+            mac = mac.replace('.', '')
+            mac = mac[0:4] + '.' + mac[4:8] + '.' + mac[8:12]
+        else:
+            raise KeyError('MAC address {0} is not valid'.format(mac))
+        return mac
 
 
     def _update_mac(self):
@@ -145,7 +136,6 @@ class awp_mac(Feature):
         self._mac = OrderedDict()
 
         # 1    port1.0.1    0000.cd1d.7eb0   forward   dynamic
-
         ifre = re.compile('(?P<vlan>\d+)\s+'
                           '(?P<interface>[^\s]+)\s+'
                           '(?P<mac>[^\s]+)\s+'

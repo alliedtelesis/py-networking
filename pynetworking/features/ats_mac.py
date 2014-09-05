@@ -76,9 +76,9 @@ class ats_mac(Feature):
             # self._device.cmd(cmds, cache=False, flush_cache=True)
             self._d.log_info("remove all the static entries")
             cmds = {'cmds':[{'cmd': 'conf'  , 'prompt':'\(config\)\#'}]}
-            keys = self._d.mac.keys()
+            keys = self._mac.keys()
             for key in keys:
-                mac_item = self._d.mac[key]
+                mac_item = self._mac[key]
                 if mac_item['type'] == 'static':
                     vlan_cmd = 'interface vlan {0}'.format(mac_item['vlan'])
                     del_cmd = 'no bridge address {0}'.format(key)

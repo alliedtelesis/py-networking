@@ -70,9 +70,21 @@ class ats_mac(Feature):
         self._update_mac()
 
         if (mac == ''):
-            self._d.log_info("remove all the entries")
-            del_cmd = 'clear bridge'
-            cmds = {'cmds':[{'cmd': del_cmd , 'prompt':'\#'}]}
+            # self._d.log_info("remove all the dynamic entries")
+            # del_cmd = 'clear bridge'
+            # cmds = {'cmds':[{'cmd': del_cmd , 'prompt':'\#'}]}
+            # self._device.cmd(cmds, cache=False, flush_cache=True)
+            self._d.log_info("remove all the static entries")
+            cmds = {'cmds':[{'cmd': 'conf'  , 'prompt':'\(config\)\#'}]}
+            keys = self._d.mac.keys()
+            for key in keys:
+                mac_item = self._d.mac[key]
+                if mac_item['type'] == 'static':
+                    vlan_cmd = 'interface vlan {0}'.format(mac_item['vlan'])
+                    del_cmd = 'no bridge address {0}'.format(key)
+                    cmds['cmds'].append({'cmd': vlan_cmd, 'prompt':'\(config-if\)\#'})
+                    cmds['cmds'].append({'cmd': del_cmd , 'prompt':'\(config-if\)\#'})
+            cmds['cmds'].append({'cmd': chr(26) , 'prompt':'\#'})
             self._device.cmd(cmds, cache=False, flush_cache=True)
         else:
             self._d.log_info("remove {0}".format(mac))
@@ -145,3 +157,14 @@ class ats_mac(Feature):
                                   'type': m.group('type')
                                  }
         self._d.log_debug("mac {0}".format(pformat(json.dumps(self._mac))))
+
+
+    def _check_static_entry_presence(self):
+        self._d.log_info("_check_static_entry_presence")
+
+        keys = self._d.mac.keys()
+        for key in keys:
+            if self._d.mac[key]['type'] == 'static':
+                return True
+
+        return False

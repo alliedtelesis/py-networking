@@ -316,17 +316,31 @@ Aging time is 300 sec
 
   Vlan        Mac Address       Port     Type
 -------- --------------------- ------ ----------
+   1       00:00:cd:24:04:8b    1/e1   dynamic
+   1       00:00:cd:37:0a:d3    1/e1   dynamic
+   1       4a:4b:4c:4d:4e:4f    1/e1   static
 """]
 
     setup_dut(dut)
 
-    dut.add_cmd({'cmd': 'show bridge address-table', 'state':0, 'action':'PRINT'    ,'args': output_0})
-    dut.add_cmd({'cmd': 'clear bridge'             , 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'show bridge address-table', 'state':1, 'action':'PRINT'    ,'args': output_1})
+    mac_address = '4a4b.4c4d.4e4f'
+    dotted_mac = mac_address
+    ifc = '1/e1'
+    create_cmd = 'bridge address ' + dotted_mac + ' ethernet ' + ifc + ' permanent'
+    delete_cmd = 'no bridge address ' + dotted_mac
+
+    dut.add_cmd({'cmd': 'show bridge address-table', 'state':0, 'action':'PRINT'     ,'args': output_0})
+    dut.add_cmd({'cmd': 'interface vlan 1'         , 'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
+    dut.add_cmd({'cmd': create_cmd                 , 'state':0, 'action':'SET_STATE' ,'args':[1]})
+    dut.add_cmd({'cmd': 'show bridge address-table', 'state':1, 'action':'PRINT'     ,'args': output_1})
+    dut.add_cmd({'cmd': 'interface vlan 1'         , 'state':1, 'action':'SET_PROMPT','args':['(config-if)#']})
+    dut.add_cmd({'cmd': delete_cmd                 , 'state':1, 'action':'SET_STATE' ,'args':[2]})
+    dut.add_cmd({'cmd': 'show bridge address-table', 'state':2, 'action':'PRINT'     ,'args': output_0})
 
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
-    assert d.mac.keys() != []
+    d.mac.create(mac_address, ifc)
+    assert d.mac._check_static_entry_presence() == True
     d.mac.delete()
-    assert d.mac.keys() == []
+    assert d.mac._check_static_entry_presence() == False
     d.close()

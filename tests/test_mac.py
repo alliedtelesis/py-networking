@@ -245,22 +245,32 @@ def test_delete_all(dut, log_level):
     output_0 = ["""
 VLAN port             mac            fwd
 1    port1.0.1    0000.cd1d.7eb0   forward   dynamic
-1    port1.0.1    00c0.ee82.fa41   forward   dynamic
 1    port1.0.1    1803.73b5.06ea   forward   dynamic
 """]
     output_1 = ["""
 VLAN port             mac            fwd
+1    port1.0.1    0000.cd1d.7eb0   forward   dynamic
+1    port1.0.2    4a4b.4c4d.4e4f   forward   static
+1    port1.0.1    1803.73b5.06ea   forward   dynamic
 """]
 
     setup_dut(dut)
 
-    dut.add_cmd({'cmd': 'show mac address-table' , 'state':0, 'action':'PRINT'    ,'args': output_0})
-    dut.add_cmd({'cmd': 'clear mac address-table', 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'show mac address-table' , 'state':1, 'action':'PRINT'    ,'args': output_1})
+    mac_address = '4a4b.4c4d.4e4f'
+    dotted_mac = mac_address
+    ifc = 'port1.0.2'
+    create_cmd = 'mac address-table static ' + dotted_mac + ' forward interface ' + ifc + ' vlan 1'
+
+    dut.add_cmd({'cmd': 'show mac address-table'        , 'state':0, 'action':'PRINT'    ,'args': output_0})
+    dut.add_cmd({'cmd': create_cmd                      , 'state':0, 'action':'SET_STATE','args':[1]})
+    dut.add_cmd({'cmd': 'show mac address-table'        , 'state':1, 'action':'PRINT'    ,'args': output_1})
+    dut.add_cmd({'cmd': 'clear mac address-table static', 'state':1, 'action':'SET_STATE','args':[2]})
+    dut.add_cmd({'cmd': 'show mac address-table'        , 'state':2, 'action':'PRINT'    ,'args': output_0})
 
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
-    assert d.mac.keys() != []
+    d.mac.create(mac_address, ifc)
+    assert d.mac._check_static_entry_presence() == True
     d.mac.delete()
-    assert d.mac.keys() == []
+    assert d.mac._check_static_entry_presence() == False
     d.close()

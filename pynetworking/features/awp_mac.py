@@ -154,3 +154,14 @@ class awp_mac(Feature):
                                   'type': m.group('type')
                                  }
         self._d.log_debug("mac {0}".format(pformat(json.dumps(self._mac))))
+
+
+    def _check_static_entry_presence(self):
+        self._d.log_info("_check_static_entry_presence")
+        self._update_mac()
+
+        for key in self._d.mac.keys():
+            if self._d.mac[key]['type'] == 'static' and self._d.mac[key]['interface'] != 'CPU':
+                return True
+
+        return False

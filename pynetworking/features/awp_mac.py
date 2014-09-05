@@ -141,6 +141,7 @@ class awp_mac(Feature):
                           '(?P<mac>[^\s]+)\s+'
                           '(?P<action>[^\s]+)\s+'
                           '(?P<type>[^\s]+)')
+        self._device.cmd("terminal length 0")
         for line in self._device.cmd("show mac address-table").split('\n'):
             self._d.log_debug("line is {0}".format(line))
             m = ifre.match(line)

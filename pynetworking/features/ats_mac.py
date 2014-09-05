@@ -75,6 +75,13 @@ class ats_mac(Feature):
             cmds = {'cmds':[{'cmd': del_cmd , 'prompt':'\#'}]}
             self._device.cmd(cmds, cache=False, flush_cache=True)
         else:
+            self._d.log_info("remove {0}".format(mac))
+            mac = self._get_dotted_mac(mac)
+            if mac not in self._d.mac.keys():
+                raise KeyError('mac {0} is not existing'.format(mac))
+            if self._d.mac[mac]['type'] == 'dynamic':
+                raise KeyError('cannot remove a dynamic entry')
+            vlan = self._d.mac[mac]['vlan']
             vlan_cmd = 'interface vlan {0}'.format(vlan)
             del_cmd = 'no bridge address {0}'.format(mac)
             cmds = {'cmds':[{'cmd': 'conf'  , 'prompt':'\(config\)\#'},
@@ -123,7 +130,7 @@ class ats_mac(Feature):
         self._mac = OrderedDict()
 
         #   1       00:00:cd:24:04:8b    1/e1   dynamic
-        ifre = re.compile('\s(?P<vlan>\d+)\s+'
+        ifre = re.compile('\s+(?P<vlan>\d+)\s+'
                           '(?P<mac>[^\s]+)\s+'
                           '(?P<interface>[^\s]+)\s+'
                           '(?P<type>[^\s]+)')
@@ -131,10 +138,10 @@ class ats_mac(Feature):
             self._d.log_debug("line is {0}".format(line))
             m = ifre.match(line)
             if m:
-                key = _get_dotted_mac(m.group('mac'))
+                key = self._get_dotted_mac(m.group('mac'))
                 self._mac[key] = {'vlan': m.group('vlan'),
                                   'interface': m.group('interface'),
-                                  'action': m.group('action'),
-                                  'type': 'forward'
+                                  'action': 'forward',
+                                  'type': m.group('type')
                                  }
         self._d.log_debug("mac {0}".format(pformat(json.dumps(self._mac))))

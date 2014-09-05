@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from pynetworking import Feature
 from pprint import pformat
+from time import sleep
 import re
 import json
 try:
@@ -71,10 +72,9 @@ class awp_mac(Feature):
 
         if (mac == ''):
             self._d.log_info("remove all the entries")
-            del_cmd = 'clear mac address-table'
+            del_cmd = 'clear mac address-table static'
             cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
-                            {'cmd': 'conf t', 'prompt':'\(config\)\#'},
-                            {'cmd': del_cmd , 'prompt':'\(config\)\#'},
+                            {'cmd': del_cmd , 'prompt':'\#'},
                             {'cmd': chr(26) , 'prompt':'\#'}
                            ]}
             self._device.cmd(cmds, cache=False, flush_cache=True)
@@ -142,6 +142,7 @@ class awp_mac(Feature):
                           '(?P<action>[^\s]+)\s+'
                           '(?P<type>[^\s]+)')
         self._device.cmd("terminal length 0")
+        sleep(1)
         for line in self._device.cmd("show mac address-table").split('\n'):
             self._d.log_debug("line is {0}".format(line))
             m = ifre.match(line)

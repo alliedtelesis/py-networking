@@ -23,6 +23,26 @@ class awp_mac(Feature):
 
     def load_config(self, config):
         self._d.log_info("loading config")
+        self._mac = OrderedDict()
+
+        # 1    port1.0.1    0000.cd1d.7eb0   forward   dynamic
+        ifre = re.compile('(?P<vlan>\d+)\s+'
+                          '(?P<interface>[^\s]+)\s+'
+                          '(?P<mac>[^\s]+)\s+'
+                          '(?P<action>[^\s]+)\s+'
+                          '(?P<type>[^\s]+)')
+
+        for line in config.split('\n'):
+            self._d.log_debug("line is {0}".format(line))
+            m = ifre.match(line)
+            if m:
+                key = m.group('mac')
+                self._mac[key] = {'vlan': m.group('vlan'),
+                                  'interface': m.group('interface'),
+                                  'action': m.group('action'),
+                                  'type': m.group('type')
+                                 }
+        self._d.log_info(self._mac)
 
 
     def create(self, mac, interface, forward=True, vlan=1):
@@ -72,10 +92,12 @@ class awp_mac(Feature):
 
         if (mac == ''):
             self._d.log_info("remove all the entries")
-            del_cmd = 'clear mac address-table static'
-            cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
-                            {'cmd': del_cmd , 'prompt':'\#'},
-                            {'cmd': chr(26) , 'prompt':'\#'}
+            del_cmd_1 = 'clear mac address-table dynamic'
+            del_cmd_2 = 'clear mac address-table static'
+            cmds = {'cmds':[{'cmd': 'enable' , 'prompt':'\#'},
+                            {'cmd': del_cmd_1, 'prompt':'\#'},
+                            {'cmd': del_cmd_2, 'prompt':'\#'},
+                            {'cmd': chr(26)  , 'prompt':'\#'}
                            ]}
             self._device.cmd(cmds, cache=False, flush_cache=True)
         else:

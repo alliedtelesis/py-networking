@@ -22,6 +22,25 @@ class ats_mac(Feature):
 
     def load_config(self, config):
         self._d.log_info("loading config")
+        self._mac = OrderedDict()
+
+        #   1       00:00:cd:24:04:8b    1/e1   dynamic
+        ifre = re.compile('\s+(?P<vlan>\d+)\s+'
+                          '(?P<mac>[^\s]+)\s+'
+                          '(?P<interface>[^\s]+)\s+'
+                          '(?P<type>[^\s]+)')
+
+        for line in config.split('\n'):
+            self._d.log_debug("line is {0}".format(line))
+            m = ifre.match(line)
+            if m:
+                key = self._get_dotted_mac(m.group('mac'))
+                self._mac[key] = {'vlan': m.group('vlan'),
+                                  'interface': m.group('interface'),
+                                  'action': 'forward',
+                                  'type': m.group('type')
+                                 }
+        self._d.log_info(self._mac)
 
 
     def create(self, mac, interface, forward=True, vlan=1):
@@ -70,10 +89,14 @@ class ats_mac(Feature):
         self._update_mac()
 
         if (mac == ''):
-            # self._d.log_info("remove all the dynamic entries")
-            # del_cmd = 'clear bridge'
-            # cmds = {'cmds':[{'cmd': del_cmd , 'prompt':'\#'}]}
-            # self._device.cmd(cmds, cache=False, flush_cache=True)
+            # In spite the dynamic entries are removed, the device will learn them again.
+            # Indeed the MAC address table is left empty for a very short time.
+            self._d.log_info("remove all the dynamic entries")
+            del_cmd = 'clear bridge'
+            cmds = {'cmds':[{'cmd': del_cmd , 'prompt':'\#'}]}
+            self._device.cmd(cmds, cache=False, flush_cache=True)
+
+            # The static entries have to be removed one by one, given that there is no global command.
             self._d.log_info("remove all the static entries")
             cmds = {'cmds':[{'cmd': 'conf'  , 'prompt':'\(config\)\#'}]}
             keys = self._mac.keys()

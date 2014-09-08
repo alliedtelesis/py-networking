@@ -31,6 +31,18 @@ Serial number:   1122334455
 
 
 def test_nodots_mac_crud(dut, log_level):
+    output_a = ["""
+interface range ethernet 1/e(1-16)
+spanning-tree portfast
+exit
+interface vlan 1
+bridge address 00:00:cd:24:04:8b ethernet 1/e1
+bridge address 00:00:cd:37:0a:d3 ethernet 1/e1
+exit
+interface vlan 1
+ip address 10.17.39.252 255.255.255.0
+exit
+"""]
     output_0 = ["""
 Aging time is 300 sec
 
@@ -71,6 +83,7 @@ Aging time is 300 sec
     update_cmd = 'bridge address ' + dotted_mac + ' ethernet ' + ifu + ' permanent'
     delete_cmd = 'no bridge address ' + dotted_mac
 
+    dut.add_cmd({'cmd': 'show running-config'      , 'state':0, 'action':'PRINT'     ,'args': output_a})
     dut.add_cmd({'cmd': 'show bridge address-table', 'state':0, 'action':'PRINT'     ,'args': output_0})
     dut.add_cmd({'cmd': 'interface vlan 1'         , 'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
     dut.add_cmd({'cmd': create_cmd                 , 'state':0, 'action':'SET_STATE' ,'args':[1]})
@@ -103,6 +116,7 @@ Aging time is 300 sec
         d.mac.update(missing_mac_address, ifu)
     d.mac.update(mac_address, ifu)
     assert dotted_mac in d.mac.keys()
+    assert d.mac[mac_address]['interface'] == ifu
     assert (dotted_mac, {'vlan': '1', 'interface': ifu, 'action': 'forward', 'type': 'static'}) in d.mac.items()
 
     with pytest.raises(KeyError) as excinfo:
@@ -168,10 +182,8 @@ Aging time is 300 sec
     d.open()
     assert dotted_mac not in d.mac.keys()
     d.mac.create(mac_address, ifc)
-    assert dotted_mac in d.mac.keys()
     assert (dotted_mac, {'vlan': '1', 'interface': ifc, 'action': 'forward', 'type': 'static'}) in d.mac.items()
     d.mac.update(mac_address, ifu)
-    assert dotted_mac in d.mac.keys()
     assert (dotted_mac, {'vlan': '1', 'interface': ifu, 'action': 'forward', 'type': 'static'}) in d.mac.items()
     d.mac.delete(mac_address)
     assert dotted_mac not in d.mac.keys()
@@ -230,10 +242,8 @@ Aging time is 300 sec
     d.open()
     assert dotted_mac not in d.mac.keys()
     d.mac.create(mac_address, ifc)
-    assert dotted_mac in d.mac.keys()
     assert (dotted_mac, {'vlan': '1', 'interface': ifc, 'action': 'forward', 'type': 'static'}) in d.mac.items()
     d.mac.update(mac_address, ifu)
-    assert dotted_mac in d.mac.keys()
     assert (dotted_mac, {'vlan': '1', 'interface': ifu, 'action': 'forward', 'type': 'static'}) in d.mac.items()
     d.mac.delete(mac_address)
     assert dotted_mac not in d.mac.keys()
@@ -292,10 +302,8 @@ Aging time is 300 sec
     d.open()
     assert dotted_mac not in d.mac.keys()
     d.mac.create(mac_address, ifc)
-    assert dotted_mac in d.mac.keys()
     assert (dotted_mac, {'vlan': '1', 'interface': ifc, 'action': 'forward', 'type': 'static'}) in d.mac.items()
     d.mac.update(mac_address, ifu)
-    assert dotted_mac in d.mac.keys()
     assert (dotted_mac, {'vlan': '1', 'interface': ifu, 'action': 'forward', 'type': 'static'}) in d.mac.items()
     d.mac.delete(mac_address)
     assert dotted_mac not in d.mac.keys()

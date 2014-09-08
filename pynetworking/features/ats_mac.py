@@ -24,21 +24,25 @@ class ats_mac(Feature):
         self._d.log_info("loading config")
         self._mac = OrderedDict()
 
-        #   1       00:00:cd:24:04:8b    1/e1   dynamic
-        ifre = re.compile('\s+(?P<vlan>\d+)\s+'
-                          '(?P<mac>[^\s]+)\s+'
-                          '(?P<interface>[^\s]+)\s+'
-                          '(?P<type>[^\s]+)')
+        #interface vlan 1
+        #bridge address aa:bb:99:99:99:99 ethernet 1/e16
+        vlan = 0
+        ifre1 = re.compile('interface\s+vlan\s+(?P<vlan>\d+)')
+        ifre2 = re.compile('bridge\s+address\s+(?P<mac>[^\s]+)\s+'
+                           'ethernet\s+(?P<interface>[^\s]+)')
 
         for line in config.split('\n'):
             self._d.log_debug("line is {0}".format(line))
-            m = ifre.match(line)
+            m = ifre1.match(line)
+            if m:
+                vlan = m.group('vlan')
+            m = ifre2.match(line)
             if m:
                 key = self._get_dotted_mac(m.group('mac'))
-                self._mac[key] = {'vlan': m.group('vlan'),
+                self._mac[key] = {'vlan': vlan,
                                   'interface': m.group('interface'),
                                   'action': 'forward',
-                                  'type': m.group('type')
+                                  'type': 'static'
                                  }
         self._d.log_info(self._mac)
 

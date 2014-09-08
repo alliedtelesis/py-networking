@@ -25,12 +25,11 @@ class awp_mac(Feature):
         self._d.log_info("loading config")
         self._mac = OrderedDict()
 
-        # 1    port1.0.1    0000.cd1d.7eb0   forward   dynamic
-        ifre = re.compile('(?P<vlan>\d+)\s+'
-                          '(?P<interface>[^\s]+)\s+'
-                          '(?P<mac>[^\s]+)\s+'
+        #mac address-table static xxxx.xxxx.xxxx forward interface port1.0.1 vlan 1
+        ifre = re.compile('mac\s+address-table\s+static\s+(?P<mac>[^\s]+)\s+'
                           '(?P<action>[^\s]+)\s+'
-                          '(?P<type>[^\s]+)')
+                          'interface\s+(?P<interface>[^\s]+)\s+'
+                          'vlan\s+(?P<vlan>\d+)')
 
         for line in config.split('\n'):
             self._d.log_debug("line is {0}".format(line))
@@ -40,7 +39,7 @@ class awp_mac(Feature):
                 self._mac[key] = {'vlan': m.group('vlan'),
                                   'interface': m.group('interface'),
                                   'action': m.group('action'),
-                                  'type': m.group('type')
+                                  'type': 'static'
                                  }
         self._d.log_info(self._mac)
 
@@ -63,6 +62,7 @@ class awp_mac(Feature):
                          {'cmd': chr(26) , 'prompt': '\#'}
                         ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
+        sleep(1)
         self._update_mac()
 
 
@@ -84,6 +84,7 @@ class awp_mac(Feature):
                          {'cmd': chr(26) , 'prompt': '\#'}
                         ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
+        sleep(1)
         self._update_mac()
 
 
@@ -120,6 +121,7 @@ class awp_mac(Feature):
                            ]}
             self._device.cmd(cmds, cache=False, flush_cache=True)
 
+        sleep(1)
         self._update_mac()
 
 
@@ -165,7 +167,6 @@ class awp_mac(Feature):
                           '(?P<action>[^\s]+)\s+'
                           '(?P<type>[^\s]+)')
         self._device.cmd("terminal length 0")
-        sleep(1)
         for line in self._device.cmd("show mac address-table").split('\n'):
             self._d.log_debug("line is {0}".format(line))
             m = ifre.match(line)

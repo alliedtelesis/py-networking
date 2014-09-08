@@ -16,6 +16,22 @@ Build type : RELEASE
 
 
 def test_nodots_mac_crud(dut, log_level):
+    output_a = ["""
+!
+interface port1.0.1-1.0.50
+ switchport
+ switchport mode access
+!
+vlan database
+vlan 1
+exit
+!
+mac address-table static 0000.cd1d.7eb0 forward interface port1.0.1 vlan 1
+mac address-table static 00c0.ee82.fa41 forward interface port1.0.1 vlan 1
+mac address-table static 1803.73b5.06ea forward interface port1.0.1 vlan 1
+!
+end
+"""]
     output_0 = ["""
 VLAN port             mac            fwd
 1    port1.0.1    0000.cd1d.7eb0   forward   dynamic
@@ -48,6 +64,7 @@ VLAN port             mac            fwd
     update_cmd = 'mac address-table static ' + dotted_mac + ' discard interface ' + ifu + ' vlan 1'
     delete_cmd = 'no mac address-table static ' + dotted_mac + ' discard interface ' + ifu + ' vlan 1'
 
+    dut.add_cmd({'cmd': 'show running-config'   , 'state':0, 'action':'PRINT'    ,'args': output_a})
     dut.add_cmd({'cmd': 'show mac address-table', 'state':0, 'action':'PRINT'    ,'args': output_0})
     dut.add_cmd({'cmd': create_cmd              , 'state':0, 'action':'SET_STATE','args':[1]})
     dut.add_cmd({'cmd': 'show mac address-table', 'state':1, 'action':'PRINT'    ,'args': output_1})
@@ -70,6 +87,7 @@ VLAN port             mac            fwd
         d.mac.create(mac_address, ifc)
     d.mac.update(mac_address, ifu, forward=False)
     assert dotted_mac in d.mac.keys()
+    assert d.mac[dotted_mac]['interface'] == ifu
     assert (dotted_mac, {'vlan': '1', 'interface': ifu, 'action': 'discard', 'type': 'static'}) in d.mac.items()
     with pytest.raises(KeyError) as excinfo:
         d.mac.update(missing_mac_address, ifu, forward=False)
@@ -125,10 +143,8 @@ VLAN port             mac            fwd
     d.open()
     assert dotted_mac not in d.mac.keys()
     d.mac.create(mac_address, ifc, forward=False)
-    assert dotted_mac in d.mac.keys()
     assert (dotted_mac, {'vlan': '1', 'interface': ifc, 'action': 'discard', 'type': 'static'}) in d.mac.items()
     d.mac.update(mac_address, ifu, forward=False)
-    assert dotted_mac in d.mac.keys()
     assert (dotted_mac, {'vlan': '1', 'interface': ifu, 'action': 'discard', 'type': 'static'}) in d.mac.items()
     d.mac.delete(mac_address)
     assert dotted_mac not in d.mac.keys()
@@ -178,10 +194,8 @@ VLAN port             mac            fwd
     d.open()
     assert dotted_mac not in d.mac.keys()
     d.mac.create(mac_address, ifc)
-    assert dotted_mac in d.mac.keys()
     assert (dotted_mac, {'vlan': '1', 'interface': ifc, 'action': 'forward', 'type': 'static'}) in d.mac.items()
     d.mac.update(mac_address, ifu, forward=False)
-    assert dotted_mac in d.mac.keys()
     assert (dotted_mac, {'vlan': '1', 'interface': ifu, 'action': 'discard', 'type': 'static'}) in d.mac.items()
     d.mac.delete(mac_address)
     assert dotted_mac not in d.mac.keys()
@@ -231,10 +245,8 @@ VLAN port             mac            fwd
     d.open()
     assert dotted_mac not in d.mac.keys()
     d.mac.create(mac_address, ifc)
-    assert dotted_mac in d.mac.keys()
     assert (dotted_mac, {'vlan': '1', 'interface': ifc, 'action': 'forward', 'type': 'static'}) in d.mac.items()
     d.mac.update(mac_address, ifu, forward=False)
-    assert dotted_mac in d.mac.keys()
     assert (dotted_mac, {'vlan': '1', 'interface': ifu, 'action': 'discard', 'type': 'static'}) in d.mac.items()
     d.mac.delete(mac_address)
     assert dotted_mac not in d.mac.keys()

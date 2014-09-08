@@ -48,7 +48,7 @@ class ats_mac(Feature):
         self._update_mac()
 
         mac = self._get_dotted_mac(mac)
-        if mac in self._d.mac.keys():
+        if mac in self._mac.keys():
             raise KeyError('MAC address {0} is already existing'.format(mac))
         if forward == False:
             raise KeyError('Discard option not supported')
@@ -69,7 +69,7 @@ class ats_mac(Feature):
         self._update_mac()
 
         mac = self._get_dotted_mac(mac)
-        if mac not in self._d.mac.keys():
+        if mac not in self._mac.keys():
             raise KeyError('MAC address {0} is not existing'.format(mac))
         if forward == False:
             raise KeyError('Discard option not supported')
@@ -112,11 +112,11 @@ class ats_mac(Feature):
         else:
             self._d.log_info("remove {0}".format(mac))
             mac = self._get_dotted_mac(mac)
-            if mac not in self._d.mac.keys():
+            if mac not in self._mac.keys():
                 raise KeyError('mac {0} is not existing'.format(mac))
-            if self._d.mac[mac]['type'] == 'dynamic':
+            if self._mac[mac]['type'] == 'dynamic':
                 raise KeyError('cannot remove a dynamic entry')
-            vlan = self._d.mac[mac]['vlan']
+            vlan = self._mac[mac]['vlan']
             vlan_cmd = 'interface vlan {0}'.format(vlan)
             del_cmd = 'no bridge address {0}'.format(mac)
             cmds = {'cmds':[{'cmd': 'conf'  , 'prompt':'\(config\)\#'},
@@ -184,10 +184,11 @@ class ats_mac(Feature):
 
     def _check_static_entry_presence(self):
         self._d.log_info("_check_static_entry_presence")
+        self._update_mac()
 
-        keys = self._d.mac.keys()
+        keys = self._mac.keys()
         for key in keys:
-            if self._d.mac[key]['type'] == 'static':
+            if self._mac[key]['type'] == 'static':
                 return True
 
         return False

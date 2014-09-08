@@ -50,7 +50,7 @@ class awp_mac(Feature):
         self._update_mac()
 
         mac = self._get_dotted_mac(mac)
-        if mac in self._d.mac.keys():
+        if mac in self._mac.keys():
             raise KeyError('MAC address {0} is already existing'.format(mac))
 
         fwd = 'forward'
@@ -71,7 +71,7 @@ class awp_mac(Feature):
         self._update_mac()
 
         mac = self._get_dotted_mac(mac)
-        if mac not in self._d.mac.keys():
+        if mac not in self._mac.keys():
             raise KeyError('MAC address {0} is not existing'.format(mac))
 
         fwd = 'forward'
@@ -103,14 +103,15 @@ class awp_mac(Feature):
         else:
             self._d.log_info("remove {0}".format(mac))
             mac = self._get_dotted_mac(mac)
-            if mac not in self._d.mac.keys():
+            if mac not in self._mac.keys():
                 raise KeyError('mac {0} is not existing'.format(mac))
-            if self._d.mac[mac]['type'] == 'dynamic':
+            entry = self._mac[mac]
+            if entry['type'] == 'dynamic':
                 raise KeyError('cannot remove a dynamic entry')
 
-            fwd = self._d.mac[mac]['action']
-            interface = self._d.mac[mac]['interface']
-            vlan = self._d.mac[mac]['vlan']
+            fwd = entry['action']
+            interface = entry['interface']
+            vlan = entry['vlan']
             del_cmd = 'no mac address-table static {0} {1} interface {2} vlan {3}'.format(mac, fwd, interface, vlan)
             cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
                             {'cmd': 'conf t', 'prompt':'\(config\)\#'},
@@ -182,8 +183,9 @@ class awp_mac(Feature):
         self._d.log_info("_check_static_entry_presence")
         self._update_mac()
 
-        for key in self._d.mac.keys():
-            if self._d.mac[key]['type'] == 'static' and self._d.mac[key]['interface'] != 'CPU':
+        keys = self._mac.keys()
+        for key in keys:
+            if self._mac[key]['type'] == 'static' and self._mac[key]['interface'] != 'CPU':
                 return True
 
         return False

@@ -31,6 +31,207 @@ Serial number:
     """]})
 
 
+def test_dashed_vlan(dut, log_level):
+    output_sv_0 = ["""
+
+Vlan       Name                   Ports                Type     Authorization
+---- ----------------- --------------------------- ------------ -------------
+ 1           1         1/e(1-48),1/g(1-4),          other       Required
+                       2/e(1-48),2/g(1-4),
+                       3/e(1-48),3/g(1-4),
+                       4/e(1-48),4/g(1-4),
+                       5/e(1-48),5/g(1-4),
+                       6/e(1-48),6/g(1-4),ch(1-8)
+    """]
+    output_sr_0 = ["""
+interface vlan 1
+ip address 10.17.39.252 255.255.255.0
+name default_vlan
+exit
+hostname nac_dev
+ip ssh server
+    """]
+
+    output_sv_1 = ["""
+
+Vlan       Name                   Ports                Type     Authorization
+---- ----------------- --------------------------- ------------ -------------
+ 1           1         1/e(1-48),1/g(1-4),          other       Required
+                       2/e(1-48),2/g(1-4),
+                       3/e(1-48),3/g(1-4),
+                       4/e(1-48),4/g(1-4),
+                       5/e(1-48),5/g(1-4),
+                       6/e(1-48),6/g(1-4),ch(1-8)
+ 21          21                                     permanent     Required
+ 22          22                                     permanent     Required
+ 23          23                                     permanent     Required
+ 24          24                                     permanent     Required
+ 25          25                                     permanent     Required
+    """]
+    output_sr_1 = ["""
+vlan database
+vlan 21-25
+exit
+interface vlan 21
+name "twentyone"
+exit
+interface vlan 22
+name "zweiundzwanzig"
+exit
+interface vlan 23
+name "vingttrois"
+exit
+interface vlan 24
+name "ventiquattro"
+exit
+interface vlan 25
+name "vienticinco"
+exit
+interface vlan 1
+ip address 10.17.39.252 255.255.255.0
+name default_vlan
+exit
+hostname nac_dev
+ip ssh server
+    """]
+
+    setup_dut(dut)
+    dut.add_cmd({'cmd': 'show vlan'          , 'state':0 , 'action':'PRINT'     ,'args': output_sv_0})
+    dut.add_cmd({'cmd': 'show running-config', 'state':0 , 'action':'PRINT'     ,'args': output_sr_0})
+    dut.add_cmd({'cmd': 'vlan database'      , 'state':0 , 'action':'SET_PROMPT','args':['(config-vlan)#']})
+    dut.add_cmd({'cmd': 'vlan database'      , 'state':0 , 'action':'SET_STATE' ,'args':[1]})
+    dut.add_cmd({'cmd': 'vlan 21-25'         , 'state':1 , 'action':'SET_STATE' ,'args':[2]})
+    dut.add_cmd({'cmd': 'show vlan'          , 'state':2 , 'action':'PRINT'     ,'args':output_sv_1})
+    dut.add_cmd({'cmd': 'show running-config', 'state':2 , 'action':'PRINT'     ,'args':output_sr_1})
+    dut.add_cmd({'cmd': 'interface vlan 21'  , 'state':2 , 'action':'SET_PROMPT','args':['(config-if)#']})
+    dut.add_cmd({'cmd': 'interface vlan 21'  , 'state':2 , 'action':'SET_STATE' ,'args':[3]})
+    dut.add_cmd({'cmd': 'name twentyone'     , 'state':3 , 'action':'SET_STATE' ,'args':[4]})
+    # dut.add_cmd({'cmd': 'show vlan'          , 'state':4 , 'action':'PRINT'     ,'args':output_sv_1})
+    # dut.add_cmd({'cmd': 'show running-config', 'state':4 , 'action':'PRINT'     ,'args':output_sr_1})
+    dut.add_cmd({'cmd': 'interface vlan 22'  , 'state':4 , 'action':'SET_PROMPT','args':['(config-if)#']})
+    dut.add_cmd({'cmd': 'interface vlan 22'  , 'state':4 , 'action':'SET_STATE' ,'args':[5]})
+    dut.add_cmd({'cmd': 'name zweiundzwanzig', 'state':5 , 'action':'SET_STATE' ,'args':[6]})
+    # dut.add_cmd({'cmd': 'show vlan'          , 'state':6 , 'action':'PRINT'     ,'args':output_sv_1})
+    # dut.add_cmd({'cmd': 'show running-config', 'state':6 , 'action':'PRINT'     ,'args':output_sr_1})
+    dut.add_cmd({'cmd': 'interface vlan 23'  , 'state':6 , 'action':'SET_PROMPT','args':['(config-if)#']})
+    dut.add_cmd({'cmd': 'interface vlan 23'  , 'state':6 , 'action':'SET_STATE' ,'args':[7]})
+    dut.add_cmd({'cmd': 'name vingttrois'    , 'state':7 , 'action':'SET_STATE' ,'args':[8]})
+    # dut.add_cmd({'cmd': 'show vlan'          , 'state':7 , 'action':'PRINT'     ,'args':output_sv_1})
+    # dut.add_cmd({'cmd': 'show running-config', 'state':7 , 'action':'PRINT'     ,'args':output_sr_1})
+    dut.add_cmd({'cmd': 'interface vlan 24'  , 'state':8 , 'action':'SET_PROMPT','args':['(config-if)#']})
+    dut.add_cmd({'cmd': 'interface vlan 24'  , 'state':8 , 'action':'SET_STATE' ,'args':[9]})
+    dut.add_cmd({'cmd': 'name ventiquattro'  , 'state':9 , 'action':'SET_STATE' ,'args':[10]})
+    # dut.add_cmd({'cmd': 'show vlan'          , 'state':10, 'action':'PRINT'     ,'args':output_sv_1})
+    # dut.add_cmd({'cmd': 'show running-config', 'state':10, 'action':'PRINT'     ,'args':output_sr_1})
+    dut.add_cmd({'cmd': 'interface vlan 25'  , 'state':10, 'action':'SET_PROMPT','args':['(config-if)#']})
+    dut.add_cmd({'cmd': 'interface vlan 25'  , 'state':10, 'action':'SET_STATE' ,'args':[11]})
+    dut.add_cmd({'cmd': 'name vienticinco'   , 'state':11, 'action':'SET_STATE' ,'args':[12]})
+    dut.add_cmd({'cmd': 'show vlan'          , 'state':12, 'action':'PRINT'     ,'args':output_sv_1})
+    dut.add_cmd({'cmd': 'show running-config', 'state':12, 'action':'PRINT'     ,'args':output_sr_1})
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d.open()
+    # d.vlan.create(21)
+    # # d.vlan.create(22)
+    # # d.vlan.create(23)
+    # # d.vlan.create(24)
+    # # d.vlan.create(25)
+    d.vlan.create(21, name='twentyone')
+    d.vlan.create(22, name='zweiundzwanzig')
+    d.vlan.create(23, name='vingttrois')
+    d.vlan.create(24, name='ventiquattro')
+    d.vlan.create(25, name='vienticinco')
+    # d.vlan.update(21, name='twentyone')
+    # d.vlan.update(22, name='zweiundzwanzig')
+    # d.vlan.update(23, name='vingttrois')
+    # d.vlan.update(24, name='ventiquattro')
+    # d.vlan.update(25, name='vienticinco')
+    assert '21' in d.vlan
+    assert '22' in d.vlan
+    assert '23' in d.vlan
+    assert '24' in d.vlan
+    assert '25' in d.vlan
+    d.close()
+
+
+def test_two_vlans(dut, log_level):
+    output_sv_0 = ["""
+
+Vlan       Name                   Ports                Type     Authorization
+---- ----------------- --------------------------- ------------ -------------
+ 1           1         1/e(1-48),1/g(1-4),          other       Required
+                       2/e(1-48),2/g(1-4),
+                       3/e(1-48),3/g(1-4),
+                       4/e(1-48),4/g(1-4),
+                       5/e(1-48),5/g(1-4),
+                       6/e(1-48),6/g(1-4),ch(1-8)
+    """]
+    output_sr_0 = ["""
+interface vlan 1
+ip address 10.17.39.252 255.255.255.0
+name default_vlan
+exit
+hostname nac_dev
+ip ssh server
+    """]
+
+    output_sv_1 = ["""
+
+Vlan       Name                   Ports                Type     Authorization
+---- ----------------- --------------------------- ------------ -------------
+ 1           1         1/e(1-48),1/g(1-4),          other       Required
+                       2/e(1-48),2/g(1-4),
+                       3/e(1-48),3/g(1-4),
+                       4/e(1-48),4/g(1-4),
+                       5/e(1-48),5/g(1-4),
+                       6/e(1-48),6/g(1-4),ch(1-8)
+ 21          21                                     permanent     Required
+ 22          22                                     permanent     Required
+    """]
+    output_sr_1 = ["""
+vlan database
+vlan 21,22
+exit
+interface vlan 21
+name "twentyone"
+exit
+interface vlan 1
+ip address 10.17.39.252 255.255.255.0
+name default_vlan
+exit
+hostname nac_dev
+ip ssh server
+    """]
+
+    setup_dut(dut)
+    dut.add_cmd({'cmd': 'show vlan'          , 'state':0 , 'action':'PRINT'     ,'args': output_sv_0})
+    dut.add_cmd({'cmd': 'show running-config', 'state':0 , 'action':'PRINT'     ,'args': output_sr_0})
+    dut.add_cmd({'cmd': 'vlan database'      , 'state':0 , 'action':'SET_PROMPT','args':['(config-vlan)#']})
+    dut.add_cmd({'cmd': 'vlan database'      , 'state':0 , 'action':'SET_STATE' ,'args':[1]})
+    dut.add_cmd({'cmd': 'vlan 21'         , 'state':1 , 'action':'SET_STATE' ,'args':[2]})
+    dut.add_cmd({'cmd': 'show vlan'          , 'state':2 , 'action':'PRINT'     ,'args':output_sv_1})
+    dut.add_cmd({'cmd': 'show running-config', 'state':2 , 'action':'PRINT'     ,'args':output_sr_1})
+    dut.add_cmd({'cmd': 'interface vlan 21'  , 'state':2 , 'action':'SET_PROMPT','args':['(config-if)#']})
+    dut.add_cmd({'cmd': 'interface vlan 21'  , 'state':2 , 'action':'SET_STATE' ,'args':[3]})
+    dut.add_cmd({'cmd': 'name twentyone'     , 'state':3 , 'action':'SET_STATE' ,'args':[4]})
+    dut.add_cmd({'cmd': 'show vlan'          , 'state':4 , 'action':'PRINT'     ,'args':output_sv_1})
+    dut.add_cmd({'cmd': 'show running-config', 'state':4 , 'action':'PRINT'     ,'args':output_sr_1})
+    # dut.add_cmd({'cmd': 'interface vlan 22'  , 'state':4 , 'action':'SET_PROMPT','args':['(config-if)#']})
+    # dut.add_cmd({'cmd': 'interface vlan 22'  , 'state':4 , 'action':'SET_STATE' ,'args':[5]})
+    # dut.add_cmd({'cmd': 'name zweiundzwanzig', 'state':5 , 'action':'SET_STATE' ,'args':[6]})
+    # dut.add_cmd({'cmd': 'show vlan'          , 'state':6 , 'action':'PRINT'     ,'args':output_sv_1})
+    # dut.add_cmd({'cmd': 'show running-config', 'state':6 , 'action':'PRINT'     ,'args':output_sr_1})
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d.open()
+    d.vlan.create(21, name='twentyone')
+    # d.vlan.create(22)
+    # d.vlan.create(22, name='zweiundzwanzig')
+    # d.vlan.update(21, name='twentyone')
+    # d.vlan.update(22, name='zweiundzwanzig')
+    assert '21' in d.vlan
+    # assert '22' in d.vlan
+    d.close()
+
+
 def test_get_vlan(dut, log_level):
     setup_dut(dut)
     dut.add_cmd({'cmd':'show interfaces status', 'state':0, 'action':'PRINT','args':["""

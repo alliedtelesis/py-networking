@@ -10,6 +10,7 @@ Contents
     file
     interface
     license
+    mac
     user
     vlan
     cookbook

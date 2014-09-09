@@ -9,8 +9,8 @@ Contents
     facts
     file
     interface
-    license
     mac
+    license
     user
     vlan
     cookbook

@@ -11,10 +11,12 @@ features:
   user: awp_user
   file: awp_file
   license: awp_license
+  mac: awp_mac
 {% elif os == 'ats' %}
   interface: ats_interface
   vlan: ats_vlan
   user: ats_user
   file: ats_file
+  mac: ats_mac
 {% endif %}
 

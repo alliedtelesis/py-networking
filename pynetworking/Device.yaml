@@ -10,6 +10,7 @@ features:
   interface: awp_interface
   user: awp_user
   file: awp_file
+  license: awp_license
 {% elif os == 'ats' %}
   interface: ats_interface
   vlan: ats_vlan

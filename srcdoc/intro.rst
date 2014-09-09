@@ -115,13 +115,16 @@ Next evolutions of PN will overcome the above explained problem by enabling the 
 
         enable
         configure terminal
+        crypto key generate hostkey rsa
         service ssh ip
+        ssh server allow-users <username>
         exit
         write
     
     On ATS devices instead type::
 
         configure
+        crypto key generate rsa
         ip ssh server
         exit
         copy running-config startup-config

@@ -73,20 +73,12 @@ class VlanConfigLexer(object):
                     result[vid] = {'name': vid}
                 continue
             if tok.type == 'VLANRANGE':
-                for vid in tok.value.split(','):
-                    print ("vid is \n")
-                    print vid
-                    if '-' in vid:
-                        a = int(vid.split('-')[0])
-                        b = int(vid.split('-')[1]) + 1
-                        print(a)
-                        print("\nboundaries\n")
-                        print(b)
-                        for c in range(a, b):
-                            d = "{0}".format(c)
-                            result[d] = {'name': d}
-                    else:
-                        result[vid] = {'name': vid}
+                vid = tok.value
+                a = int(vid.split('-')[0])
+                b = int(vid.split('-')[1]) + 1
+                for c in range(a, b):
+                    d = "{0}".format(c)
+                    result[d] = {'name': d}
                 continue
             if tok.type == 'name':
                 result[tok.value[0]]['name'] = tok.value[1]

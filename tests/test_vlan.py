@@ -14,6 +14,146 @@ Build type : RELEASE
     """]})
 
 
+def test_two_vlans(dut, log_level):
+    output_show_rcfg = ["""
+!
+interface port1.0.1-1.0.50
+ switchport
+ switchport mode access
+!
+vlan database
+vlan 10,21-22
+exit
+interface vlan 21
+name "twentyone"
+exit
+interface vlan 22
+name "zweiundzwanzig"
+exit
+interface vlan 1
+ip address 10.17.39.253 255.255.255.0
+name default
+exit
+!
+end
+    """]
+    output_show_vlan = ["""
+VLAN ID  Name            Type    State   Member ports
+                                         (u)-Untagged, (t)-Tagged
+======= ================ ======= ======= ====================================
+1       default          STATIC  ACTIVE  port1.0.1(u) port1.0.2(u) port1.0.3(u)
+                                         port1.0.4(u) port1.0.5(u) port1.0.6(u)
+                                         port1.0.7(u) port1.0.8(u) port1.0.9(u)
+                                         port1.0.10(u) port1.0.11(u)
+                                         port1.0.12(t) port1.0.13(u)
+                                         port1.0.14(u) port1.0.15(u)
+                                         port1.0.16(u) port1.0.17(u)
+                                         port1.0.18(u) port1.0.19(u)
+                                         port1.0.20(t) port1.0.21(u)
+                                         port1.0.22(u) port1.0.23(u)
+                                         port1.0.24(u) port1.0.25(u)
+                                         port1.0.26(u) port1.0.27(u)
+                                         port1.0.28(u) port1.0.29(u)
+                                         port1.0.31(u)
+                                         port1.0.32(u) port1.0.33(u)
+                                         port1.0.34(u) port1.0.35(u)
+                                         port1.0.36(u) port1.0.37(u)
+                                         port1.0.38(u) port1.0.39(u)
+                                         port1.0.40(u) port1.0.41(u)
+                                         port1.0.44(u) port1.0.45(u)
+                                         port1.0.46(u) port1.0.47(u)
+                                         port1.0.48(u) port1.0.49(u)
+                                         port1.0.50(u)
+21      twentyone        STATIC  ACTIVE  port1.0.42(t) port1.0.43(t)
+22      zweiundzwanzig   STATIC  ACTIVE  port1.0.42(t) port1.0.43(t)
+    """]
+
+    setup_dut(dut)
+    dut.add_cmd({'cmd': 'show running-config', 'state':0 , 'action':'PRINT'     ,'args': output_show_rcfg})
+    dut.add_cmd({'cmd': 'show vlan all'      , 'state':0 , 'action':'PRINT'     ,'args': output_show_vlan})
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d.open()
+    assert '21' in d.vlan
+    assert d.vlan[21]['name'] == 'twentyone'
+    assert ('22', {'current state': 'ACTIVE', 'name': 'zweiundzwanzig', 'untagged': (), 'tagged': ('1.0.42', '1.0.43'), 'type': 'STATIC'}) in d.vlan.items()
+    with pytest.raises(TypeError) as excinfo:
+        d.vlan[d.vlan]
+    str(d.vlan)
+    d.close()
+
+
+def test_three_vlans(dut, log_level):
+    output_show_rcfg = ["""
+!
+interface port1.0.1-1.0.50
+ switchport
+ switchport mode access
+!
+vlan database
+vlan 21-22,30
+exit
+interface vlan 21
+name "twentyone"
+exit
+interface vlan 22
+name "zweiundzwanzig"
+exit
+interface vlan 30
+name "trenta"
+exit
+interface vlan 1
+ip address 10.17.39.253 255.255.255.0
+name default
+exit
+!
+end
+    """]
+    output_show_vlan = ["""
+VLAN ID  Name            Type    State   Member ports
+                                         (u)-Untagged, (t)-Tagged
+======= ================ ======= ======= ====================================
+1       default          STATIC  ACTIVE  port1.0.1(u) port1.0.2(u) port1.0.3(u)
+                                         port1.0.4(u) port1.0.5(u) port1.0.6(u)
+                                         port1.0.7(u) port1.0.8(u) port1.0.9(u)
+                                         port1.0.10(u) port1.0.11(u)
+                                         port1.0.12(t) port1.0.13(u)
+                                         port1.0.14(u) port1.0.15(u)
+                                         port1.0.16(u) port1.0.17(u)
+                                         port1.0.18(u) port1.0.19(u)
+                                         port1.0.20(t) port1.0.21(u)
+                                         port1.0.22(u) port1.0.23(u)
+                                         port1.0.24(u) port1.0.25(u)
+                                         port1.0.26(u) port1.0.27(u)
+                                         port1.0.28(u) port1.0.29(u)
+                                         port1.0.31(u)
+                                         port1.0.32(u) port1.0.33(u)
+                                         port1.0.34(u) port1.0.35(u)
+                                         port1.0.36(u) port1.0.37(u)
+                                         port1.0.38(u) port1.0.39(u)
+                                         port1.0.40(u) port1.0.41(u)
+                                         port1.0.44(u) port1.0.45(u)
+                                         port1.0.46(u) port1.0.47(u)
+                                         port1.0.48(u) port1.0.49(u)
+                                         port1.0.50(u)
+21      twentyone        STATIC  ACTIVE  port1.0.42(t) port1.0.43(t)
+22      zweiundzwanzig   STATIC  ACTIVE  port1.0.42(t) port1.0.43(t)
+30      trenta           STATIC  ACTIVE  port1.0.42(t) port1.0.43(t)
+    """]
+
+    setup_dut(dut)
+    dut.add_cmd({'cmd': 'show running-config', 'state':0 , 'action':'PRINT'     ,'args': output_show_rcfg})
+    dut.add_cmd({'cmd': 'show vlan all'      , 'state':0 , 'action':'PRINT'     ,'args': output_show_vlan})
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d.open()
+    assert '21' in d.vlan
+    assert d.vlan[21]['name'] == 'twentyone'
+    assert '22' in d.vlan
+    assert d.vlan[22]['name'] == 'zweiundzwanzig'
+    assert '30' in d.vlan
+    assert d.vlan[30]['name'] == 'trenta'
+    d.close()
+
+
 def test_get_vlan(dut, log_level):
     setup_dut(dut)
     dut.add_cmd({'cmd':'show running-config', 'state':0, 'action': 'PRINT','args':["""

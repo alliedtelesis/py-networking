@@ -6,10 +6,12 @@ class VlanConfigLexer(object):
     states = (
         ('vlandb','exclusive'),
         ('vlaninterface','exclusive'),
-    )
+        # ('vlanrange','exclusive'),
+)
 
     tokens = (
         'VLANLIST',
+        'VLANRANGE',
         'name',
     )
 
@@ -23,9 +25,42 @@ class VlanConfigLexer(object):
 
     def t_vlandb_VLANLIST(self, t):
         r'vlan\s+[^\n]+'
+        # r'vlan\s+\d+(\,\d+)+'
+        print ("BEFORE SPLIT\n")
+        print (t.value)
         t.value = re.split('\s+',t.value)[1]
+        print ("AFTER SPLIT\n")
+        print (t.value)
+        print ("DONE\n")
         return t
 
+    def t_vlandb_VLANRANGE(self, t):
+        r'vlan\s+\d+\-\d+'
+        print ("BEFORE SPLIT\n")
+        print (t.value)
+        t.value = re.split('\s+',t.value)[1]
+        print ("AFTER SPLITTED\n")
+        print (t.value)
+        print ("DONE\n")
+        # t.lexer.push_state('vlanrange')
+        # # str = t.value
+        # # a = str.split('-')[0]
+        # # b = str.split('-')[1]
+        # print ("RESPLIT\n")
+        # print (a)
+        # print ("\n")
+        # print (b)
+        # print ("RESPLIT\n")
+        # t.value = a + ',' + b
+        # t.lexer.push_state('vlanrange')
+        # t.lexer.id = t.value
+        return t
+
+    # def t_vlanid_vlanrange_newline(self, t):
+    #    r'\n+'
+    #    t.lexer.lineno += len(t.value)
+    #    t.lexer.pop_state()
+    #
     def t_INITIAL_VLANINTERFACE_START(self, t):
         r'interface\s+vlan\s+\d+'
         t.lexer.begin('vlaninterface')
@@ -62,12 +97,27 @@ class VlanConfigLexer(object):
         self.lexer.input(data)
         result = {'1': {'name':'1'}}
         for tok in self.lexer:
+            print("tok is")
+            print(tok)
+            # if tok.type == 'VLANLIST':
+            #     for vid in tok.value.split(','):
+            #         result[vid] = {'name': vid}
+            #     continue
             if tok.type == 'VLANLIST':
                 for vid in tok.value.split(','):
-                    result[vid] = {'name': vid}
+                    print ("vid is \n")
+                    print vid
+                    if '-' in vid:
+                        a = vid.split('-')[0]
+                        b = vid.split('-')[1]
+                        result[a] = {'name': a}
+                        result[b] = {'name': b}
+                    else:
+                        result[vid] = {'name': vid}
                 continue
+            if tok.type == 'VLANRANGE':
+                print('TO BE WRITTEN')
             if tok.type == 'name':
                 result[tok.value[0]]['name'] = tok.value[1]
 
         return result
-

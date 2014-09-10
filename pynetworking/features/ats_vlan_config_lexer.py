@@ -26,35 +26,35 @@ class VlanConfigLexer(object):
     def t_vlandb_VLANLIST(self, t):
         r'vlan\s+[^\n]+'
         # r'vlan\s+\d+(\,\d+)+'
-        print ("BEFORE SPLIT\n")
-        print (t.value)
+        # print ("BEFORE SPLIT\n")
+        # print (t.value)
         t.value = re.split('\s+',t.value)[1]
-        print ("AFTER SPLIT\n")
-        print (t.value)
-        print ("DONE\n")
+        # print ("AFTER SPLIT\n")
+        # print (t.value)
+        # print ("DONE\n")
         return t
 
-    def t_vlandb_VLANRANGE(self, t):
-        r'vlan\s+\d+\-\d+'
-        print ("BEFORE SPLIT\n")
-        print (t.value)
-        t.value = re.split('\s+',t.value)[1]
-        print ("AFTER SPLITTED\n")
-        print (t.value)
-        print ("DONE\n")
-        # t.lexer.push_state('vlanrange')
-        # # str = t.value
-        # # a = str.split('-')[0]
-        # # b = str.split('-')[1]
-        # print ("RESPLIT\n")
-        # print (a)
-        # print ("\n")
-        # print (b)
-        # print ("RESPLIT\n")
-        # t.value = a + ',' + b
-        # t.lexer.push_state('vlanrange')
-        # t.lexer.id = t.value
-        return t
+    # def t_vlandb_VLANRANGE(self, t):
+    #     r'vlan\s+\d+\-\d+'
+    #     print ("BEFORE SPLIT\n")
+    #     print (t.value)
+    #     t.value = re.split('\s+',t.value)[1]
+    #     print ("AFTER SPLITTED\n")
+    #     print (t.value)
+    #     print ("DONE\n")
+    #     # t.lexer.push_state('vlanrange')
+    #     # # str = t.value
+    #     # # a = str.split('-')[0]
+    #     # # b = str.split('-')[1]
+    #     # print ("RESPLIT\n")
+    #     # print (a)
+    #     # print ("\n")
+    #     # print (b)
+    #     # print ("RESPLIT\n")
+    #     # t.value = a + ',' + b
+    #     # t.lexer.push_state('vlanrange')
+    #     # t.lexer.id = t.value
+    #     return t
 
     # def t_vlanid_vlanrange_newline(self, t):
     #    r'\n+'
@@ -108,10 +108,18 @@ class VlanConfigLexer(object):
                     print ("vid is \n")
                     print vid
                     if '-' in vid:
-                        a = vid.split('-')[0]
-                        b = vid.split('-')[1]
-                        result[a] = {'name': a}
-                        result[b] = {'name': b}
+                        # a = vid.split('-')[0]
+                        # b = vid.split('-')[1]
+                        # result[a] = {'name': a}
+                        # result[b] = {'name': b}
+                        a = int(vid.split('-')[0])
+                        b = int(vid.split('-')[1]) + 1
+                        print(a)
+                        print("\nboundaries\n")
+                        print(b)
+                        for c in range(a, b):
+                            d = "{0}".format(c)
+                            result[d] = {'name': d}
                     else:
                         result[vid] = {'name': vid}
                 continue

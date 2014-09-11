@@ -9,6 +9,7 @@ Contents
     facts
     file
     interface
+    mac
     license
     user
     vlan

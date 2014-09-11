@@ -64,10 +64,17 @@ class VlanConfigLexer(object):
         for tok in self.lexer:
             if tok.type == 'VLANLIST':
                 for vid in tok.value.split(','):
-                    result[vid] = {'name': vid}
+                    if '-' in vid:
+                        a = int(vid.split('-')[0])
+                        b = int(vid.split('-')[1]) + 1
+                        for c in range(a, b):
+                            d = "{0}".format(c)
+                            result[d] = {'name': d}
+                        continue
+                    else:
+                        result[vid] = {'name': vid}
                 continue
             if tok.type == 'name':
                 result[tok.value[0]]['name'] = tok.value[1]
 
         return result
-

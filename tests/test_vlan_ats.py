@@ -274,6 +274,76 @@ ip ssh server
     d.close()
 
 
+def test_vlan_dashed_list(dut, log_level):
+    output_show_rcfg = ["""
+vlan database
+vlan 21-23,25,30-33
+exit
+interface vlan 21
+name twentyone
+exit
+interface vlan 22
+name zweiundzwanzig
+exit
+interface vlan 23
+name vingttrois
+exit
+interface vlan 25
+name venticinque
+exit
+interface vlan 1
+ip address 10.17.39.252 255.255.255.0
+name default_vlan
+exit
+hostname nac_dev
+ip ssh server
+    """]
+    output_show_vlan = ["""
+
+Vlan       Name                   Ports                Type     Authorization
+---- ----------------- --------------------------- ------------ -------------
+ 1      default_vlan   1/e(1-48),1/g(1-4),          other       Required
+                       2/e(1-48),2/g(1-4),
+                       3/e(1-48),3/g(1-4),
+                       4/e(1-48),4/g(1-4),
+                       5/e(1-48),5/g(1-4),
+                       6/e(1-48),6/g(1-4),ch(1-8)
+ 21      twentyone                                  permanent     Required
+ 22   zweiundzwanzig                                permanent     Required
+ 23   vingttrois                                    permanent     Required
+ 25   venticinque                                   permanent     Required
+ 30          30                                     permanent     Required
+ 31          31                                     permanent     Required
+ 32          32                                     permanent     Required
+ 33          33                                     permanent     Required
+    """]
+
+    setup_dut(dut)
+    dut.add_cmd({'cmd': 'show running-config', 'state':0 , 'action':'PRINT'     ,'args': output_show_rcfg})
+    dut.add_cmd({'cmd': 'show vlan'          , 'state':0 , 'action':'PRINT'     ,'args': output_show_vlan})
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d.open()
+    with pytest.raises(TypeError) as excinfo:
+        d.vlan[d.vlan]
+    assert d.vlan[21]['name'] == 'twentyone'
+    assert ('22', {'name': 'zweiundzwanzig', 'tagged': [], 'type': 'permanent', 'untagged': []}) in d.vlan.items()
+    assert '23' in d.vlan
+    assert d.vlan[23]['name'] == 'vingttrois'
+    assert '24' not in d.vlan
+    assert '25' in d.vlan
+    assert d.vlan[25]['name'] == 'venticinque'
+    assert '26' not in d.vlan
+    assert '27' not in d.vlan
+    assert '28' not in d.vlan
+    assert '29' not in d.vlan
+    assert '30' in d.vlan
+    assert d.vlan[30]['name'] == '30'
+    assert '31' in d.vlan
+    assert '32' in d.vlan
+    assert '33' in d.vlan
+    d.close()
+
+
 def test_create1(dut, log_level):
     setup_dut(dut)
     dut.add_cmd({'cmd':'show vlan',                  'state':0, 'action':'PRINT','args':["""

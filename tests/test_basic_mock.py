@@ -189,3 +189,32 @@ VLAN ID  Name            Type    State   Member ports
     d.open()
     d.close()
 
+
+def test_ping_failure_1(dut, log_level):
+    setup_dut(dut)
+
+    # Mock a failed ping as the device was unexisting on EVERY instance of the Device class
+    ping_mocker = MagicMock()
+    ping_mocker.return_value = False
+    Device.ping = ping_mocker
+
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    d.open()
+    assert d.ping() == False
+    d.ping.assert_called_once()
+    d.close()
+
+
+def test_ping_failure_2(dut, log_level):
+    setup_dut(dut)
+
+    # Mock a failed ping as the device was unexisting on a particular instance of the Device class
+    ping_mocker = MagicMock()
+    ping_mocker.return_value = False
+
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    d.ping = ping_mocker
+    d.open()
+    assert d.ping() == False
+    d.ping.assert_called_once()
+    d.close()

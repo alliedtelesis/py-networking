@@ -1,8 +1,10 @@
 import pytest
-from pynetworking import Device
+from pynetworking import Device, DeviceException
 from time import sleep
 from paramiko.rsakey import RSAKey
 from mock import MagicMock
+import yaml
+import zmq
 
 
 def setup_dut(dut):
@@ -194,9 +196,9 @@ def test_ping_failure_1(dut, log_level):
     setup_dut(dut)
 
     # Mock a failed ping as the device was unexisting on EVERY instance of the Device class
-    ping_mocker = MagicMock()
-    ping_mocker.return_value = False
-    Device.ping = ping_mocker
+    ping_mck = MagicMock()
+    ping_mck.return_value = False
+    Device.ping = ping_mck
 
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
@@ -209,12 +211,59 @@ def test_ping_failure_2(dut, log_level):
     setup_dut(dut)
 
     # Mock a failed ping as the device was unexisting on a particular instance of the Device class
-    ping_mocker = MagicMock()
-    ping_mocker.return_value = False
+    ping_mck = MagicMock()
+    ping_mck.return_value = False
 
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
-    d.ping = ping_mocker
+    d.ping = ping_mck
     d.open()
     assert d.ping() == False
     d.ping.assert_called_once()
     d.close()
+
+
+def test_load_system(dut, log_level):
+    setup_dut(dut)
+
+    models = {'features': None, 'system': None}
+    yaml_mck = MagicMock()
+    yaml_mck.return_value = models
+    yaml.load = yaml_mck
+
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    with pytest.raises(ImportError) as excinfo:
+        d.open()
+    assert str(excinfo.value) == 'No module named None'
+
+
+def test_load_features(dut, log_level):
+    setup_dut(dut)
+
+    yaml_mck = MagicMock()
+    yaml_mck.return_value = None
+    yaml.load = yaml_mck
+
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    with pytest.raises(AttributeError) as excinfo:
+        d.open()
+    assert str(excinfo.value) == '\'Device\' object has no attribute \'system\''
+
+    models = {'features': None}
+    yaml_mck.return_value = models
+    with pytest.raises(AttributeError) as excinfo:
+        d.open()
+    assert str(excinfo.value) == '\'Device\' object has no attribute \'system\''
+
+
+def test_timeout(dut, log_level):
+    setup_dut(dut)
+
+    # Timeout mocked returning an empty string, as the device had not answered
+    poll_mck = MagicMock()
+    poll_mck.return_value = ''
+    zmq.Poller.poll = poll_mck
+
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    with pytest.raises(DeviceException) as excinfo:
+        d.open()
+    assert str(excinfo.value).startswith("proxy exited with error")

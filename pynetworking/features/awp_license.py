@@ -149,6 +149,7 @@ class awp_license(Feature):
             if m:
                 key = m.group('name')
                 fflist = line.split(': ')[-1]
+                fflist = fflist.split('\r\n\r\n')[0]
                 fflist = fflist.replace(' ', '')
                 fflist = fflist.replace('\n', '')
                 fflist = fflist.replace('\r', '')

@@ -323,10 +323,10 @@ Vlan       Name                   Ports                Type     Authorization
     dut.add_cmd({'cmd': 'show vlan'          , 'state':0 , 'action':'PRINT'     ,'args': output_show_vlan})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
-    assert '21' in d.vlan
+    with pytest.raises(TypeError) as excinfo:
+        d.vlan[d.vlan]
     assert d.vlan[21]['name'] == 'twentyone'
-    assert '22' in d.vlan
-    assert d.vlan[22]['name'] == 'zweiundzwanzig'
+    assert ('22', {'name': 'zweiundzwanzig', 'tagged': [], 'type': 'permanent', 'untagged': []}) in d.vlan.items()
     assert '23' in d.vlan
     assert d.vlan[23]['name'] == 'vingttrois'
     assert '24' not in d.vlan

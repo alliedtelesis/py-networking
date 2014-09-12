@@ -282,6 +282,21 @@ def test_timeout(dut, log_level):
         assert str(excinfo.value).startswith("proxy exited with error")
 
 
+def test_zmq_error(dut, log_level):
+    setup_dut(dut)
+
+    with patch('zmq.Context.socket') as MockClass:
+        # ZMQ undefined error simulated
+        socket_mck = MagicMock()
+        socket_mck.side_effect = zmq.error.ZMQError
+        zmq.Context.socket = socket_mck
+
+        d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+        with pytest.raises(DeviceException) as excinfo:
+            d.open()
+        assert str(excinfo.value) == 'ZMQError ZMQError(\'Undefined error: 0\')'
+
+
 def test_last(dut, log_level):
     setup_dut(dut)
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)

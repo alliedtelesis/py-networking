@@ -279,7 +279,7 @@ def test_timeout(dut, log_level):
         d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
         with pytest.raises(DeviceException) as excinfo:
             d.open()
-        assert str(excinfo.value).startswith("proxy exited with error")
+        assert str(excinfo.value) == 'proxy exited with error (None)'
 
 
 def test_zmq_error(dut, log_level):

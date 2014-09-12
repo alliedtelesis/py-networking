@@ -241,14 +241,21 @@ def test_load_system(dut, log_level):
 def test_load_features(dut, log_level):
     setup_dut(dut)
 
-    # ITEMS [('mac', 'awp_mac'), ('file', 'awp_file'), ('license', 'awp_license'), ('vlan', 'awp_vlan'), ('user', 'awp_user'), ('interface', 'awp_interface')]
-
     with patch('yaml.load') as MockClass:
         yaml_mck = MagicMock()
         yaml_mck.return_value = None
         yaml.load = yaml_mck
 
         d=Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+
+        models = {'system': 'awp_system', 'features': {'dhcp': 'awp_dhcp'}}
+        yaml_mck.return_value = models
+        with pytest.raises(ImportError) as excinfo:
+            d.open()
+        assert str(excinfo.value) == 'No module named awp_dhcp'
+
+        models = None
+        yaml_mck.return_value = models
         with pytest.raises(AttributeError) as excinfo:
             d.open()
         assert str(excinfo.value) == '\'Device\' object has no attribute \'system\''

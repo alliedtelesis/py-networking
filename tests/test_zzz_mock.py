@@ -3,6 +3,7 @@ from pynetworking import Device, DeviceException
 from time import sleep
 from paramiko.rsakey import RSAKey
 from mock import MagicMock
+from mock import patch
 import yaml
 import zmq
 
@@ -258,12 +259,22 @@ def test_load_features(dut, log_level):
 def test_timeout(dut, log_level):
     setup_dut(dut)
 
-    # Timeout mocked returning an empty string, as the device had not answered
-    poll_mck = MagicMock()
-    poll_mck.return_value = ''
-    zmq.Poller.poll = poll_mck
+    with patch('zmq.Poller.poll') as MockClass:
+        # Timeout mocked returning an empty string, as the device had not answered
+        poll_mck = MagicMock()
+        poll_mck.return_value = ''
+        zmq.Poller.poll = poll_mck
 
+        d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+        with pytest.raises(DeviceException) as excinfo:
+            d.open()
+        assert str(excinfo.value).startswith("proxy exited with error")
+
+
+def test_last(dut, log_level):
+    setup_dut(dut)
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
-    with pytest.raises(DeviceException) as excinfo:
-        d.open()
-    assert str(excinfo.value).startswith("proxy exited with error")
+    d.open()
+    d.close()
+
+

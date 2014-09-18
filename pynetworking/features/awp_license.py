@@ -26,6 +26,7 @@ class awp_license(Feature):
         self._update_license()
 
         if not ((label == '' and key == '' and certificate != '') or (label != '' and key != '' and certificate == '')):
+            self._d.log_error("cannot set license")
             raise KeyError('Either label and key or certificate must be given')
 
         if (certificate == ''):

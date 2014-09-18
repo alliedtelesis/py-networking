@@ -3,10 +3,14 @@ from pynetworking import Feature
 from pprint import pformat
 import re
 import json
-import os
 import pytz
 from datetime import datetime, timedelta
 from pytz import timezone
+try:
+    from collections import OrderedDict
+except ImportError: #pragma: no cover
+    from ordereddict import OrderedDict
+
 
 class awp_clock(Feature):
     """
@@ -15,15 +19,12 @@ class awp_clock(Feature):
     def __init__(self, device, **kvargs):
         Feature.__init__(self, device, **kvargs)
         self._d = device
+        self._d._clock = {}
         self._d.log_debug("loading feature")
 
 
     def load_config(self, config):
         self._d.log_info("loading config")
-
-
-    def create(self, name, protocol='http', text='', filename=''):
-        self._d.log_info("create file {0}".format(name))
 
 
     def update(self, dt=None, tz=None):
@@ -41,7 +42,7 @@ class awp_clock(Feature):
             month = dt.strftime('%b')
             year = dt.strftime('%Y')
 
-            self._d.log_info("Setting time={0}:{1}:{2}, date={3}/{4}/{5}".format(hh, mm, ss, day, month, year))
+            self._d.log_info("Setting time={0}:{1}:{2}, date={3}-{4}-{5}".format(hh, mm, ss, day, month, year))
 
             #clock set 14:00:00 25 Jan 2008
             cmd = "clock set {0}:{1}:{2} {3} {4} {5}".format(hh, mm, ss, day, month, year)
@@ -98,25 +99,64 @@ class awp_clock(Feature):
                 cmd = "clock summer-time {0} recurring {1} {2} {3} {4} {5} {6} {7} {8} {9}".format(tz_name, bw, bd, bm, bt, ew, ed, em, et, om)
                 self._d.log_info("Command is {0}".format(cmd))
 
-
-    def delete(self, file_name):
-        self._d.log_info("remove {0}".format(file_name))
+        self._update_clock()
 
 
     def items(self):
-        self._update_file()
-        return self._file.items()
+        self._update_clock()
+        return self._clock.items()
 
 
     def keys(self):
-        self._update_file()
-        return self._file.keys()
+        self._update_clock()
+        return self._clock.keys()
+
+
+    def _update_clock(self):
+        self._d.log_info("_update_clock")
+        self._clock = OrderedDict()
+
+        # Local Time: Thu, 18 Sep 2014 10:21:17 -0400
+        # UTC Time:   Thu, 18 Sep 2014 14:21:17 +0000
+        # Timezone: EDT
+        # Timezone Offset: -05:00
+        # Summer time zone: EDT
+        # Summer time starts: Second Sunday in March at 02:00:00
+        # Summer time ends: First Sunday in November at 02:00:00
+        # Summer time offset: 60 mins
+        # Summer time recurring: Yes
+
+        # username manager privilege 15 password 8 $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0
+        ifre = re.compile('\s+Local\s+Time:\s+(?P<local_time>[^\n]+)\s+'
+                          '\s+UTC\s+Time:\s+(?P<utc_time>[^\n]+)\s+'
+                          '\s+Timezone:\s+(?P<tz_name>[^\n]+)\s+'
+                          '\s+Timezone\s+Offset:\s+(?P<timezone_offset>[^\s]+)\s+'
+                          '\s+Summer\s+time\s+zone:\s+(?P<st_zone>[^\s]+)\s+'
+                          '\s+Summer\s+time\s+starts:\s+(?P<st_start>[^\n]+)\s+'
+                          '\s+Summer\s+time\s+ends:\s+(?P<st_stop>[^\n]+)\s+'
+                          '\s+Summer\s+time\s+offset:\s+(?P<st_offset>\d+)\s+mins\s+'
+                          '\s+Summer\s+time\s+recurring:\s+Yes')
+        output = self._device.cmd("show clock")
+        # output = output.replace('\r','')
+        self._d.log_info("output is {0}".format(output))
+        m = ifre.match(output)
+        if m:
+            self._clock = {'local_time': m.group('local_time'),
+                           'utc_time': m.group('utc_time'),
+                           'timezone_name': m.group('tz_name'),
+                           'timezone_offset': m.group('timezone_offset'),
+                           'timezone_name': m.group('st_zone'),
+                           'summertime_start': m.group('st_start'),
+                           'summertime_end': m.group('st_stop'),
+                           'summertime_offset': m.group('st_offset')
+                          }
 
 
     def _get_begin_dst(self, tz, dt):
         tt = tz._utc_transition_times
         offset = dt.hour
         year = dt.year
+        ret = None
 
         for index in range(len(tt)):
             if tt[index].year >= year:
@@ -129,15 +169,17 @@ class awp_clock(Feature):
                 self._d.log_debug("DST start is {0} (index {1})".format(tt[index], index))
                 a_tt = datetime(tt[index].year, tt[index].month, tt[index].day, tt[index].hour, tt[index].minute, tzinfo = utc)
                 ret_tt = a_tt.astimezone(tz)
-                return ret_tt
+                ret = ret_tt
+                break
 
-        return None
+        return ret
 
 
     def _get_end_dst(self, tz, dt):
         tt = tz._utc_transition_times
         offset = dt.hour
         year = dt.year
+        ret = None
 
         for index in range(len(tt)):
             if tt[index].year >= year:
@@ -152,8 +194,9 @@ class awp_clock(Feature):
                 # adjustment due to DST time
                 a_tt = datetime(tt[index].year, tt[index].month, tt[index].day, tt[index].hour + 1, tt[index].minute, tzinfo = utc)
                 ret_tt = a_tt.astimezone(tz)
-                return ret_tt
+                ret = ret_tt
+                break
 
-        return None
+        return ret
 
 

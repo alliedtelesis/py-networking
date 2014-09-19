@@ -45,8 +45,15 @@ class awp_clock(Feature):
             self._d.log_info("Setting time={0}:{1}:{2}, date={3}-{4}-{5}".format(hh, mm, ss, day, month, year))
 
             #clock set 14:00:00 25 Jan 2008
-            cmd = "clock set {0}:{1}:{2} {3} {4} {5}".format(hh, mm, ss, day, month, year)
-            self._d.log_info("Command is {0}".format(cmd))
+            set_cmd = "clock set {0}:{1}:{2} {3} {4} {5}".format(hh, mm, ss, day, month, year)
+            self._d.log_info("Command is {0}".format(set_cmd))
+            cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
+                            {'cmd': 'conf t', 'prompt':'\(config\)\#'},
+                            {'cmd': set_cmd , 'prompt':'\(config\)\#'},
+                            {'cmd': chr(26) , 'prompt':'\#'},
+                           ]}
+
+            self._device.cmd(cmds, cache=False, flush_cache=True)
 
         if (tz != None):
             # set the timezone
@@ -60,8 +67,8 @@ class awp_clock(Feature):
                 sign_key = 'plus'
 
             # clock timezone <timezone-name> {plus|minus} <0-12>
-            cmd = "clock timezone {0} {1} {2}:{3}".format(tz_name, sign_key, off_h, off_m)
-            self._d.log_info("Command is {0}".format(cmd))
+            tz_cmd = "clock timezone {0} {1} {2}".format(tz_name, sign_key, off_h)
+            self._d.log_info("Command is {0}".format(tz_cmd))
 
             # set the DST rules
             begin_dst = self._get_begin_dst(tz, loc_dt)
@@ -86,8 +93,17 @@ class awp_clock(Feature):
                 self._d.log_info("Setting timezone {0} with {1} {2} {3} {4} {5} {6} {7} {8} {9}".format(tz_name, bw, bd, bm, bt, ew, ed, em, et, om))
 
                 # clock summer-time <zone-name> recurring <start-week> <start-day> <start-month> <start-time> <end-week> <end-day> <end-month> <end-time> <1-180>
-                cmd = "clock summer-time {0} recurring {1} {2} {3} {4} {5} {6} {7} {8} {9}".format(tz_name, bw, bd, bm, bt, ew, ed, em, et, om)
-                self._d.log_info("Command is {0}".format(cmd))
+                st_cmd = "clock summer-time {0} recurring {1} {2} {3} {4} {5} {6} {7} {8} {9}".format(tz_name, bw, bd, bm, bt, ew, ed, em, et, om)
+                self._d.log_info("Command is {0}".format(st_cmd))
+
+            cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
+                            {'cmd': 'conf t', 'prompt':'\(config\)\#'},
+                            {'cmd': tz_cmd  , 'prompt':'\(config\)\#'},
+                            {'cmd': st_cmd  , 'prompt':'\(config\)\#'},
+                            {'cmd': chr(26) , 'prompt':'\#'},
+                           ]}
+
+            self._device.cmd(cmds, cache=False, flush_cache=True)
 
         self._update_clock()
 
@@ -100,6 +116,13 @@ class awp_clock(Feature):
     def keys(self):
         self._update_clock()
         return self._clock.keys()
+
+
+    def __getitem__(self, id):
+        self._update_clock()
+        if id in self._clock.keys():
+            return self._clock[id]
+        raise KeyError('data {0} does not exist'.format(id))
 
 
     def _update_clock(self):
@@ -128,18 +151,18 @@ class awp_clock(Feature):
                           '\s+Summer\s+time\s+recurring:\s+Yes')
         output = self._device.cmd("show clock")
         # output = output.replace('\r','')
-        self._d.log_info("output is {0}".format(output))
+        # self._d.log_info("output is {0}".format(output))
         m = ifre.match(output)
         if m:
             self._clock = {'local_time': m.group('local_time'),
                            'utc_time': m.group('utc_time'),
                            'timezone_name': m.group('tz_name'),
                            'timezone_offset': m.group('timezone_offset'),
-                           'timezone_name': m.group('st_zone'),
                            'summertime_start': m.group('st_start'),
                            'summertime_end': m.group('st_stop'),
                            'summertime_offset': m.group('st_offset')
                           }
+        self._d.log_debug("File {0}".format(pformat(json.dumps(self._clock))))
 
 
     def _get_begin_dst(self, tz, dt):

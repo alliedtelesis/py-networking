@@ -40,11 +40,11 @@ Summer time recurring: Yes
     clock_output_2 = ["""
 Local Time: Fri, 19 Sep 2014 07:02:41 -0200
 UTC Time:   Fri, 19 Sep 2014 09:02:41 +0000
-Timezone: CLST
+Timezone: UYT
 Timezone Offset: -03:00
-Summer time zone: CLST
-Summer time starts: First Sunday in September at 00:00:00
-Summer time ends: Last Sunday in April at 01:00:00
+Summer time zone: UYT
+Summer time starts: First Sunday in October at 02:00:00
+Summer time ends: Second Sunday in March at 02:00:00
 Summer time offset: 60 mins
 Summer time recurring: Yes
 """]
@@ -83,7 +83,7 @@ Summer time zone: None
     dt = datetime.now()
 
     tz1 = timezone('Europe/Rome')
-    tz2 = timezone('America/Santiago')
+    tz2 = timezone('America/Montevideo')
     tz3 = timezone('Australia/Sydney')
     tz4 = timezone('America/New_York')
     tz5 = timezone('Asia/Shanghai')
@@ -92,8 +92,8 @@ Summer time zone: None
     dut.add_cmd({'cmd': 'clock timezone CEST plus 2' , 'state':0, 'action':'SET_STATE','args': [1]})
     dut.add_cmd({'cmd': 'clock summer-time CEST recurring 5 Sun Mar 2:00 5 Sun Oct 3:00 60', 'state':1, 'action':'SET_STATE','args': [2]})
     dut.add_cmd({'cmd': 'show clock'                 , 'state':2, 'action':'PRINT','args': clock_output_1})
-    dut.add_cmd({'cmd': 'clock timezone CLST minus 3', 'state':2, 'action':'SET_STATE','args': [3]})
-    dut.add_cmd({'cmd': 'clock summer-time CLST recurring 2 Sun Sep 0:00 5 Sun Apr 0:00 60', 'state':3, 'action':'SET_STATE','args': [4]})
+    dut.add_cmd({'cmd': 'clock timezone UYT minus 3' , 'state':2, 'action':'SET_STATE','args': [3]})
+    dut.add_cmd({'cmd': 'clock summer-time UYT recurring 1 Sun Oct 2:00 2 Sun Mar 2:00 60', 'state':3 , 'action':'SET_STATE','args': [4]})
     dut.add_cmd({'cmd': 'show clock'                 , 'state':4, 'action':'PRINT','args': clock_output_2})
     dut.add_cmd({'cmd': 'clock timezone AEST plus 10', 'state':4, 'action':'SET_STATE','args': [5]})
     dut.add_cmd({'cmd': 'clock summer-time AEST recurring 1 Sun Oct 2:00 1 Sun Apr 3:00 60', 'state':5, 'action':'SET_STATE','args': [6]})
@@ -120,10 +120,10 @@ Summer time zone: None
     assert d.clock['summertime_offset'] == '60'
 
     d.clock.update(tz=tz2)
-    assert d.clock['timezone_name'] == 'CLST'
+    assert d.clock['timezone_name'] == 'UYT'
     assert d.clock['timezone_offset'] == '-03:00'
-    assert d.clock['summertime_start'] == 'First Sunday in September at 00:00:00'
-    assert d.clock['summertime_end'] == 'Last Sunday in April at 01:00:00'
+    assert d.clock['summertime_start'] == 'First Sunday in October at 02:00:00'
+    assert d.clock['summertime_end'] == 'Second Sunday in March at 02:00:00'
     assert d.clock['summertime_offset'] == '60'
 
     d.clock.update(tz=tz3)

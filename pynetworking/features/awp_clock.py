@@ -150,7 +150,7 @@ class awp_clock(Feature):
         # Summer time ends: First Sunday in November at 02:00:00
         # Summer time offset: 60 mins
         # Summer time recurring: Yes
-        ifre1 = re.compile('\s+Local\s+Time:\s+(?P<local_time>[^\n]+)\s+'
+        ifre1 = re.compile('(\s|'')+Local\s+Time:\s+(?P<local_time>[^\n]+)\s+'
                           '\s+UTC\s+Time:\s+(?P<utc_time>[^\n]+)\s+'
                           '\s+Timezone:\s+(?P<tz_name>[^\n]+)\s+'
                           '\s+Timezone\s+Offset:\s+(?P<timezone_offset>[^\s]+)\s+'
@@ -165,7 +165,7 @@ class awp_clock(Feature):
         # Timezone: CST
         # Timezone Offset: +08:00
         # Summer time zone: None
-        ifre2 = re.compile('\s+Local\s+Time:\s+(?P<local_time>[^\n]+)\s+'
+        ifre2 = re.compile('(\s|'')+Local\s+Time:\s+(?P<local_time>[^\n]+)\s+'
                           '\s+UTC\s+Time:\s+(?P<utc_time>[^\n]+)\s+'
                           '\s+Timezone:\s+(?P<tz_name>[^\n]+)\s+'
                           '\s+Timezone\s+Offset:\s+(?P<timezone_offset>[^\s]+)\s+'

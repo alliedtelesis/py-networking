@@ -106,8 +106,12 @@ Summer time zone: None
     dut.add_cmd({'cmd': 'show clock'                 , 'state':10,'action':'PRINT','args': clock_output_5})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
+
     with pytest.raises(KeyError) as excinfo:
         d.clock.update(dt=None, tz=None)
+    with pytest.raises(KeyError) as excinfo:
+        assert d.clock['calendar'] == ''
+
     d.clock.update(tz=tz1)
     assert d.clock['timezone_name'] == 'CEST'
     assert d.clock['timezone_offset'] == '+02:00'
@@ -142,4 +146,9 @@ Summer time zone: None
     assert d.clock['summertime_start'] == ''
     assert d.clock['summertime_end'] == ''
     assert d.clock['summertime_offset'] == ''
+
+    assert 'utc_time' in d.clock.keys()
+    assert 'local_time' in d.clock.keys()
+    assert ('timezone_offset', '+08:00') in d.clock.items()
+
     d.close()

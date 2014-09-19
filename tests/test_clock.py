@@ -47,17 +47,21 @@ Summer time recurring: Yes
     tz3 = timezone('Australia/Sydney')
     tz4 = timezone('America/New_York')
 
-    # dut.add_cmd({'cmd': 'show clock'                , 'state':0, 'action':'PRINT','args': clock_output_0})
-    # dut.add_cmd({'cmd': 'clock timezone EST minus 5', 'state':0, 'action':'SET_STATE','args': [1]})
-    dut.add_cmd({'cmd': 'show clock'                , 'state':0, 'action':'PRINT','args': clock_output_1})
+    dut.add_cmd({'cmd': 'show clock'                , 'state':0, 'action':'PRINT','args': clock_output_0})
+    dut.add_cmd({'cmd': 'clock timezone EDT minus 4', 'state':0, 'action':'SET_STATE','args': [1]})
+    dut.add_cmd({'cmd': 'clock summer-time EDT recurring 2 Sun Mar 2:00 1 Sun Nov 2:00 60', 'state':1, 'action':'SET_STATE','args': [2]})
+    dut.add_cmd({'cmd': 'show clock'                , 'state':2, 'action':'PRINT','args': clock_output_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
+    # print(dut.port)
+    # sleep(1000)
     with pytest.raises(KeyError) as excinfo:
         d.clock.update(dt=None, tz=None)
-    d.clock.update(tz=tz1)
-    d.clock.update(tz=tz2)
-    d.clock.update(tz=tz3)
+    # d.clock.update(tz=tz1)
+    # d.clock.update(tz=tz2)
+    # d.clock.update(tz=tz3)
     d.clock.update(tz=tz4)
-    d.clock.update(dt=dt)
-    assert d.clock._clock['timezone_name'] == 'EDT'
+    # d.clock.update(dt=dt)
+
+    assert d.clock['timezone_name'] == 'EDT'
     d.close()

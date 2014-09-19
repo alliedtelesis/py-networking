@@ -71,7 +71,6 @@ class ats_clock(Feature):
             self._d.log_info("Setting timezone {0} with offset {1}{2}:{3}".format(tz_name, sign, off_h, off_m))
 
             # clock timezone hours-offset [minutes minutes-offset] [zone acronym]
-            # tz_cmd = "clock timezone {0}{1} zone {2}".format(sign, off_h, tz_name)
             if sign == '+':
                 sign = ''
             tz_cmd = "clock timezone {0}{1} zone {2}".format(sign, off_h, tz_name)
@@ -104,7 +103,7 @@ class ats_clock(Feature):
                 self._d.log_info("Setting timezone {0} with {1} {2} {3} {4} {5} {6} {7} {8} {9}".format(tz_name, bw, bd, bm, bt, ew, ed, em, et, om))
 
                 # clock summer-time recurring week day month hh:mm week day month hh:mm [offset offset] [zone acronym]
-                st_cmd = "clock summer-time recurring {0} {1} {2} {3} {4} {5} {6} {7} offset {8} zone {9}".format(bw, bd, bm, bt, ew, ed, em, et, om, tz_name)
+                st_cmd = "clock su r {0} {1} {2} {3} {4} {5} {6} {7} o {8} z {9}".format(bw, bd, bm, bt, ew, ed, em, et, om, tz_name)
                 self._d.log_info("Command is {0}".format(st_cmd))
             else:
                 st_cmd = "no clock summer-time"

@@ -105,6 +105,8 @@ class awp_clock(Feature):
                 # clock summer-time <zone-name> recurring <start-week> <start-day> <start-month> <start-time> <end-week> <end-day> <end-month> <end-time> <1-180>
                 st_cmd = "clock summer-time {0} recurring {1} {2} {3} {4} {5} {6} {7} {8} {9}".format(tz_name, bw, bd, bm, bt, ew, ed, em, et, om)
                 self._d.log_info("Command is {0}".format(st_cmd))
+            else:
+                st_cmd = "no clock summer-time"
 
             cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
                             {'cmd': 'conf t', 'prompt':'\(config\)\#'},
@@ -148,9 +150,7 @@ class awp_clock(Feature):
         # Summer time ends: First Sunday in November at 02:00:00
         # Summer time offset: 60 mins
         # Summer time recurring: Yes
-
-        # username manager privilege 15 password 8 $1$bJoVec4D$JwOJGPr7YqoExA0GVasdE0
-        ifre = re.compile('\s+Local\s+Time:\s+(?P<local_time>[^\n]+)\s+'
+        ifre1 = re.compile('\s+Local\s+Time:\s+(?P<local_time>[^\n]+)\s+'
                           '\s+UTC\s+Time:\s+(?P<utc_time>[^\n]+)\s+'
                           '\s+Timezone:\s+(?P<tz_name>[^\n]+)\s+'
                           '\s+Timezone\s+Offset:\s+(?P<timezone_offset>[^\s]+)\s+'
@@ -159,10 +159,21 @@ class awp_clock(Feature):
                           '\s+Summer\s+time\s+ends:\s+(?P<st_stop>[^\n]+)\s+'
                           '\s+Summer\s+time\s+offset:\s+(?P<st_offset>\d+)\s+mins\s+'
                           '\s+Summer\s+time\s+recurring:\s+Yes')
+
+        # Local Time: Fri, 19 Sep 2014 17:04:20 +0800
+        # UTC Time:   Fri, 19 Sep 2014 09:04:20 +0000
+        # Timezone: CST
+        # Timezone Offset: +08:00
+        # Summer time zone: None
+        ifre2 = re.compile('\s+Local\s+Time:\s+(?P<local_time>[^\n]+)\s+'
+                          '\s+UTC\s+Time:\s+(?P<utc_time>[^\n]+)\s+'
+                          '\s+Timezone:\s+(?P<tz_name>[^\n]+)\s+'
+                          '\s+Timezone\s+Offset:\s+(?P<timezone_offset>[^\s]+)\s+'
+                          '\s+Summer\s+time\s+zone:\s+None\s+')
+
         output = self._device.cmd("show clock")
         # output = output.replace('\r','')
-        # self._d.log_info("output is {0}".format(output))
-        m = ifre.match(output)
+        m = ifre1.match(output)
         if m:
             self._clock = {'local_time': m.group('local_time'),
                            'utc_time': m.group('utc_time'),
@@ -172,6 +183,17 @@ class awp_clock(Feature):
                            'summertime_end': m.group('st_stop'),
                            'summertime_offset': m.group('st_offset')
                           }
+        else:
+            m = ifre2.match(output)
+            if m:
+                self._clock = {'local_time': m.group('local_time'),
+                               'utc_time': m.group('utc_time'),
+                               'timezone_name': m.group('tz_name'),
+                               'timezone_offset': m.group('timezone_offset'),
+                               'summertime_start': '',
+                               'summertime_end': '',
+                               'summertime_offset': ''
+                              }
         self._d.log_debug("File {0}".format(pformat(json.dumps(self._clock))))
 
 

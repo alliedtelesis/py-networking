@@ -106,7 +106,7 @@ class ats_clock(Feature):
                 st_cmd = "clock su r {0} {1} {2} {3} {4} {5} {6} {7} o {8} z {9}".format(bw, bd, bm, bt, ew, ed, em, et, om, tz_name)
                 self._d.log_info("Command is {0}".format(st_cmd))
             else:
-                st_cmd = "no clock summer-time"
+                st_cmd = "no clock summer-time r"
 
             cmds = {'cmds':[{'cmd': 'conf' , 'prompt':'\(config\)\#'},
                             {'cmd': tz_cmd , 'prompt':'\(config\)\#'},
@@ -140,42 +140,36 @@ class ats_clock(Feature):
         self._d.log_info("_update_clock")
         self._clock = OrderedDict()
 
-        # Local Time: Thu, 18 Sep 2014 10:21:17 -0400
-        # UTC Time:   Thu, 18 Sep 2014 14:21:17 +0000
-        # Timezone: EDT
-        # Timezone Offset: -05:00
-        # Summer time zone: EDT
-        # Summer time starts: Second Sunday in March at 02:00:00
-        # Summer time ends: First Sunday in November at 02:00:00
-        # Summer time offset: 60 mins
-        # Summer time recurring: Yes
-        ifre1 = re.compile('(\s|'')+Local\s+Time:\s+(?P<local_time>[^\n]+)\s+'
-                          '\s+UTC\s+Time:\s+(?P<utc_time>[^\n]+)\s+'
-                          '\s+Timezone:\s+(?P<tz_name>[^\n]+)\s+'
-                          '\s+Timezone\s+Offset:\s+(?P<timezone_offset>[^\s]+)\s+'
-                          '\s+Summer\s+time\s+zone:\s+(?P<st_zone>[^\s]+)\s+'
-                          '\s+Summer\s+time\s+starts:\s+(?P<st_start>[^\n]+)\s+'
-                          '\s+Summer\s+time\s+ends:\s+(?P<st_stop>[^\n]+)\s+'
-                          '\s+Summer\s+time\s+offset:\s+(?P<st_offset>\d+)\s+mins\s+'
-                          '\s+Summer\s+time\s+recurring:\s+Yes')
+        # *11:11:59 AEST(UTC+10)  Oct 1 2006
+        # No time source
+        #
+        # Time zone:
+        # Acronym is AEST
+        # Offset is UTC+10
+        #
+        # Summertime:
+        # Acronym is AEST
+        # Recurring every year.
+        # Begins at 01 01 10 02:00.
+        # Ends at 01 01 04 03:00.
+        # Offset is 60 minutes.
+        ifre1 = re.compile('')
 
-        # Local Time: Fri, 19 Sep 2014 17:04:20 +0800
-        # UTC Time:   Fri, 19 Sep 2014 09:04:20 +0000
-        # Timezone: CST
-        # Timezone Offset: +08:00
-        # Summer time zone: None
-        ifre2 = re.compile('(\s|'')+Local\s+Time:\s+(?P<local_time>[^\n]+)\s+'
-                          '\s+UTC\s+Time:\s+(?P<utc_time>[^\n]+)\s+'
-                          '\s+Timezone:\s+(?P<tz_name>[^\n]+)\s+'
-                          '\s+Timezone\s+Offset:\s+(?P<timezone_offset>[^\s]+)\s+'
-                          '\s+Summer\s+time\s+zone:\s+None\s+')
+        # *09:13:23 CST(UTC+8)  Oct 1 2006
+        # No time source
+        #
+        # Time zone:
+        # Acronym is CST
+        # Offset is UTC+8
+        ifre2 = re.compile('')
 
-        output = self._device.cmd("show clock")
-        # output = output.replace('\r','')
+        output = self._device.cmd("show clock details")
+        self._d.log_info("Output: {0}".format(output))
         m = ifre1.match(output)
         if m:
+            self._d.log_info("three!")
             self._clock = {'local_time': m.group('local_time'),
-                           'utc_time': m.group('utc_time'),
+                           'utc_time': '',
                            'timezone_name': m.group('tz_name'),
                            'timezone_offset': m.group('timezone_offset'),
                            'summertime_start': m.group('st_start'),
@@ -184,10 +178,12 @@ class ats_clock(Feature):
                           }
         else:
             m = ifre2.match(output)
+            self._d.log_info("one")
             if m:
-                self._clock = {'local_time': m.group('local_time'),
-                               'utc_time': m.group('utc_time'),
-                               'timezone_name': m.group('tz_name'),
+                self._d.log_info("two!")
+                self._clock = {'local_time': m.group('local_time') + ' ' + m.group('date'),
+                               'utc_time': m.group('local_time') + ' ' + m.group('date'),
+                               'timezone_name': m.group('timezone_name'),
                                'timezone_offset': m.group('timezone_offset'),
                                'summertime_start': '',
                                'summertime_end': '',

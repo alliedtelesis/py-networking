@@ -178,17 +178,15 @@ class ats_clock(Feature):
 
         ifre6 = re.compile('Offset\s+is\s+(?P<summertime_offset>\d+)\s+minutes.')
 
-        for line in self._device.cmd("show clock details").split('\n'):
+        for line in self._device.cmd("show clock detail").split('\n'):
             m = ifre1.match(line)
             if m:
-                self._d.log_debug("match 1")
                 local_time = m.group('local_time')
                 local_date = m.group('local_date')
                 the_year = m.group('local_date').split(' ')[-1]
 
             m = ifre2.match(line)
             if m:
-                self._d.log_debug("match 2")
                 timezone_d = m.group('offset_data')
                 timezone_s = timezone_d[0]
                 timezone_h = timezone_d[1:3]
@@ -199,22 +197,18 @@ class ats_clock(Feature):
 
             m = ifre3.match(line)
             if m:
-                self._d.log_debug("match 3")
                 timezone_name = m.group('timezone_name')
 
             m = ifre4.match(line)
             if m:
-                self._d.log_debug("match 4")
-                summertime_start = line.split('.')[0] + '.'
+                summertime_start = self._get_summertime_str(m.group('bweek'),m.group('bday'),m.group('bmonth'),the_year) + m.group('bhour') + ':' + m.group('bmin') + ':00'
 
             m = ifre5.match(line)
             if m:
-                self._d.log_debug("match 5")
-                summertime_end = line.split('.')[0] + '.'
+                summertime_end = self._get_summertime_str(m.group('eweek'),m.group('eday'),m.group('emonth'),the_year) + m.group('ehour') + ':' + m.group('emin') + ':00'
 
             m = ifre6.match(line)
             if m:
-                self._d.log_debug("match 6")
                 summertime_offset = m.group('summertime_offset')
 
         self._clock = {'local_time': local_time + ' ' + local_date,
@@ -276,3 +270,11 @@ class ats_clock(Feature):
         return ret
 
 
+    def _get_summertime_str(self, beweek, beday, bemonth, the_year):
+        a_week = ['First ', 'Second ', 'Third ', 'Fourth ', 'Last ']
+        a_day = ['Sunday ', 'Monday ', 'Tuesday ', 'Wednesday ', 'Thursday ', 'Friday ', 'Saturday ']
+        strweek = a_week[int(beweek)-1]
+        strday = a_day[int(beday)-1]
+        ddd = datetime(int(the_year), int(bemonth), 1)
+        str = strweek + strday + 'in ' + ddd.strftime("%B") + ' at '
+        return str

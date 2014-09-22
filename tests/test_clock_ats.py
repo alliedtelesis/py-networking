@@ -66,7 +66,7 @@ Acronym is UYT
 Offset is UTC-3
 
 Summertime:
-Acronym is CEST
+Acronym is UYT
 Recurring every year.
 Begins at 05 01 03 02:00.
 Ends at 05 01 10 03:00.
@@ -150,29 +150,29 @@ Offset is UTC+8
     d.clock.update(tz=tz1)
     assert d.clock['timezone_name'] == 'CEST'
     assert d.clock['timezone_offset'] == '+02:00'
-    assert d.clock['summertime_start'] == 'Last Sunday in March at 02:00:00'
-    assert d.clock['summertime_end'] == 'Last Sunday in October at 03:00:00'
+    assert d.clock['summertime_start'] == 'Begins at 05 01 03 02:00.'
+    assert d.clock['summertime_end'] == 'Ends at 05 01 10 03:00.'
     assert d.clock['summertime_offset'] == '60'
 
     d.clock.update(tz=tz2)
     assert d.clock['timezone_name'] == 'UYT'
     assert d.clock['timezone_offset'] == '-03:00'
-    assert d.clock['summertime_start'] == 'First Sunday in October at 02:00:00'
-    assert d.clock['summertime_end'] == 'Second Sunday in March at 02:00:00'
+    assert d.clock['summertime_start'] == 'Begins at 05 01 03 02:00.'
+    assert d.clock['summertime_end'] == 'Ends at 05 01 10 03:00.'
     assert d.clock['summertime_offset'] == '60'
 
     d.clock.update(tz=tz3)
     assert d.clock['timezone_name'] == 'AEST'
     assert d.clock['timezone_offset'] == '+10:00'
-    assert d.clock['summertime_start'] == 'First Sunday in October at 02:00:00'
-    assert d.clock['summertime_end'] == 'First Sunday in April at 03:00:00'
+    assert d.clock['summertime_start'] == 'Begins at 01 01 10 02:00.'
+    assert d.clock['summertime_end'] == 'Ends at 01 01 04 03:00.'
     assert d.clock['summertime_offset'] == '60'
 
     d.clock.update(tz=tz4)
     assert d.clock['timezone_name'] == 'EDT'
     assert d.clock['timezone_offset'] == '-04:00'
-    assert d.clock['summertime_start'] == 'Second Sunday in March at 02:00:00'
-    assert d.clock['summertime_end'] == 'First Sunday in November at 02:00:00'
+    assert d.clock['summertime_start'] == 'Begins at 02 01 03 02:00.'
+    assert d.clock['summertime_end'] == 'Ends at 01 01 11 02:00.'
     assert d.clock['summertime_offset'] == '60'
 
     d.clock.update(dt=dt,tz=tz5)

@@ -44,6 +44,7 @@ Offset is UTC+0
 """]
     clock_output_1 = ["""
 *23:10:40 CEST(UTC+2)  Sep 30 2006
+
 No time source
 
 Time zone:
@@ -58,7 +59,8 @@ Ends at 05 01 10 03:00.
 Offset is 60 minutes.
 """]
     clock_output_2 = ["""
-*23:11:16 CEST(UTC-3)  Sep 30 2006
+*23:11:16 UYT(UTC-3)  Sep 30 2006
+
 No time source
 
 Time zone:
@@ -68,8 +70,8 @@ Offset is UTC-3
 Summertime:
 Acronym is UYT
 Recurring every year.
-Begins at 05 01 03 02:00.
-Ends at 05 01 10 03:00.
+Begins at 01 01 10 02:00.
+Ends at 02 01 03 02:00.
 Offset is 60 minutes.
 """]
     clock_output_3 = ["""
@@ -155,8 +157,8 @@ Offset is UTC+8
     d.clock.update(tz=tz2)
     assert d.clock['timezone_name'] == 'UYT'
     assert d.clock['timezone_offset'] == '-03:00'
-    assert d.clock['summertime_start'] == 'Last Sunday in March at 02:00:00'
-    assert d.clock['summertime_end'] == 'Last Sunday in October at 03:00:00'
+    assert d.clock['summertime_start'] == 'First Sunday in October at 02:00:00'
+    assert d.clock['summertime_end'] == 'Second Sunday in March at 02:00:00'
     assert d.clock['summertime_offset'] == '60'
 
     d.clock.update(tz=tz3)

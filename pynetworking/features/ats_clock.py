@@ -141,7 +141,7 @@ class ats_clock(Feature):
         self._d.log_info("_update_clock")
         self._clock = OrderedDict()
 
-        the_year = ''
+        the_year = '2014'
         local_time = ''
         local_date = ''
         timezone_name = 'UTC'
@@ -165,12 +165,19 @@ class ats_clock(Feature):
         # Offset is 60 minutes.
 
         ifre1 = re.compile('\*(?P<local_time>[^\s]+)\s+'
-                           '(?P<time_stuff>[^\s]+)\s+'
-                           '\s+(?P<local_date>[^\n]+)\s+')
+                            '(?P<time_stuff>[^\s]+)\s+'
+                            '\s+(?P<local_month>\w+)\s+'
+                            '(?P<local_day>\d+)\s+'
+                            '(?P<local_year>\d+)')
+        # ifre1 = re.compile('\*(?P<local_time>[^\s]+)\s+'
+        #                     '(?P<time_stuff>[^\s]+)\s+'
+        #                     '\s+(?P<local_month>[^\s]+)\s+'
+        #                     '(?P<local_day>\d+)\s+'
+        #                     '(?P<local_year>\d+)')
 
         ifre2 = re.compile('Offset\s+is\s+UTC(?P<offset_data>[^\s]+)\s+')
 
-        ifre3 = re.compile('Acronym\s+is\s+(?P<timezone_name>[^\s]+)\s+')
+        ifre3 = re.compile('Acronym\s+is\s+(?P<timezone_name>\w+)')
 
         ifre4 = re.compile('Begins\s+at\s+(?P<bweek>\d+)\s+(?P<bday>\d+)\s+(?P<bmonth>\d+)\s+(?P<bhour>\d+):(?P<bmin>\d+).')
 
@@ -178,15 +185,27 @@ class ats_clock(Feature):
 
         ifre6 = re.compile('Offset\s+is\s+(?P<summertime_offset>\d+)\s+minutes.')
 
-        for line in self._device.cmd("show clock detail").split('\n'):
+        scd_output = self._device.cmd("show clock detail")
+        self._d.log_debug("output is: {0}".format(scd_output))
+        for line in scd_output.split('\n'):
+            self._d.log_debug("line parsed is: {0}".format(line))
+            # print (":".join("{:02x}".format(ord(c)) for c in line))
+            # if (line.find('\r*') == 0):
+            #     self._d.log_debug("UUUUUUH")
+            #     line.replace('\r*','*')
+            # else:
+            #     line = lline
             m = ifre1.match(line)
             if m:
+                self._d.log_debug("match 1")
                 local_time = m.group('local_time')
-                local_date = m.group('local_date')
-                the_year = m.group('local_date').split(' ')[-1]
+                local_date = m.group('local_day') + '-' + m.group('local_month') + '-' + m.group('local_year')
+                the_year = m.group('local_year')
+                self._d.log_debug("got {0}, {1} and {2}".format(local_time, local_date, the_year))
 
             m = ifre2.match(line)
             if m:
+                self._d.log_debug("match 2")
                 timezone_d = m.group('offset_data')
                 timezone_s = timezone_d[0]
                 timezone_h = timezone_d[1:3]
@@ -197,7 +216,12 @@ class ats_clock(Feature):
 
             m = ifre3.match(line)
             if m:
+                self._d.log_debug("match 3")
                 timezone_name = m.group('timezone_name')
+                # timezone_name = line.split(' ')[-1]
+                # if (timezone_name[-1] == '\r'):
+                #     timezone_name = timezone_name[0:-1]
+                self._d.log_debug("timezone name is: {0}".format(timezone_name))
 
             m = ifre4.match(line)
             if m:

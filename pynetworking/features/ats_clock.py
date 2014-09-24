@@ -140,6 +140,7 @@ class ats_clock(Feature):
     def _now(self):
         return datetime.now()
 
+
     def _update_clock(self):
         self._d.log_info("_update_clock")
         self._clock = OrderedDict()

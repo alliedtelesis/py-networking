@@ -27,21 +27,21 @@ class ats_clock(Feature):
         self._d.log_info("loading config")
 
 
-    def update(self, dt=None, tz=None):
+    def update(self, datetime=None, timezone=None):
         self._d.log_info("update")
         self._update_clock()
 
-        if (dt == None and tz == None):
+        if (datetime == None and timezone == None):
             raise KeyError('either datetime or timezone argument must be given')
 
-        if (dt != None):
+        if (datetime != None):
             # set date and time
-            hh = dt.strftime('%H')
-            mm = dt.strftime('%M')
-            ss = dt.strftime('%S')
-            day = dt.strftime('%d')
-            month = dt.strftime('%b')
-            year = dt.strftime('%Y')
+            hh = datetime.strftime('%H')
+            mm = datetime.strftime('%M')
+            ss = datetime.strftime('%S')
+            day = datetime.strftime('%d')
+            month = datetime.strftime('%b')
+            year = datetime.strftime('%Y')
 
             self._d.log_info("Setting time={0}:{1}:{2}, date={3}-{4}-{5}".format(hh, mm, ss, day, month, year))
 
@@ -55,10 +55,10 @@ class ats_clock(Feature):
 
             self._device.cmd(cmds, cache=False, flush_cache=True)
 
-        if (tz != None):
+        if (timezone != None):
             # set the timezone
-            loc_now = datetime.now()
-            loc_dt = tz.localize(loc_now)
+            loc_now = self._now()
+            loc_dt = timezone.localize(loc_now)
             tz_name = loc_dt.strftime('%Z')
             offset = loc_dt.strftime('%z')
 
@@ -81,8 +81,8 @@ class ats_clock(Feature):
                            ]}
 
             # set the DST rules
-            begin_dst = self._get_begin_dst(tz, loc_dt)
-            end_dst = self._get_end_dst(tz, loc_dt)
+            begin_dst = self._get_begin_dst(timezone, loc_dt)
+            end_dst = self._get_end_dst(timezone, loc_dt)
             if (begin_dst != None and end_dst != None):
                 hh = int(begin_dst.strftime('%H')) - 1
                 mm = begin_dst.strftime('%M')
@@ -137,6 +137,9 @@ class ats_clock(Feature):
         raise KeyError('data {0} does not exist'.format(id))
 
 
+    def _now(self):
+        return datetime.now()
+
     def _update_clock(self):
         self._d.log_info("_update_clock")
         self._clock = OrderedDict()
@@ -149,7 +152,7 @@ class ats_clock(Feature):
         summertime_end = ''
         summertime_offset = ''
         tz_hours = 0
-        the_year = datetime.now().year
+        the_year = self._now().year
 
         # *11:11:59 AEST(UTC+10)  Oct 1 2006
         # No time source

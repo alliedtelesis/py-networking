@@ -48,10 +48,7 @@ class ats_clock(Feature):
             #clock set 14:00:00 25 Jan 2008
             set_cmd = "clock set {0}:{1}:{2} {3} {4} {5}".format(hh, mm, ss, day, month, year)
             self._d.log_info("Command is {0}".format(set_cmd))
-            cmds = {'cmds':[{'cmd': 'conf'  , 'prompt':'\(config\)\#'},
-                            {'cmd': set_cmd , 'prompt':'\(config\)\#'},
-                            {'cmd': chr(26) , 'prompt':'\#'},
-                           ]}
+            cmds = {'cmds':[{'cmd': set_cmd , 'prompt':'\#'}]}
 
             self._device.cmd(cmds, cache=False, flush_cache=True)
 

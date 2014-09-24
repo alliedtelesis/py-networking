@@ -141,7 +141,6 @@ class ats_clock(Feature):
         self._d.log_info("_update_clock")
         self._clock = OrderedDict()
 
-        the_year = '2014'
         local_time = ''
         local_date = ''
         timezone_name = 'UTC'
@@ -149,6 +148,7 @@ class ats_clock(Feature):
         summertime_start = ''
         summertime_end = ''
         summertime_offset = ''
+        the_year = datetime.now().year
 
         # *11:11:59 AEST(UTC+10)  Oct 1 2006
         # No time source
@@ -180,37 +180,26 @@ class ats_clock(Feature):
 
         ifre6 = re.compile('Offset\s+is\s+(?P<summertime_offset>\d+)\s+minutes.')
 
-        scd_output = self._device.cmd("show clock detail")
-        self._d.log_debug("output is: {0}".format(scd_output))
-        for line in scd_output.split('\n'):
+        for line in self._device.cmd("show clock detail").split('\n'):
             self._d.log_debug("line parsed is: {0}".format(line))
             m = ifre1.match(line)
             if m:
-                self._d.log_debug("match 1")
                 local_time = m.group('local_time')
                 local_date = m.group('local_day') + '-' + m.group('local_month') + '-' + m.group('local_year')
                 the_year = m.group('local_year')
-                self._d.log_debug("got {0}, {1} and {2}".format(local_time, local_date, the_year))
 
             m = ifre2.match(line)
             if m:
-                self._d.log_debug("match 2")
                 timezone_d = m.group('offset_data')
                 timezone_s = timezone_d[0]
                 timezone_h = timezone_d[1:3]
                 if (len(timezone_h) == 1):
                     timezone_h = '0' + timezone_h
                 timezone_offset = timezone_s + timezone_h + ':00'
-                self._d.log_debug("timezone offset is: {0}".format(timezone_offset))
 
             m = ifre3.match(line)
             if m:
-                self._d.log_debug("match 3")
                 timezone_name = m.group('timezone_name')
-                # timezone_name = line.split(' ')[-1]
-                # if (timezone_name[-1] == '\r'):
-                #     timezone_name = timezone_name[0:-1]
-                self._d.log_debug("timezone name is: {0}".format(timezone_name))
 
             m = ifre4.match(line)
             if m:

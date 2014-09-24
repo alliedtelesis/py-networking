@@ -142,12 +142,13 @@ class ats_clock(Feature):
         self._clock = OrderedDict()
 
         local_time = ''
-        local_date = ''
+        utc_time = ''
         timezone_name = 'UTC'
         timezone_offset = ''
         summertime_start = ''
         summertime_end = ''
         summertime_offset = ''
+        tz_hours = 0
         the_year = datetime.now().year
 
         # *11:11:59 AEST(UTC+10)  Oct 1 2006
@@ -184,8 +185,7 @@ class ats_clock(Feature):
             self._d.log_debug("line parsed is: {0}".format(line))
             m = ifre1.match(line)
             if m:
-                local_time = m.group('local_time')
-                local_date = m.group('local_day') + '-' + m.group('local_month') + '-' + m.group('local_year')
+                local_time = m.group('local_day') + '-' + m.group('local_month') + '-' + m.group('local_year') + ' ' + m.group('local_time')
                 the_year = m.group('local_year')
 
             m = ifre2.match(line)
@@ -196,6 +196,7 @@ class ats_clock(Feature):
                 if (len(timezone_h) == 1):
                     timezone_h = '0' + timezone_h
                 timezone_offset = timezone_s + timezone_h + ':00'
+                tz_hours = -int(timezone_d[0:3])
 
             m = ifre3.match(line)
             if m:
@@ -213,8 +214,13 @@ class ats_clock(Feature):
             if m:
                 summertime_offset = m.group('summertime_offset')
 
-        self._clock = {'local_time': local_time + ' ' + local_date,
-                       'utc_time': '',
+        loc_time_obj = datetime.strptime(local_time, "%d-%b-%Y %H:%M:%S")
+        loc_time_delta = timedelta(hours=tz_hours)
+        utc_time_obj = loc_time_obj + loc_time_delta
+        utc_time = utc_time_obj.strftime("%d-%b-%Y %H:%M:%S")
+
+        self._clock = {'local_time': local_time,
+                       'utc_time': utc_time,
                        'timezone_name': timezone_name,
                        'timezone_offset': timezone_offset,
                        'summertime_start': summertime_start,

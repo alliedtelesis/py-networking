@@ -164,16 +164,11 @@ class ats_clock(Feature):
         # Ends at 01 01 04 03:00.
         # Offset is 60 minutes.
 
-        ifre1 = re.compile('\*(?P<local_time>[^\s]+)\s+'
+        ifre1 = re.compile('(\r|'')\*(?P<local_time>[^\s]+)\s+'
                             '(?P<time_stuff>[^\s]+)\s+'
                             '\s+(?P<local_month>\w+)\s+'
                             '(?P<local_day>\d+)\s+'
                             '(?P<local_year>\d+)')
-        # ifre1 = re.compile('\*(?P<local_time>[^\s]+)\s+'
-        #                     '(?P<time_stuff>[^\s]+)\s+'
-        #                     '\s+(?P<local_month>[^\s]+)\s+'
-        #                     '(?P<local_day>\d+)\s+'
-        #                     '(?P<local_year>\d+)')
 
         ifre2 = re.compile('Offset\s+is\s+UTC(?P<offset_data>[^\s]+)\s+')
 
@@ -189,12 +184,6 @@ class ats_clock(Feature):
         self._d.log_debug("output is: {0}".format(scd_output))
         for line in scd_output.split('\n'):
             self._d.log_debug("line parsed is: {0}".format(line))
-            # print (":".join("{:02x}".format(ord(c)) for c in line))
-            # if (line.find('\r*') == 0):
-            #     self._d.log_debug("UUUUUUH")
-            #     line.replace('\r*','*')
-            # else:
-            #     line = lline
             m = ifre1.match(line)
             if m:
                 self._d.log_debug("match 1")

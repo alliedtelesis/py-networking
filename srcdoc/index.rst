@@ -7,6 +7,7 @@ Contents
     intro
     device
     facts
+    clock
     file
     interface
     license

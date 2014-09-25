@@ -1,5 +1,5 @@
-NTP
-***
+NTP Feature
+***********
 This feature allows to configure one or more NTP servers that the device will use to synchronize with.
 
 Operations

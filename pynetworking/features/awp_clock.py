@@ -42,11 +42,8 @@ class awp_clock(Feature):
             month = datetime.strftime('%b')
             year = datetime.strftime('%Y')
 
-            self._d.log_info("Setting time={0}:{1}:{2}, date={3}-{4}-{5}".format(hh, mm, ss, day, month, year))
-
             #clock set 14:00:00 25 Jan 2008
             set_cmd = "clock set {0}:{1}:{2} {3} {4} {5}".format(hh, mm, ss, day, month, year)
-            self._d.log_info("Command is {0}".format(set_cmd))
             cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
                             {'cmd': 'conf t', 'prompt':'\(config\)\#'},
                             {'cmd': set_cmd , 'prompt':'\(config\)\#'},
@@ -69,8 +66,6 @@ class awp_clock(Feature):
                 off_h = offset[1:3]
             off_m = offset[3:5]
 
-            self._d.log_info("Setting timezone {0} with offset {1}{2}:{3}".format(tz_name, sign, off_h, off_m))
-
             if sign == '-':
                 sign_key = 'minus'
             else:
@@ -78,7 +73,6 @@ class awp_clock(Feature):
 
             # clock timezone <timezone-name> {plus|minus} <0-12>
             tz_cmd = "clock timezone {0} {1} {2}".format(tz_name, sign_key, off_h)
-            self._d.log_info("Command is {0}".format(tz_cmd))
 
             # set the DST rules
             begin_dst = self._get_begin_dst(timezone, loc_dt)
@@ -100,11 +94,8 @@ class awp_clock(Feature):
 
                 om = '60'
 
-                self._d.log_info("Setting timezone {0} with {1} {2} {3} {4} {5} {6} {7} {8} {9}".format(tz_name, bw, bd, bm, bt, ew, ed, em, et, om))
-
                 # clock summer-time <zone-name> recurring <start-week> <start-day> <start-month> <start-time> <end-week> <end-day> <end-month> <end-time> <1-180>
                 st_cmd = "clock summer-time {0} recurring {1} {2} {3} {4} {5} {6} {7} {8} {9}".format(tz_name, bw, bd, bm, bt, ew, ed, em, et, om)
-                self._d.log_info("Command is {0}".format(st_cmd))
             else:
                 st_cmd = "no clock summer-time"
 

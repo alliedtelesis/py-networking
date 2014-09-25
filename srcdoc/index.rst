@@ -7,11 +7,11 @@ Contents
     intro
     device
     facts
-    clock
     file
     interface
-    mac
     license
+    mac
+    ntp
     user
     vlan
     cookbook

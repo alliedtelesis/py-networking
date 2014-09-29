@@ -19,6 +19,10 @@ Build type : RELEASE
     """]})
 
 
+# The software commented below is part of some initial experiment to get confident with Mock.
+# It should not be useful anymore, but I let it there because there could be some interesting
+# hints for the next tests.
+
 # def test_vlan_for_mock_classes(dut, log_level):
 #     output_sr = ["""
 # !
@@ -223,6 +227,13 @@ Build type : RELEASE
 #     d.close()
 #
 #
+
+
+# Remember to use the patch(...) pattern always, so to have mock working locally.
+# In case the pattern is not used, the behaviour of the mocked function remains the same
+# until the end of the test suite.
+# Just to be clear, if a function is mocked so to get the open() failing,
+# you won't be able to open a device anymore.
 def test_load_system(dut, log_level):
     setup_dut(dut)
 

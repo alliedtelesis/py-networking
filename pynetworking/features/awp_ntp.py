@@ -25,22 +25,19 @@ class awp_ntp(Feature):
         self._d.log_info("loading config")
         self._ntp = OrderedDict()
 
-        #ntp address-table static xxxx.xxxx.xxxx forward interface port1.0.1 vlan 1
-        ifre = re.compile('ntp\s+address-table\s+static\s+(?P<ntp>[^\s]+)\s+'
-                          '(?P<action>[^\s]+)\s+'
-                          'interface\s+(?P<interface>[^\s]+)\s+'
-                          'vlan\s+(?P<vlan>\d+)')
-
-        for line in config.split('\n'):
-            self._d.log_debug("line is {0}".format(line))
-            m = ifre.match(line)
-            if m:
-                key = m.group('ntp')
-                self._ntp[key] = {'vlan': m.group('vlan'),
-                                  'interface': m.group('interface'),
-                                  'action': m.group('action'),
-                                  'type': 'static'
-                                 }
+        # #ntp address-table static xxxx.xxxx.xxxx forward interface port1.0.1 vlan 1
+        # ifre = re.compile('(?P<address>[^\s]+)\s+'
+        #                   '(?P<polltime>[^\s]+)\s+'
+        #                   '(?P<status>[^\s]+)')
+        #
+        # for line in config.split('\n'):
+        #     self._d.log_debug("line is {0}".format(line))
+        #     m = ifre.match(line)
+        #     if m:
+        #         key = m.group('address')
+        #         self._ntp[key] = {'polltime': m.group('polltime'),
+        #                           'status': m.group('status')
+        #                          }
         self._d.log_info(self._ntp)
 
 
@@ -111,7 +108,6 @@ class awp_ntp(Feature):
 
 
     def __getitem__(self, address):
-        self._update_ntp()
         if address not in self._ntp.keys():
             raise KeyError('NTP server {0} does not exist'.format(address))
         return self._ntp[address]
@@ -121,17 +117,34 @@ class awp_ntp(Feature):
         self._d.log_info("_update_ntp")
         self._ntp = OrderedDict()
 
-        # 1    port1.0.1    0000.cd1d.7eb0   forward   dynamic
-        ifre = re.compile('(?P<address>[^\s]+)\s+'
-                          '(?P<polltime>[^\s]+)\s+'
-                          '(?P<status>[^\s]+)')
-        self._device.cmd("terminal length 0")
-        for line in self._device.cmd("show ntp status").split('\n'):
+        # awplus#show ntp status
+        # Clock is synchronized, stratum 2, reference is 193.204.114.233
+        # actual frequency is 0.0000 PPM, precision is 2**-16
+        # reference time is d7ceaad8.b79b55c1 (16:53:12.717 CET Thu Sep 25 2014)
+        # clock offset is 9.382 msec, root delay is 21.749 msec
+        # root dispersion is 7947.402 msec
+
+        # awplus#show ntp associations
+        #   address          ref clock       st  when  poll reach   delay  offset    disp
+        # *~193.204.114.233  CTD              1     2    64   001    21.8    11.2  7937.5
+        #  ~193.204.114.105  INIT            16     -    64   000     0.0     0.0 15937.5
+        #  * master (synced), # master (unsynced), + selected, - candidate, ~ configured
+        ifre = re.compile('(\s+|'')(?P<address>[^\s]+)\s+'
+                          '\s+(?P<refclock>[^\s]+)\s+'
+                          '\s+(?P<st>\d+)\s+'
+                          '\s+(?P<when>[^\s]+)\s+'
+                          '\s+(?P<polltime>\d+)')
+        for line in self._device.cmd("show ntp associations").split('\n'):
             self._d.log_debug("line is {0}".format(line))
             m = ifre.match(line)
             if m:
-                key = m.group('address')
+                status = False
+                if (line[0] == '*'):
+                    status = True
+                    key = m.group('address')[2:]
+                else:
+                    key = m.group('address')[1:]
                 self._ntp[key] = {'polltime': m.group('polltime'),
-                                  'status': m.group('status')
+                                  'status': status
                                  }
         self._d.log_debug("ntp {0}".format(pformat(json.dumps(self._ntp))))

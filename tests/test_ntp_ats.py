@@ -24,6 +24,10 @@ def test_ntp_crud(dut, log_level):
 """]
     output_3 = ["""
 """]
+    output_4 = ["""
+"""]
+    output_5 = ["""
+"""]
     setup_dut(dut)
 
     ntp1_address = 'ntp.inrim.it'
@@ -31,6 +35,8 @@ def test_ntp_crud(dut, log_level):
     bad_ntp_address = '10.10.10.10.10'
     create_cmd_1 = 'ntp peer {0}'.format(ntp1_address)
     create_cmd_2 = 'ntp peer {0}'.format(ntp2_address)
+    update_cmd_1 = 'ntp peer {0}'.format(ntp1_address)
+    update_cmd_2 = 'ntp peer {0}'.format(ntp2_address)
     delete_cmd_1 = 'no ntp peer {0}'.format(ntp1_address)
     delete_cmd_2 = 'no ntp peer'
 
@@ -39,10 +45,14 @@ def test_ntp_crud(dut, log_level):
     dut.add_cmd({'cmd': 'show ntp status', 'state':1, 'action':'PRINT'    ,'args': output_1})
     dut.add_cmd({'cmd': create_cmd_2     , 'state':1, 'action':'SET_STATE','args':[2]})
     dut.add_cmd({'cmd': 'show ntp status', 'state':2, 'action':'PRINT'    ,'args': output_2})
-    dut.add_cmd({'cmd': delete_cmd_1     , 'state':2, 'action':'SET_STATE','args':[3]})
+    dut.add_cmd({'cmd': update_cmd_1     , 'state':2, 'action':'SET_STATE','args':[3]})
     dut.add_cmd({'cmd': 'show ntp status', 'state':3, 'action':'PRINT'    ,'args': output_3})
-    dut.add_cmd({'cmd': delete_cmd_2     , 'state':3, 'action':'SET_STATE','args':[4]})
-    dut.add_cmd({'cmd': 'show ntp status', 'state':4, 'action':'PRINT'    ,'args': output_0})
+    dut.add_cmd({'cmd': update_cmd_2     , 'state':3, 'action':'SET_STATE','args':[4]})
+    dut.add_cmd({'cmd': 'show ntp status', 'state':4, 'action':'PRINT'    ,'args': output_4})
+    dut.add_cmd({'cmd': delete_cmd_1     , 'state':4, 'action':'SET_STATE','args':[5]})
+    dut.add_cmd({'cmd': 'show ntp status', 'state':5, 'action':'PRINT'    ,'args': output_5})
+    dut.add_cmd({'cmd': delete_cmd_2     , 'state':5, 'action':'SET_STATE','args':[6]})
+    dut.add_cmd({'cmd': 'show ntp status', 'state':6, 'action':'PRINT'    ,'args': output_0})
 
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()

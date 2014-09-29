@@ -17,32 +17,36 @@ Build type : RELEASE
 
 def test_ntp_crud(dut, log_level):
     output_0 = ["""
+  address          ref clock       st  when  poll reach   delay  offset    disp
 """]
     output_1 = ["""
+  address          ref clock       st  when  poll reach   delay  offset    disp
+*~193.204.114.233  CTD              1     2    64   001    21.8    11.2  7937.5
 """]
     output_2 = ["""
-"""]
-    output_3 = ["""
+  address          ref clock       st  when  poll reach   delay  offset    disp
+*~193.204.114.233  CTD              1     2    64   001    21.8    11.2  7937.5
+ ~ntp.inrim.it     INIT            16     -    64   000     0.0     0.0 15937.5
 """]
     setup_dut(dut)
 
-    ntp1_address = 'ntp.inrim.it'
-    ntp2_address = '10.17.39.111'
+    ntp1_address = '193.204.114.233'
+    ntp2_address = 'ntp.inrim.it'
     bad_ntp_address = '10.10.10.10.10'
     create_cmd_1 = 'ntp peer {0}'.format(ntp1_address)
     create_cmd_2 = 'ntp peer {0}'.format(ntp2_address)
     delete_cmd_1 = 'no ntp peer {0}'.format(ntp1_address)
     delete_cmd_2 = 'no ntp peer'
 
-    dut.add_cmd({'cmd': 'show ntp status', 'state':0, 'action':'PRINT'    ,'args': output_0})
-    dut.add_cmd({'cmd': create_cmd_1     , 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'show ntp status', 'state':1, 'action':'PRINT'    ,'args': output_1})
-    dut.add_cmd({'cmd': create_cmd_2     , 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'show ntp status', 'state':2, 'action':'PRINT'    ,'args': output_2})
-    dut.add_cmd({'cmd': delete_cmd_1     , 'state':2, 'action':'SET_STATE','args':[3]})
-    dut.add_cmd({'cmd': 'show ntp status', 'state':3, 'action':'PRINT'    ,'args': output_3})
-    dut.add_cmd({'cmd': delete_cmd_2     , 'state':3, 'action':'SET_STATE','args':[4]})
-    dut.add_cmd({'cmd': 'show ntp status', 'state':4, 'action':'PRINT'    ,'args': output_0})
+    dut.add_cmd({'cmd': 'show ntp associations', 'state':0, 'action':'PRINT'    ,'args': output_0})
+    dut.add_cmd({'cmd': create_cmd_1           , 'state':0, 'action':'SET_STATE','args':[1]})
+    dut.add_cmd({'cmd': 'show ntp associations', 'state':1, 'action':'PRINT'    ,'args': output_1})
+    dut.add_cmd({'cmd': create_cmd_2           , 'state':1, 'action':'SET_STATE','args':[2]})
+    dut.add_cmd({'cmd': 'show ntp associations', 'state':2, 'action':'PRINT'    ,'args': output_2})
+    dut.add_cmd({'cmd': delete_cmd_1           , 'state':2, 'action':'SET_STATE','args':[3]})
+    dut.add_cmd({'cmd': 'show ntp associations', 'state':3, 'action':'PRINT'    ,'args': output_1})
+    dut.add_cmd({'cmd': delete_cmd_2           , 'state':3, 'action':'SET_STATE','args':[4]})
+    dut.add_cmd({'cmd': 'show ntp associations', 'state':4, 'action':'PRINT'    ,'args': output_0})
 
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()

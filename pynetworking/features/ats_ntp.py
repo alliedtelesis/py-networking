@@ -16,7 +16,7 @@ class ats_ntp(Feature):
     """
     def __init__(self, device, **kvargs):
         Feature.__init__(self, device, **kvargs)
-        self._ntp={}
+        self._ntp = {}
         self._d = device
         self._d.log_debug("loading feature")
 
@@ -26,20 +26,17 @@ class ats_ntp(Feature):
         self._ntp = OrderedDict()
 
         #ntp address-table static xxxx.xxxx.xxxx forward interface port1.0.1 vlan 1
-        ifre = re.compile('ntp\s+address-table\s+static\s+(?P<ntp>[^\s]+)\s+'
-                          '(?P<action>[^\s]+)\s+'
-                          'interface\s+(?P<interface>[^\s]+)\s+'
-                          'vlan\s+(?P<vlan>\d+)')
+        ifre = re.compile('(?P<address>[^\s]+)\s+'
+                          '(?P<polltime>[^\s]+)\s+'
+                          '(?P<status>[^\s]+)')
 
         for line in config.split('\n'):
             self._d.log_debug("line is {0}".format(line))
             m = ifre.match(line)
             if m:
-                key = m.group('ntp')
-                self._ntp[key] = {'vlan': m.group('vlan'),
-                                  'interface': m.group('interface'),
-                                  'action': m.group('action'),
-                                  'type': 'static'
+                key = m.group('address')
+                self._ntp[key] = {'polltime': m.group('polltime'),
+                                  'status': m.group('status')
                                  }
         self._d.log_info(self._ntp)
 
@@ -123,7 +120,6 @@ class ats_ntp(Feature):
         ifre = re.compile('(?P<address>[^\s]+)\s+'
                           '(?P<polltime>[^\s]+)\s+'
                           '(?P<status>[^\s]+)')
-        self._device.cmd("terminal length 0")
         for line in self._device.cmd("show ntp status").split('\n'):
             self._d.log_debug("line is {0}".format(line))
             m = ifre.match(line)

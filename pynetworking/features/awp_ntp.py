@@ -55,6 +55,7 @@ class awp_ntp(Feature):
                          {'cmd': chr(26) , 'prompt': '\#'}
                         ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
+        sleep(1)
         self._update_ntp()
 
 
@@ -87,13 +88,23 @@ class awp_ntp(Feature):
         if address != '' and address not in self._ntp.keys():
             raise KeyError('NTP server {0} not present'.format(address))
 
-        del_cmd = 'no ntp peer {0}'.format(address)
         cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
-                         {'cmd': 'conf t', 'prompt': '\(config\)\#'},
-                         {'cmd': del_cmd , 'prompt': '\(config\)\#'},
-                         {'cmd': chr(26) , 'prompt': '\#'}
+                         {'cmd': 'conf t', 'prompt': '\(config\)\#'}
                         ]}
+
+        if address == '':
+            ntp_list = self._ntp.keys()
+            for i in range(len(ntp_list)):
+                del_cmd = 'no ntp peer {0}'.format(ntp_list[i])
+                self._d.log_info("cmd is {0}".format(del_cmd))
+                cmds['cmds'].append({'cmd': del_cmd ,'prompt':'\(config\)\#'})
+        else:
+            del_cmd = 'no ntp peer {0}'.format(address)
+            cmds['cmds'].append({'cmd': del_cmd ,'prompt':'\(config\)\#'})
+
+        cmds['cmds'].append({'cmd': chr(26) , 'prompt': '\#'})
         self._device.cmd(cmds, cache=False, flush_cache=True)
+        sleep(1)
         self._update_ntp()
 
 
@@ -127,9 +138,10 @@ class awp_ntp(Feature):
         # awplus#show ntp associations
         #   address          ref clock       st  when  poll reach   delay  offset    disp
         # *~193.204.114.233  CTD              1     2    64   001    21.8    11.2  7937.5
-        #  ~193.204.114.105  INIT            16     -    64   000     0.0     0.0 15937.5
+        # -~193.204.114.105  CTD              1    39    64   077    20.2    20.7     4.3
+        #  ~193.204.114.106  INIT            16     -    64   000     0.0     0.0 15937.5
         #  * master (synced), # master (unsynced), + selected, - candidate, ~ configured
-        ifre = re.compile('(\s+|'')(?P<address>[^\s]+)\s+'
+        ifre = re.compile('(\s+|\*+|\-+)~+(?P<address>[^\s]+)\s+'
                           '\s+(?P<refclock>[^\s]+)\s+'
                           '\s+(?P<st>\d+)\s+'
                           '\s+(?P<when>[^\s]+)\s+'
@@ -141,9 +153,7 @@ class awp_ntp(Feature):
                 status = False
                 if (line[0] == '*'):
                     status = True
-                    key = m.group('address')[2:]
-                else:
-                    key = m.group('address')[1:]
+                key = m.group('address')
                 self._ntp[key] = {'polltime': m.group('polltime'),
                                   'status': status
                                  }

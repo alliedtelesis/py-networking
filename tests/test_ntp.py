@@ -26,17 +26,27 @@ def test_ntp_crud(dut, log_level):
     output_2 = ["""
   address          ref clock       st  when  poll reach   delay  offset    disp
 *~193.204.114.233  CTD              1     2    64   001    21.8    11.2  7937.5
- ~ntp.inrim.it     INIT            16     -    64   000     0.0     0.0 15937.5
+-~193.204.114.105  CTD              1    42    64   037    20.0    20.7     3.7
 """]
     setup_dut(dut)
 
     ntp1_address = '193.204.114.233'
-    ntp2_address = 'ntp.inrim.it'
+    ntp2_address = '193.204.114.105'
+    # ntp2_string_address = 'ntp.inrim.it'
     bad_ntp_address = '10.10.10.10.10'
     create_cmd_1 = 'ntp peer {0}'.format(ntp1_address)
     create_cmd_2 = 'ntp peer {0}'.format(ntp2_address)
-    delete_cmd_1 = 'no ntp peer {0}'.format(ntp1_address)
-    delete_cmd_2 = 'no ntp peer'
+    delete_cmd_1 = 'no ntp peer {0}'.format(ntp2_address)
+    delete_cmd_2 = 'no ntp peer {0}'.format(ntp1_address)
+
+    # Add the routes manually to have the NTP servers reachable:
+    #
+    #ip name-server 10.17.39.11
+    #ip route 193.204.114.233/32 10.17.39.1
+    #ip route 193.204.114.105/32 10.17.39.1
+    #
+    # Note that NTP server addresses are shown in the numeric form, even if they have been set in the literal one.
+
 
     dut.add_cmd({'cmd': 'show ntp associations', 'state':0, 'action':'PRINT'    ,'args': output_0})
     dut.add_cmd({'cmd': create_cmd_1           , 'state':0, 'action':'SET_STATE','args':[1]})
@@ -62,10 +72,14 @@ def test_ntp_crud(dut, log_level):
     d.ntp.create(ntp2_address)
     assert ntp2_address in d.ntp.keys()
 
+    pt = d.ntp[ntp1_address]['polltime']
+    st = d.ntp[ntp1_address]['status']
+    assert (ntp1_address, {'polltime': pt, 'status': st}) in d.ntp.items()
+
     with pytest.raises(KeyError) as excinfo:
         d.ntp.delete(bad_ntp_address)
-    d.ntp.delete(ntp1_address)
-    assert ntp1_address not in d.ntp.keys()
-    d.ntp.delete()
+    d.ntp.delete(ntp2_address)
     assert ntp2_address not in d.ntp.keys()
+    d.ntp.delete()
+    assert ntp1_address not in d.ntp.keys()
     d.close()

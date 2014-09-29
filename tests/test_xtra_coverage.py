@@ -237,12 +237,9 @@ Build type : RELEASE
 def test_load_system(dut, log_level):
     setup_dut(dut)
 
-    with patch('yaml.load') as MockClass:
-        models = {'features': None, 'system': None}
-        yaml_mck = MagicMock()
-        yaml_mck.return_value = models
-        yaml.load = yaml_mck
+    yaml_load_mocked = MagicMock(return_value = {'features': None, 'system': None})
 
+    with patch('yaml.load', yaml_load_mocked):
         d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
         with pytest.raises(ImportError) as excinfo:
             d.open()
@@ -252,27 +249,22 @@ def test_load_system(dut, log_level):
 def test_load_features(dut, log_level):
     setup_dut(dut)
 
-    with patch('yaml.load') as MockClass:
-        yaml_mck = MagicMock()
-        yaml_mck.return_value = None
-        yaml.load = yaml_mck
+    yaml_load_mocked = MagicMock()
 
+    with patch('yaml.load', yaml_load_mocked):
         d=Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
 
-        models = {'system': 'awp_system', 'features': {'dhcp': 'awp_dhcp'}}
-        yaml_mck.return_value = models
+        yaml_load_mocked.return_value = {'system': 'awp_system', 'features': {'dhcp': 'awp_dhcp'}}
         with pytest.raises(ImportError) as excinfo:
             d.open()
         assert str(excinfo.value) == 'No module named awp_dhcp'
 
-        models = None
-        yaml_mck.return_value = models
+        yaml_load_mocked.return_value = None
         with pytest.raises(AttributeError) as excinfo:
             d.open()
         assert str(excinfo.value) == '\'Device\' object has no attribute \'system\''
 
-        models = {'features': None}
-        yaml_mck.return_value = models
+        yaml_load_mocked.return_value = {'features': None}
         with pytest.raises(AttributeError) as excinfo:
             d.open()
         assert str(excinfo.value) == '\'Device\' object has no attribute \'system\''
@@ -281,12 +273,10 @@ def test_load_features(dut, log_level):
 def test_timeout(dut, log_level):
     setup_dut(dut)
 
-    with patch('zmq.Poller.poll') as MockClass:
-        # Timeout mocked returning an empty string, as the device had not answered
-        poll_mck = MagicMock()
-        poll_mck.return_value = ''
-        zmq.Poller.poll = poll_mck
+    # Timeout mocked returning an empty string, as the device had not answered
+    zmq_poller_poll_mocked = MagicMock(return_value = '')
 
+    with patch('zmq.Poller.poll', zmq_poller_poll_mocked):
         d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
         with pytest.raises(DeviceException) as excinfo:
             d.open()
@@ -296,12 +286,10 @@ def test_timeout(dut, log_level):
 def test_zmq_error(dut, log_level):
     setup_dut(dut)
 
-    with patch('zmq.Context.socket') as MockClass:
-        # ZMQ undefined error simulated
-        socket_mck = MagicMock()
-        socket_mck.side_effect = zmq.error.ZMQError
-        zmq.Context.socket = socket_mck
+    # ZMQ undefined error simulated
+    zmq_context_socket = MagicMock(side_effect = zmq.error.ZMQError)
 
+    with patch('zmq.Context.socket', zmq_context_socket):
         d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
         with pytest.raises(DeviceException) as excinfo:
             d.open()
@@ -309,6 +297,7 @@ def test_zmq_error(dut, log_level):
 
 
 def test_last(dut, log_level):
+    # If this is working, it means that the previous mocked functions has a local effect as they should
     setup_dut(dut)
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()

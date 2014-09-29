@@ -229,9 +229,9 @@ Build type : RELEASE
 #
 
 
-# Remember to use the patch(...) pattern always, so to have mock working locally.
-# In case the pattern is not used, the behaviour of the mocked function remains the same
-# until the end of the test suite.
+# Remember to use the with patch(...) pattern always, so to have local mocking.
+# In case the pattern is not used, the mocked function remains the same
+# until the end of the whole test suite.
 # Just to be clear, if a function is mocked so to get the open() failing,
 # you won't be able to open a device anymore.
 def test_load_system(dut, log_level):

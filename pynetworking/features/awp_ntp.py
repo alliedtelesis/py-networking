@@ -96,7 +96,6 @@ class awp_ntp(Feature):
             ntp_list = self._ntp.keys()
             for i in range(len(ntp_list)):
                 del_cmd = 'no ntp peer {0}'.format(ntp_list[i])
-                self._d.log_info("cmd is {0}".format(del_cmd))
                 cmds['cmds'].append({'cmd': del_cmd ,'prompt':'\(config\)\#'})
         else:
             del_cmd = 'no ntp peer {0}'.format(address)
@@ -119,6 +118,7 @@ class awp_ntp(Feature):
 
 
     def __getitem__(self, address):
+        self._update_ntp()
         if address not in self._ntp.keys():
             raise KeyError('NTP server {0} does not exist'.format(address))
         return self._ntp[address]

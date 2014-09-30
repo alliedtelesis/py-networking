@@ -16,6 +16,14 @@ Build type : RELEASE
 
 
 def test_ntp_crud(dut, log_level):
+    # Add the routes manually to have the NTP servers reachable:
+    #
+    #ip name-server 10.17.39.11
+    #ip route 193.204.114.233/32 10.17.39.1
+    #ip route 193.204.114.105/32 10.17.39.1
+    #
+    # Note that NTP server addresses are shown in the numeric form, even if they have been set in the literal one.
+
     output_0 = ["""
   address          ref clock       st  when  poll reach   delay  offset    disp
 """]
@@ -28,6 +36,7 @@ def test_ntp_crud(dut, log_level):
 *~193.204.114.233  CTD              1     2    64   001    21.8    11.2  7937.5
 -~193.204.114.105  CTD              1    42    64   037    20.0    20.7     3.7
 """]
+
     setup_dut(dut)
 
     ntp1_address = '193.204.114.233'
@@ -38,15 +47,6 @@ def test_ntp_crud(dut, log_level):
     create_cmd_2 = 'ntp peer {0}'.format(ntp2_address)
     delete_cmd_1 = 'no ntp peer {0}'.format(ntp2_address)
     delete_cmd_2 = 'no ntp peer {0}'.format(ntp1_address)
-
-    # Add the routes manually to have the NTP servers reachable:
-    #
-    #ip name-server 10.17.39.11
-    #ip route 193.204.114.233/32 10.17.39.1
-    #ip route 193.204.114.105/32 10.17.39.1
-    #
-    # Note that NTP server addresses are shown in the numeric form, even if they have been set in the literal one.
-
 
     dut.add_cmd({'cmd': 'show ntp associations', 'state':0, 'action':'PRINT'    ,'args': output_0})
     dut.add_cmd({'cmd': create_cmd_1           , 'state':0, 'action':'SET_STATE','args':[1]})

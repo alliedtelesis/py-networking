@@ -40,6 +40,22 @@ def test_ntp_crud(dut, log_level):
     #
     # Note that NTP server addresses are shown in the numeric form, even if they have been set in the literal one.
 
+    output_r_c = ["""
+!
+interface port1.0.1-1.0.50
+ switchport
+ switchport mode access
+!
+vlan database
+vlan 1
+exit
+!
+clock source sntp
+sntp unicast client enable
+sntp server 83.64.124.251
+!
+end
+"""]
     output_c_0 = ["""
 Polling interval: 60 seconds.
 No MD5 authentication keys.
@@ -162,26 +178,27 @@ Unicast servers:
     delete_cmd_1 = 'no sntp server {0}'.format(ntp1_address)
     delete_cmd_2 = 'no sntp server'
 
-    dut.add_cmd({'cmd': 'show sntp config', 'state':0, 'action':'PRINT'    ,'args': output_c_0})
-    dut.add_cmd({'cmd': 'show sntp status', 'state':0, 'action':'PRINT'    ,'args': output_s_0})
-    dut.add_cmd({'cmd': create_cmd_1      , 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'show sntp config', 'state':1, 'action':'PRINT'    ,'args': output_c_1})
-    dut.add_cmd({'cmd': 'show sntp status', 'state':1, 'action':'PRINT'    ,'args': output_s_1})
-    dut.add_cmd({'cmd': create_cmd_2      , 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'show sntp config', 'state':2, 'action':'PRINT'    ,'args': output_c_2})
-    dut.add_cmd({'cmd': 'show sntp status', 'state':2, 'action':'PRINT'    ,'args': output_s_2})
-    dut.add_cmd({'cmd': update_cmd_1      , 'state':2, 'action':'SET_STATE','args':[3]})
-    dut.add_cmd({'cmd': 'show sntp config', 'state':3, 'action':'PRINT'    ,'args': output_c_3})
-    dut.add_cmd({'cmd': 'show sntp status', 'state':3, 'action':'PRINT'    ,'args': output_s_3})
-    dut.add_cmd({'cmd': update_cmd_2      , 'state':3, 'action':'SET_STATE','args':[4]})
-    dut.add_cmd({'cmd': 'show sntp config', 'state':4, 'action':'PRINT'    ,'args': output_c_4})
-    dut.add_cmd({'cmd': 'show sntp status', 'state':4, 'action':'PRINT'    ,'args': output_s_4})
-    dut.add_cmd({'cmd': delete_cmd_1      , 'state':4, 'action':'SET_STATE','args':[5]})
-    dut.add_cmd({'cmd': 'show sntp config', 'state':5, 'action':'PRINT'    ,'args': output_c_5})
-    dut.add_cmd({'cmd': 'show sntp status', 'state':5, 'action':'PRINT'    ,'args': output_s_5})
-    dut.add_cmd({'cmd': delete_cmd_2      , 'state':5, 'action':'SET_STATE','args':[6]})
-    dut.add_cmd({'cmd': 'show sntp config', 'state':6, 'action':'PRINT'    ,'args': output_c_0})
-    dut.add_cmd({'cmd': 'show sntp status', 'state':6, 'action':'PRINT'    ,'args': output_s_0})
+    dut.add_cmd({'cmd': 'show running-config', 'state':0, 'action':'PRINT'    ,'args': output_r_c})
+    dut.add_cmd({'cmd': 'show sntp config'   , 'state':0, 'action':'PRINT'    ,'args': output_c_0})
+    dut.add_cmd({'cmd': 'show sntp status'   , 'state':0, 'action':'PRINT'    ,'args': output_s_0})
+    dut.add_cmd({'cmd': create_cmd_1         , 'state':0, 'action':'SET_STATE','args':[1]})
+    dut.add_cmd({'cmd': 'show sntp config'   , 'state':1, 'action':'PRINT'    ,'args': output_c_1})
+    dut.add_cmd({'cmd': 'show sntp status'   , 'state':1, 'action':'PRINT'    ,'args': output_s_1})
+    dut.add_cmd({'cmd': create_cmd_2         , 'state':1, 'action':'SET_STATE','args':[2]})
+    dut.add_cmd({'cmd': 'show sntp config'   , 'state':2, 'action':'PRINT'    ,'args': output_c_2})
+    dut.add_cmd({'cmd': 'show sntp status'   , 'state':2, 'action':'PRINT'    ,'args': output_s_2})
+    dut.add_cmd({'cmd': update_cmd_1         , 'state':2, 'action':'SET_STATE','args':[3]})
+    dut.add_cmd({'cmd': 'show sntp config'   , 'state':3, 'action':'PRINT'    ,'args': output_c_3})
+    dut.add_cmd({'cmd': 'show sntp status'   , 'state':3, 'action':'PRINT'    ,'args': output_s_3})
+    dut.add_cmd({'cmd': update_cmd_2         , 'state':3, 'action':'SET_STATE','args':[4]})
+    dut.add_cmd({'cmd': 'show sntp config'   , 'state':4, 'action':'PRINT'    ,'args': output_c_4})
+    dut.add_cmd({'cmd': 'show sntp status'   , 'state':4, 'action':'PRINT'    ,'args': output_s_4})
+    dut.add_cmd({'cmd': delete_cmd_1         , 'state':4, 'action':'SET_STATE','args':[5]})
+    dut.add_cmd({'cmd': 'show sntp config'   , 'state':5, 'action':'PRINT'    ,'args': output_c_5})
+    dut.add_cmd({'cmd': 'show sntp status'   , 'state':5, 'action':'PRINT'    ,'args': output_s_5})
+    dut.add_cmd({'cmd': delete_cmd_2         , 'state':5, 'action':'SET_STATE','args':[6]})
+    dut.add_cmd({'cmd': 'show sntp config'   , 'state':6, 'action':'PRINT'    ,'args': output_c_0})
+    dut.add_cmd({'cmd': 'show sntp status'   , 'state':6, 'action':'PRINT'    ,'args': output_s_0})
 
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()

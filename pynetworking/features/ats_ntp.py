@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from pynetworking import Feature
 from pprint import pformat
-from time import sleep
 import re
 import json
 try:
@@ -28,7 +27,7 @@ class ats_ntp(Feature):
         # clock source sntp
         # sntp unicast client enable
         # sntp server 193.204.114.233
-        ifre = re.compile('sntp\s+server\s+(?P<address>[^\s]+)\s+')
+        ifre = re.compile('sntp\s+server\s+(?P<address>[^\n]+)')
 
         for line in config.split('\n'):
             self._d.log_debug("line is {0}".format(line))
@@ -86,29 +85,25 @@ class ats_ntp(Feature):
         if address != '' and address not in self._sntp.keys():
             raise KeyError('SNTP server {0} not present'.format(address))
 
-        cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
-                         {'cmd': 'conf t', 'prompt': '\(config\)\#'}
-                        ]}
+        cmds = {'cmds': [{'cmd': 'conf', 'prompt': '\(config\)\#'}]}
 
         if address == '':
             sntp_list = self._sntp.keys()
             for i in range(len(sntp_list)):
-                del_cmd = 'no sntp server {0}'.format(ntp_list[i])
-                cmds['cmds'].append({'cmd': del_cmd ,'prompt':'\(config\)\#'})
+                del_cmd = 'no sntp server {0}'.format(sntp_list[i])
+                cmds['cmds'].append({'cmd': del_cmd, 'prompt': '\(config\)\#'})
         else:
             del_cmd = 'no sntp server {0}'.format(address)
-            cmds['cmds'].append({'cmd': del_cmd ,'prompt':'\(config\)\#'})
+            cmds['cmds'].append({'cmd': del_cmd, 'prompt': '\(config\)\#'})
 
-        cmds['cmds'].append({'cmd': chr(26) , 'prompt': '\#'})
+        cmds['cmds'].append({'cmd': chr(26), 'prompt': '\#'})
         self._device.cmd(cmds, cache=False, flush_cache=True)
-        sleep(1)
         self._update_sntp()
 
         if self._sntp.keys() == []:
-            cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
-                             {'cmd': 'conf t', 'prompt': '\(config\)\#'},
-                             {'cmd': 'no clock source sntp', 'prompt':'\(config\)\#'},
-                             {'cmd': chr(26) , 'prompt': '\#'}
+            cmds = {'cmds': [{'cmd': 'conf'   , 'prompt': '\(config\)\#'},
+                             {'cmd': 'no c so', 'prompt': '\(config\)\#'},
+                             {'cmd': chr(26)  , 'prompt': '\#'}
                             ]}
             self._device.cmd(cmds, cache=False, flush_cache=True)
 
@@ -134,8 +129,6 @@ class ats_ntp(Feature):
         self._d.log_info("_update_sntp")
         self._sntp = OrderedDict()
 
-        # TO BE FIXED: more than one server
-
         # Polling interval: 60 seconds.
         # No MD5 authentication keys.
         # Authentication is not required for synchronization.
@@ -152,7 +145,7 @@ class ats_ntp(Feature):
         # Anycast Clients: disabled
         # No Broadcast Interfaces.
         polltime = 60
-        ifre1 = re.compile('Polling\s+interval:\s+(?P<polltime>\d+)\s+seconds.')
+        ifre1 = re.compile('(\r|'')Polling\s+interval:\s+(?P<polltime>\d+)\s+seconds.')
         for line in self._device.cmd("show sntp config").split('\n'):
             self._d.log_debug("line is {0}".format(line))
             m = ifre1.match(line)

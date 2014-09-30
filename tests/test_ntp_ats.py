@@ -165,18 +165,18 @@ Unicast servers:
 
     setup_dut(dut)
 
-    ntp1_address = '193.204.114.233'
-    ntp2_address = '193.204.114.105'
+    ntp_address_1 = '193.204.114.233'
+    ntp_address_2 = '193.204.114.105'
     bad_ntp_address = '10.10.10.10.10'
     def_polltime = '60'
     polltime_1 = '120'
     polltime_2 = '240'
-    create_cmd_1 = 'sntp server {0}'.format(ntp1_address)
-    create_cmd_2 = 'sntp server {0}'.format(ntp2_address)
+    create_cmd_1 = 'sntp server {0}'.format(ntp_address_1)
+    create_cmd_2 = 'sntp server {0}'.format(ntp_address_2)
     update_cmd_1 = 'sntp client poll timer {0}'.format(polltime_2)
     update_cmd_2 = 'sntp client poll timer {0}'.format(def_polltime)
-    delete_cmd_1 = 'no sntp server {0}'.format(ntp1_address)
-    delete_cmd_2 = 'no sntp server'
+    delete_cmd_1 = 'no sntp server {0}'.format(ntp_address_2)
+    delete_cmd_2 = 'no sntp server {0}'.format(ntp_address_1)
 
     dut.add_cmd({'cmd': 'show running-config', 'state':0, 'action':'PRINT'    ,'args': output_r_c})
     dut.add_cmd({'cmd': 'show sntp config'   , 'state':0, 'action':'PRINT'    ,'args': output_c_0})
@@ -205,30 +205,31 @@ Unicast servers:
     with pytest.raises(KeyError) as excinfo:
         d.ntp[bad_ntp_address]
 
-    assert ntp1_address not in d.ntp.keys()
-    d.ntp.create(ntp1_address)
+    assert ntp_address_1 not in d.ntp.keys()
+    d.ntp.create(ntp_address_1)
     with pytest.raises(KeyError) as excinfo:
-        d.ntp.create(ntp1_address)
-    assert ntp1_address in d.ntp.keys()
-    assert ntp2_address not in d.ntp.keys()
-    d.ntp.create(ntp2_address, polltime_1)
-    assert ntp2_address in d.ntp.keys()
-    assert d.ntp[ntp1_address]['polltime'] == polltime_1
-    assert d.ntp[ntp2_address]['polltime'] == polltime_1
+        d.ntp.create(ntp_address_1)
+    assert ntp_address_1 in d.ntp.keys()
+    assert ntp_address_2 not in d.ntp.keys()
+    d.ntp.create(ntp_address_2, polltime_1)
+    assert ntp_address_2 in d.ntp.keys()
+    assert d.ntp[ntp_address_1]['polltime'] == polltime_1
+    assert d.ntp[ntp_address_2]['polltime'] == polltime_1
+    assert (ntp_address_1, {'polltime' : polltime_1, 'status' : 'up'}) in d.ntp.items()
 
     with pytest.raises(KeyError) as excinfo:
         d.ntp.update(bad_ntp_address)
-    d.ntp.update(ntp1_address, polltime_2)
-    assert d.ntp[ntp1_address]['polltime'] == polltime_2
-    assert d.ntp[ntp2_address]['polltime'] == polltime_2
-    d.ntp.update(ntp2_address)
-    assert d.ntp[ntp1_address]['polltime'] == def_polltime
-    assert d.ntp[ntp2_address]['polltime'] == def_polltime
+    d.ntp.update(ntp_address_1, polltime_2)
+    assert d.ntp[ntp_address_1]['polltime'] == polltime_2
+    assert d.ntp[ntp_address_2]['polltime'] == polltime_2
+    d.ntp.update(ntp_address_2)
+    assert d.ntp[ntp_address_1]['polltime'] == def_polltime
+    assert d.ntp[ntp_address_2]['polltime'] == def_polltime
 
     with pytest.raises(KeyError) as excinfo:
         d.ntp.delete(bad_ntp_address)
-    d.ntp.delete(ntp1_address)
-    assert ntp1_address not in d.ntp.keys()
+    d.ntp.delete(ntp_address_2)
+    assert ntp_address_2 not in d.ntp.keys()
     d.ntp.delete()
-    assert ntp2_address not in d.ntp.keys()
+    assert ntp_address_1 not in d.ntp.keys()
     d.close()

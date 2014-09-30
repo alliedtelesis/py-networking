@@ -283,7 +283,7 @@ def test_timeout(dut, log_level):
         assert str(excinfo.value) == 'proxy exited with error (None)'
 
 
-def test_zmq_error(dut, log_level):
+def ttest_zmq_error(dut, log_level):
     setup_dut(dut)
 
     # ZMQ undefined error simulated

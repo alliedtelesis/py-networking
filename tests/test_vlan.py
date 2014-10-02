@@ -400,9 +400,7 @@ VLAN ID  Name            Type    State   Member ports
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     d.vlan.create(10, name='this is a long vlan name', mtu=1200)
-    assert d.vlan[10]['state'] == 'enable'
-    assert d.vlan[10]['name'] == 'this is a long vlan name'
-    assert d.vlan[10]['mtu'] == 1200
+    assert d.vlan[10] == {'current state':'ACTIVE', 'tagged':(), 'type': 'STATIC', 'untagged':(), 'state':'enable', 'name':'this is a long vlan name', 'mtu':1200}
     with pytest.raises(KeyError) as excinfo:
         d.vlan.update(30,name='does not exist')
     assert '[30] vlans do not exist' in excinfo.value
@@ -410,10 +408,7 @@ VLAN ID  Name            Type    State   Member ports
         d.vlan.update(10,state='idle')
     assert 'idle state makes no sense for vlans'
     d.vlan.create(20, name='admin', mtu=1300)
-    assert '20' in d.vlan
-    assert d.vlan[20]['state'] == 'enable'
-    assert d.vlan[20]['name'] == 'admin'
-    assert d.vlan[20]['mtu'] == 1300
+    assert d.vlan[20] == {'current state':'ACTIVE', 'tagged':(), 'type': 'STATIC', 'untagged':(), 'state':'enable', 'name':'admin', 'mtu':1300}
     d.vlan.create(99, state='disable')
     assert d.vlan[99]['state'] == 'disable'
     d.close()
@@ -995,7 +990,7 @@ VLAN ID  Name            Type    State   Member ports
     assert '1.0.16' in d.vlan[1]['untagged']
     assert '1.0.16' not in d.vlan[10]['untagged']
     d.vlan.add_interface(10,'1.0.16')
-    assert '1.0.16' in d.vlan[1]['untagged']
+    assert '1.0.16' not in d.vlan[1]['untagged']
     assert '1.0.16' in d.vlan[10]['untagged']
     d.vlan.delete_interface(10,'1.0.16')
     assert '1.0.16' in d.vlan[1]['untagged']

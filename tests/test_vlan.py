@@ -190,7 +190,234 @@ VLAN ID  Name            Type    State   Member ports
     d.close()
 
 
-def test_create_vlan_1(dut, log_level):
+def test_create_vlan(dut, log_level):
+    output_rc_0 = ["""
+!
+interface port1.0.1-1.0.50
+switchport
+switchport mode access
+!
+interface vlan 1
+ip address 10.17.39.253 255.255.255.0
+exit
+!
+end
+    """]
+    output_va_0 = ["""
+VLAN ID  Name            Type    State   Member ports
+                                         (u)-Untagged, (t)-Tagged
+======= ================ ======= ======= ====================================
+1       default          STATIC  ACTIVE  port1.0.1(u) port1.0.2(u) port1.0.3(u)
+                                         port1.0.4(u) port1.0.5(u) port1.0.6(u)
+                                         port1.0.7(u) port1.0.8(u) port1.0.9(u)
+                                         port1.0.10(u) port1.0.11(u)
+                                         port1.0.12(t) port1.0.13(u)
+                                         port1.0.14(u) port1.0.15(u)
+                                         port1.0.16(u) port1.0.17(u)
+                                         port1.0.18(u) port1.0.19(u)
+                                         port1.0.20(t) port1.0.21(u)
+                                         port1.0.22(u) port1.0.23(u)
+                                         port1.0.24(u) port1.0.25(u)
+                                         port1.0.26(u) port1.0.27(u)
+                                         port1.0.28(u) port1.0.29(u)
+                                         port1.0.30(u) port1.0.31(u)
+                                         port1.0.32(u) port1.0.33(u)
+                                         port1.0.34(u) port1.0.35(u)
+                                         port1.0.36(u) port1.0.37(u)
+                                         port1.0.38(u) port1.0.39(u)
+                                         port1.0.40(u) port1.0.41(u)
+                                         port1.0.44(u) port1.0.45(u)
+                                         port1.0.46(u) port1.0.47(u)
+                                         port1.0.48(u) port1.0.49(u)
+                                         port1.0.50(u)
+    """]
+    output_rc_1 = ["""
+!
+interface port1.0.1-1.0.50
+switchport
+switchport mode access
+!
+interface vlan 1
+ip address 10.17.39.253 255.255.255.0
+exit
+!
+vlan database
+vlan 10 name "this is a long vlan name" state enable mtu 1200
+!
+end
+"""]
+    output_va_1 = ["""
+VLAN ID  Name            Type    State   Member ports
+                                         (u)-Untagged, (t)-Tagged
+======= ================ ======= ======= ====================================
+1       default          STATIC  ACTIVE  port1.0.1(u) port1.0.2(u) port1.0.3(u)
+                                         port1.0.4(u) port1.0.5(u) port1.0.6(u)
+                                         port1.0.7(u) port1.0.8(u) port1.0.9(u)
+                                         port1.0.10(u) port1.0.11(u)
+                                         port1.0.12(t) port1.0.13(u)
+                                         port1.0.14(u) port1.0.15(u)
+                                         port1.0.16(u) port1.0.17(u)
+                                         port1.0.18(u) port1.0.19(u)
+                                         port1.0.20(t) port1.0.21(u)
+                                         port1.0.22(u) port1.0.23(u)
+                                         port1.0.24(u) port1.0.25(u)
+                                         port1.0.26(u) port1.0.27(u)
+                                         port1.0.28(u) port1.0.29(u)
+                                         port1.0.30(u) port1.0.31(u)
+                                         port1.0.32(u) port1.0.33(u)
+                                         port1.0.34(u) port1.0.35(u)
+                                         port1.0.36(u) port1.0.37(u)
+                                         port1.0.38(u) port1.0.39(u)
+                                         port1.0.40(u) port1.0.41(u)
+                                         port1.0.44(u) port1.0.45(u)
+                                         port1.0.46(u) port1.0.47(u)
+                                         port1.0.48(u) port1.0.49(u)
+                                         port1.0.50(u)
+10      "this is a long vlan name"
+                         STATIC  ACTIVE
+"""]
+    output_rc_2 = ["""
+!
+interface port1.0.1-1.0.50
+switchport
+switchport mode access
+!
+interface vlan 1
+ip address 10.17.39.253 255.255.255.0
+exit
+!
+vlan database
+vlan 10 name "this is a long vlan name" state enable mtu 1200
+vlan 20 name admin state enable mtu 1300
+!
+end
+"""]
+    output_va_2 = ["""
+VLAN ID  Name            Type    State   Member ports
+                                         (u)-Untagged, (t)-Tagged
+======= ================ ======= ======= ====================================
+1       default          STATIC  ACTIVE  port1.0.1(u) port1.0.2(u) port1.0.3(u)
+                                         port1.0.4(u) port1.0.5(u) port1.0.6(u)
+                                         port1.0.7(u) port1.0.8(u) port1.0.9(u)
+                                         port1.0.10(u) port1.0.11(u)
+                                         port1.0.12(t) port1.0.13(u)
+                                         port1.0.14(u) port1.0.15(u)
+                                         port1.0.16(u) port1.0.17(u)
+                                         port1.0.18(u) port1.0.19(u)
+                                         port1.0.20(t) port1.0.21(u)
+                                         port1.0.22(u) port1.0.23(u)
+                                         port1.0.24(u) port1.0.25(u)
+                                         port1.0.26(u) port1.0.27(u)
+                                         port1.0.28(u) port1.0.29(u)
+                                         port1.0.30(u) port1.0.31(u)
+                                         port1.0.32(u) port1.0.33(u)
+                                         port1.0.34(u) port1.0.35(u)
+                                         port1.0.36(u) port1.0.37(u)
+                                         port1.0.38(u) port1.0.39(u)
+                                         port1.0.40(u) port1.0.41(u)
+                                         port1.0.44(u) port1.0.45(u)
+                                         port1.0.46(u) port1.0.47(u)
+                                         port1.0.48(u) port1.0.49(u)
+                                         port1.0.50(u)
+10      "this is a long vlan name"
+                         STATIC  ACTIVE
+20      admin            STATIC  ACTIVE
+"""]
+    output_rc_3 = ["""
+!
+interface port1.0.1-1.0.50
+switchport
+switchport mode access
+!
+interface vlan 1
+ip address 10.17.39.253 255.255.255.0
+exit
+!
+vlan database
+vlan 10 name "this is a long vlan name" state enable mtu 1200
+vlan 20 name admin state enable mtu 1300
+vlan 99 state disable
+!
+end
+"""]
+    output_va_3 = ["""
+VLAN ID  Name            Type    State   Member ports
+                                         (u)-Untagged, (t)-Tagged
+======= ================ ======= ======= ====================================
+1       default          STATIC  ACTIVE  port1.0.1(u) port1.0.2(u) port1.0.3(u)
+                                         port1.0.4(u) port1.0.5(u) port1.0.6(u)
+                                         port1.0.7(u) port1.0.8(u) port1.0.9(u)
+                                         port1.0.10(u) port1.0.11(u)
+                                         port1.0.12(t) port1.0.13(u)
+                                         port1.0.14(u) port1.0.15(u)
+                                         port1.0.16(u) port1.0.17(u)
+                                         port1.0.18(u) port1.0.19(u)
+                                         port1.0.20(t) port1.0.21(u)
+                                         port1.0.22(u) port1.0.23(u)
+                                         port1.0.24(u) port1.0.25(u)
+                                         port1.0.26(u) port1.0.27(u)
+                                         port1.0.28(u) port1.0.29(u)
+                                         port1.0.30(u) port1.0.31(u)
+                                         port1.0.32(u) port1.0.33(u)
+                                         port1.0.34(u) port1.0.35(u)
+                                         port1.0.36(u) port1.0.37(u)
+                                         port1.0.38(u) port1.0.39(u)
+                                         port1.0.40(u) port1.0.41(u)
+                                         port1.0.44(u) port1.0.45(u)
+                                         port1.0.46(u) port1.0.47(u)
+                                         port1.0.48(u) port1.0.49(u)
+                                         port1.0.50(u)
+10      "this is a long vlan name"
+                         STATIC  ACTIVE
+20      admin            STATIC  ACTIVE
+99      VLAN0099         STATIC  SUSPEND
+"""]
+
+    setup_dut(dut)
+
+    dut.add_cmd({'cmd':'show running-config'                    , 'state':0, 'action':'PRINT'     ,'args':output_rc_0})
+    dut.add_cmd({'cmd':'show vlan all'                          , 'state':0, 'action':'PRINT'     ,'args':output_va_0})
+    dut.add_cmd({'cmd':'vlan database'                          , 'state':0, 'action':'SET_PROMPT','args':['(config-vlan)#']})
+    dut.add_cmd({'cmd':'vlan database'                          , 'state':0, 'action':'SET_STATE','args':[1]})
+    dut.add_cmd({'cmd':'vlan 10 name "this is a long vlan name"', 'state':1, 'action':'SET_STATE','args':[2]})
+    dut.add_cmd({'cmd':'vlan 10 mtu 1200'                       , 'state':2, 'action':'SET_STATE','args':[3]})
+    dut.add_cmd({'cmd':'show running-config'                    , 'state':3, 'action':'PRINT'     ,'args':output_rc_1})
+    dut.add_cmd({'cmd':'show vlan all'                          , 'state':3, 'action':'PRINT'     ,'args':output_va_1})
+    dut.add_cmd({'cmd':'vlan database'                          , 'state':3, 'action':'SET_PROMPT','args':['(config-vlan)#']})
+    dut.add_cmd({'cmd':'vlan database'                          , 'state':3, 'action':'SET_STATE','args':[4]})
+    dut.add_cmd({'cmd':'vlan 20 name admin'                     , 'state':4, 'action':'SET_STATE','args':[5]})
+    dut.add_cmd({'cmd':'vlan 20 mtu 1300'                       , 'state':5, 'action':'SET_STATE','args':[6]})
+    dut.add_cmd({'cmd':'show running-config'                    , 'state':6, 'action':'PRINT'     ,'args':output_rc_2})
+    dut.add_cmd({'cmd':'show vlan all'                          , 'state':6, 'action':'PRINT'     ,'args':output_va_2})
+    dut.add_cmd({'cmd':'vlan database'                          , 'state':6, 'action':'SET_PROMPT','args':['(config-vlan)#']})
+    dut.add_cmd({'cmd':'vlan database'                          , 'state':6, 'action':'SET_STATE' ,'args':[7]})
+    dut.add_cmd({'cmd':'vlan 99 state disable'                  , 'state':7, 'action':'SET_STATE' ,'args':[8]})
+    dut.add_cmd({'cmd':'show running-config'                    , 'state':8, 'action':'PRINT'     ,'args':output_rc_3})
+    dut.add_cmd({'cmd':'show vlan all'                          , 'state':8, 'action':'PRINT'     ,'args':output_va_3})
+
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d.open()
+    d.vlan.create(10, name='this is a long vlan name', mtu=1200)
+    assert d.vlan[10]['state'] == 'enable'
+    assert d.vlan[10]['name'] == 'this is a long vlan name'
+    assert d.vlan[10]['mtu'] == 1200
+    with pytest.raises(KeyError) as excinfo:
+        d.vlan.update(30,name='does not exist')
+    assert '[30] vlans do not exist' in excinfo.value
+    with pytest.raises(ValueError):
+        d.vlan.update(10,state='idle')
+    assert 'idle state makes no sense for vlans'
+    d.vlan.create(20, name='admin', mtu=1300)
+    assert '20' in d.vlan
+    assert d.vlan[20]['state'] == 'enable'
+    assert d.vlan[20]['name'] == 'admin'
+    assert d.vlan[20]['mtu'] == 1300
+    d.vlan.create(99, state='disable')
+    assert d.vlan[99]['state'] == 'disable'
+    d.close()
+
+
+def _test_create_vlan_1(dut, log_level):
     setup_dut(dut)
     dut.add_cmd({'cmd':'show running-config', 'state':0, 'action': 'PRINT','args':["""
 !
@@ -288,7 +515,7 @@ VLAN ID  Name            Type    State   Member ports
     d.close()
 
 
-def test_create_vlan_2(dut, log_level):
+def _test_create_vlan_2(dut, log_level):
     setup_dut(dut)
     dut.add_cmd({'cmd':'show running-config', 'state':0, 'action': 'PRINT','args':["""
 !
@@ -392,7 +619,7 @@ VLAN ID  Name            Type    State   Member ports
     d.close()
 
 
-def test_create_vlan_3(dut, log_level):
+def _test_create_vlan_3(dut, log_level):
     setup_dut(dut)
     dut.add_cmd({'cmd':'show running-config', 'state':0, 'action': 'PRINT','args':["""
 !
@@ -487,7 +714,7 @@ VLAN ID  Name            Type    State   Member ports
     d.close()
 
 
-def test_get_interface_config(dut, log_level):
+def _test_get_interface_config(dut, log_level):
     if dut.mode != 'emulated':
         pytest.skip("only on emulated")
     setup_dut(dut)
@@ -762,6 +989,10 @@ interface port1.0.1-1.0.50
 switchport
 switchport mode access
 !
+interface port1.0.14
+switchport mode access
+switchport access vlan 10
+!
 interface vlan 1
 ip address 10.17.39.253 255.255.255.0
 exit
@@ -821,6 +1052,7 @@ VLAN ID  Name            Type    State   Member ports
     d.vlan.add_interface(10,'1.0.14')
     assert '1.0.14' in d.vlan[10]['untagged']
     assert '1.0.14' not in d.vlan[1]['untagged']
+    assert d.vlan._interface_config['1.0.14']['switchport mode'] == 'access'
     with pytest.raises(ValueError) as excinfo:
         d.vlan.add_interface(11,'1.0.20')
     assert '11 is not a valid vlan id' in excinfo.value
@@ -897,8 +1129,8 @@ switchport
 switchport mode access
 !
 interface port1.0.15
-switchport
 switchport mode trunk
+switchport trunk allowed vlan add 10
 !
 interface vlan 1
 ip address 10.17.39.253 255.255.255.0
@@ -968,6 +1200,7 @@ VLAN ID  Name            Type    State   Member ports
     d.vlan.add_interface(10,'1.0.15',tagged=True)
     assert '1.0.15' in d.vlan[1]['untagged']
     assert '1.0.15' in d.vlan[10]['tagged']
+    assert d.vlan._interface_config['1.0.15']['switchport mode'] == 'trunk'
     d.vlan.delete_interface(10,'1.0.15')
     assert '1.0.15' in d.vlan[1]['untagged']
     assert '1.0.15' not in d.vlan[10]['tagged']

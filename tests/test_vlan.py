@@ -864,7 +864,15 @@ VLAN ID  Name            Type    State   Member ports
 def test_add_and_delete_interface_3(dut, log_level):
     output_rc_0 = ["""
 !
-interface port1.0.1-1.0.50
+interface port1.0.1-1.0.15
+ switchport
+ switchport mode access
+!
+interface port1.0.16
+ switchport
+ switchport mode trunk
+!
+interface port1.0.17-1.0.50
  switchport
  switchport mode access
 !

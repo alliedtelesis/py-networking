@@ -19,8 +19,8 @@ def test_get_vlan(dut, log_level):
     dut.add_cmd({'cmd':'show running-config', 'state':0, 'action': 'PRINT','args':["""
 !
 interface port1.0.1-1.0.50
- switchport
- switchport mode access
+switchport
+switchport mode access
 !
 vlan database
 vlan 7,10,20
@@ -241,8 +241,9 @@ VLAN ID  Name            Type    State   Member ports
     dut.add_cmd({'cmd': 'show running-config'        , 'state':3, 'action':'PRINT'    ,'args':["""
 !
 vlan database
- vlan 20 name admin state enable mtu 1300
-! 
+vlan 20 name admin state enable mtu 1300
+!
+end
     """]})
     dut.add_cmd({'cmd': 'show vlan all'              , 'state':3, 'action': 'PRINT','args':["""
 VLAN ID  Name            Type    State   Member ports
@@ -340,8 +341,9 @@ VLAN ID  Name            Type    State   Member ports
     dut.add_cmd({'cmd': 'show running-config'                     , 'state':3, 'action':'PRINT'    ,'args':["""
 !
 vlan database
- vlan 10 name "this is a long vlan name" state enable mtu 1200
+vlan 10 name "this is a long vlan name" state enable mtu 1200
 !
+end
     """]})
     dut.add_cmd({'cmd': 'show vlan all'              , 'state':3, 'action': 'PRINT','args':["""
 VLAN ID  Name            Type    State   Member ports
@@ -395,11 +397,11 @@ def test_create_vlan_3(dut, log_level):
     dut.add_cmd({'cmd':'show running-config', 'state':0, 'action': 'PRINT','args':["""
 !
 interface port1.0.1-1.0.50
- switchport
- switchport mode access
+switchport
+switchport mode access
 !
 interface vlan1
- ip address 10.17.39.253/24
+ip address 10.17.39.253/24
 !
 end
     """]})
@@ -437,14 +439,14 @@ VLAN ID  Name            Type    State   Member ports
     dut.add_cmd({'cmd': 'show running-config'                     , 'state':2, 'action':'PRINT'    ,'args':["""
 !
 interface port1.0.1-1.0.50
- switchport
- switchport mode access
+switchport
+switchport mode access
 !
 interface vlan1
- ip address 10.17.39.253/24
+ip address 10.17.39.253/24
 !
 vlan database
- vlan 99 state disable
+vlan 99 state disable
 !
 end
     """]})
@@ -490,6 +492,7 @@ def test_get_interface_config(dut, log_level):
         pytest.skip("only on emulated")
     setup_dut(dut)
     dut.add_cmd({'cmd':'show running-config', 'state':0, 'action':'PRINT','args':["""
+!
 vlan database
 vlan 10, 1000
 !
@@ -501,6 +504,7 @@ interface port1.0.15
 switchport mode access
 switchport access vlan 1000
 !
+end
     """]})
 
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
@@ -517,9 +521,10 @@ def test_exist(dut, log_level):
     dut.add_cmd({'cmd': 'show running-config'                     , 'state':0, 'action':'PRINT'    ,'args':["""
 !
 vlan database
- vlan 7 name admin state enable mtu 1200
- vlan 10 name 'marketing vlan' state enable mtu 1200
+vlan 7 name admin state enable mtu 1200
+vlan 10 name 'marketing vlan' state enable mtu 1200
 !
+end
     """]})
     dut.add_cmd({'cmd': 'show vlan all'              , 'state':0, 'action': 'PRINT','args':["""
 VLAN ID  Name            Type    State   Member ports
@@ -661,6 +666,7 @@ VLAN ID  Name            Type    State   Member ports
 vlan database
 vlan 20 name "vlan name" state enable mtu 1400
 !
+end
     """]})
     dut.add_cmd({'cmd': 'show vlan all',                   'state':6, 'action':'PRINT','args':["""
 VLAN ID  Name            Type    State   Member ports
@@ -837,17 +843,17 @@ def test_add_and_delete_interface_2(dut, log_level):
     output_rc_0 = ["""
 !
 interface port1.0.1-1.0.50
- switchport
- switchport mode access
+switchport
+switchport mode access
 !
 interface vlan 1
 ip address 10.17.39.253 255.255.255.0
 exit
 !
 vlan database
- vlan 7 name admin state enable
- vlan 10 state enable
- vlan 20 "this is a long vlan name" state enable
+vlan 7 name admin state enable
+vlan 10 state enable
+vlan 20 "this is a long vlan name" state enable
 !
 end
 """]
@@ -887,21 +893,21 @@ VLAN ID  Name            Type    State   Member ports
     output_rc_1 = ["""
 !
 interface port1.0.1-1.0.50
- switchport
- switchport mode access
+switchport
+switchport mode access
 !
 interface port1.0.15
- switchport
- switchport mode trunk
+switchport
+switchport mode trunk
 !
 interface vlan 1
 ip address 10.17.39.253 255.255.255.0
 exit
 !
 vlan database
- vlan 7 name admin state enable
- vlan 10 state enable
- vlan 20 "this is a long vlan name" state enable
+vlan 7 name admin state enable
+vlan 10 state enable
+vlan 20 "this is a long vlan name" state enable
 !
 end
 """]
@@ -1437,8 +1443,9 @@ VLAN ID  Name            Type    State   Member ports
     dut.add_cmd({'cmd': 'show running-config',             'state':2, 'action':'PRINT','args':["""
 !
 vlan database
- vlan 20 name admin state enable mtu 1300
+vlan 20 name admin state enable mtu 1300
 !
+end
     """]})
     dut.add_cmd({'cmd':'show vlan all',         'state':2, 'action':'PRINT','args':["""
 VLAN ID  Name            Type    State   Member ports

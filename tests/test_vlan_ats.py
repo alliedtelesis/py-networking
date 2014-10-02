@@ -562,9 +562,8 @@ ip ssh server
     d.close()
 
 
-def test_add_interface1(dut, log_level):
-    setup_dut(dut)
-    dut.add_cmd({'cmd':'show running-config', 'state':0, 'action':'PRINT','args':["""
+def test_add_and_delete_interface_1(dut, log_level):
+    output_rc_0 = ["""
 vlan database
 vlan 10
 exit
@@ -583,8 +582,8 @@ name default_vlan
 exit
 hostname nac_dev
 ip ssh server
-    """]})
-    dut.add_cmd({'cmd': 'show vlan',      'state':0, 'action':'PRINT','args':["""
+"""]
+    output_vl_0 = ["""
 
 Vlan       Name                   Ports                Type     Authorization
 ---- ----------------- --------------------------- ------------ -------------
@@ -596,24 +595,8 @@ Vlan       Name                   Ports                Type     Authorization
                        6/e(1-48),6/g(1-4),ch(1-8)
 10           new vlan                                permanent   Required
 
-    """]})
-    dut.add_cmd({'cmd': 'interface ethernet 1/e20',  'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': 'interface ethernet 1/e20',  'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'switchport access vlan 10', 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'show vlan',                 'state':2, 'action':'PRINT','args':["""
-
-Vlan       Name                   Ports                Type     Authorization
----- ----------------- --------------------------- ------------ -------------
- 1           1         1/e(1-19,21-48),1/g(1-4),      other       Required
-                       2/e(1-48),2/g(1-4),
-                       3/e(1-48),3/g(1-4),
-                       4/e(1-48),4/g(1-4),
-                       5/e(1-48),5/g(1-4),
-                       6/e(1-48),6/g(1-4),ch(1-8)
-10           new vlan  1/e20                          permanent   Required
-
-    """]})
-    dut.add_cmd({'cmd':'show running-config', 'state':2, 'action':'PRINT','args':["""
+"""]
+    output_rc_1 = ["""
 vlan database
 vlan 10
 exit
@@ -632,41 +615,8 @@ name default_vlan
 exit
 hostname nac_dev
 ip ssh server
-    """]})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
-    d.open()
-    d.vlan.add_interface(10,'1.0.20')
-    assert '1.0.20' in d.vlan[10]['untagged']
-    assert '1.0.20' not in d.vlan[1]['untagged']
-    with pytest.raises(ValueError) as excinfo:
-        d.vlan.add_interface(11,'1.0.20')
-    assert '11 is not a valid vlan id' in excinfo.value
-    d.close()
-
-
-def test_delete_interface1(dut, log_level):
-    setup_dut(dut)
-    dut.add_cmd({'cmd':'show running-config', 'state':0, 'action':'PRINT','args':["""
-vlan database
-vlan 10
-exit
-interface ethernet 1/e20
-switchport access vlan 10
-exit
-interface range ethernet 1/e(11-12)
-switchport mode trunk
-exit
-interface range ethernet 1/e(18-19),1/g1
-switchport mode trunk
-exit
-interface vlan 1
-ip address 10.17.39.252 255.255.255.0
-name default_vlan
-exit
-hostname nac_dev
-ip ssh server
-    """]})
-    dut.add_cmd({'cmd': 'show vlan',      'state':0, 'action':'PRINT','args':["""
+"""]
+    output_vl_1 = ["""
 
 Vlan       Name                   Ports                Type     Authorization
 ---- ----------------- --------------------------- ------------ -------------
@@ -677,43 +627,31 @@ Vlan       Name                   Ports                Type     Authorization
                        5/e(1-48),5/g(1-4),
                        6/e(1-48),6/g(1-4),ch(1-8)
 10           new vlan  1/e20                         permanent   Required
+"""]
 
-    """]})
-    dut.add_cmd({'cmd': 'interface ethernet 1/e20',             'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': 'interface ethernet 1/e20',             'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'no switchport access vlan',            'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'show vlan',                            'state':2, 'action':'PRINT','args':["""
+    setup_dut(dut)
 
-Vlan       Name                   Ports                Type     Authorization
----- ----------------- --------------------------- ------------ -------------
- 1           1         1/e(1-48),1/g(1-4),          other       Required
-                       2/e(1-48),2/g(1-4),
-                       3/e(1-48),3/g(1-4),
-                       4/e(1-48),4/g(1-4),
-                       5/e(1-48),5/g(1-4),
-                       6/e(1-48),6/g(1-4),ch(1-8)
-10           new vlan                                permanent   Required
+    dut.add_cmd({'cmd':'show running-config'      , 'state':0, 'action':'PRINT','args':output_rc_0})
+    dut.add_cmd({'cmd':'show vlan'                , 'state':0, 'action':'PRINT','args':output_vl_0})
+    dut.add_cmd({'cmd':'interface ethernet 1/e20' , 'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
+    dut.add_cmd({'cmd':'interface ethernet 1/e20' , 'state':0, 'action':'SET_STATE','args':[1]})
+    dut.add_cmd({'cmd':'switchport access vlan 10', 'state':1, 'action':'SET_STATE','args':[2]})
+    dut.add_cmd({'cmd':'show running-config'      , 'state':2, 'action':'PRINT','args':output_rc_1})
+    dut.add_cmd({'cmd':'show vlan'                , 'state':2, 'action':'PRINT','args':output_vl_1})
+    dut.add_cmd({'cmd':'interface ethernet 1/e20' , 'state':2, 'action':'SET_PROMPT','args':['(config-if)#']})
+    dut.add_cmd({'cmd':'interface ethernet 1/e20' , 'state':2, 'action':'SET_STATE','args':[3]})
+    dut.add_cmd({'cmd':'no switchport access vlan', 'state':3, 'action':'SET_STATE','args':[4]})
+    dut.add_cmd({'cmd':'show running-config'      , 'state':4, 'action':'PRINT','args':output_rc_0})
+    dut.add_cmd({'cmd':'show vlan'                , 'state':4, 'action':'PRINT','args':output_vl_0})
 
-    """]})
-    dut.add_cmd({'cmd':'show running-config',                    'state':2, 'action':'PRINT','args':["""
-vlan database
-vlan 10,11,26
-exit
-interface range ethernet 1/e(11-12)
-switchport mode trunk
-exit
-interface range ethernet 1/e(18-19),1/g1
-switchport mode trunk
-exit
-interface vlan 1
-ip address 10.17.39.252 255.255.255.0
-name default_vlan
-exit
-hostname nac_dev
-ip ssh server
-    """]})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
+    d.vlan.add_interface(10,'1.0.20')
+    assert '1.0.20' in d.vlan[10]['untagged']
+    assert '1.0.20' not in d.vlan[1]['untagged']
+    with pytest.raises(ValueError) as excinfo:
+        d.vlan.add_interface(11,'1.0.20')
+    assert '11 is not a valid vlan id' in excinfo.value
     assert '1.0.20' in d.vlan[10]['untagged']
     assert '1.0.20' not in d.vlan[1]['untagged']
     d.vlan.delete_interface(10,'1.0.20')
@@ -728,9 +666,8 @@ ip ssh server
     d.close()
 
 
-def test_add_interface2(dut, log_level):
-    setup_dut(dut)
-    dut.add_cmd({'cmd':'show running-config', 'state':0, 'action':'PRINT','args':["""
+def test_add_and_delete_interface_2(dut, log_level):
+    output_rc_0 = ["""
 vlan database
 vlan 10
 exit
@@ -749,8 +686,8 @@ name default_vlan
 exit
 hostname nac_dev
 ip ssh server
-    """]})
-    dut.add_cmd({'cmd': 'show vlan',      'state':0, 'action':'PRINT','args':["""
+"""]
+    output_vl_0 = ["""
 
 Vlan       Name                   Ports                Type     Authorization
 ---- ----------------- --------------------------- ------------ -------------
@@ -762,25 +699,8 @@ Vlan       Name                   Ports                Type     Authorization
                        6/e(1-48),6/g(1-4),ch(1-8)
 10           new vlan                                permanent   Required
 
-    """]})
-    dut.add_cmd({'cmd': 'interface ethernet 1/e20',             'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': 'interface ethernet 1/e20',             'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'switchport mode trunk',                'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'switchport trunk allowed vlan add 10', 'state':2, 'action':'SET_STATE','args':[3]})
-    dut.add_cmd({'cmd': 'show vlan',                            'state':3, 'action':'PRINT','args':["""
-
-Vlan       Name                   Ports                Type     Authorization
----- ----------------- --------------------------- ------------ -------------
- 1           1         1/e(1-19,21-48),1/g(1-4),      other       Required
-                       2/e(1-48),2/g(1-4),
-                       3/e(1-48),3/g(1-4),
-                       4/e(1-48),4/g(1-4),
-                       5/e(1-48),5/g(1-4),
-                       6/e(1-48),6/g(1-4),ch(1-8)
-10           new vlan  1/e20                          permanent   Required
-
-    """]})
-    dut.add_cmd({'cmd':'show running-config',                    'state':3, 'action':'PRINT','args':["""
+"""]
+    output_rc_1 = ["""
 vlan database
 vlan 10
 exit
@@ -800,38 +720,8 @@ name default_vlan
 exit
 hostname nac_dev
 ip ssh server
-    """]})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
-    d.open()
-    d.vlan.add_interface(10,'1.0.20',tagged=True)
-    assert '1.0.20' in d.vlan[10]['tagged']
-    d.close()
-
-
-def test_delete_interface2(dut, log_level):
-    setup_dut(dut)
-    dut.add_cmd({'cmd':'show running-config', 'state':0, 'action':'PRINT','args':["""
-vlan database
-vlan 10
-exit
-interface ethernet 1/e20
-switchport mode trunk
-switchport trunk allowed vlan add 10
-exit
-interface range ethernet 1/e(11-12)
-switchport mode trunk
-exit
-interface range ethernet 1/e(18-19),1/g1
-switchport mode trunk
-exit
-interface vlan 1
-ip address 10.17.39.252 255.255.255.0
-name default_vlan
-exit
-hostname nac_dev
-ip ssh server
-    """]})
-    dut.add_cmd({'cmd': 'show vlan',      'state':0, 'action':'PRINT','args':["""
+"""]
+    output_vl_1 = ["""
 
 Vlan       Name                   Ports                Type     Authorization
 ---- ----------------- --------------------------- ------------ -------------
@@ -843,53 +733,36 @@ Vlan       Name                   Ports                Type     Authorization
                        6/e(1-48),6/g(1-4),ch(1-8)
 10           new vlan  1/e20                         permanent   Required
 
-    """]})
-    dut.add_cmd({'cmd': 'interface ethernet 1/e20',               'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': 'interface ethernet 1/e20',               'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'switchport trunk allowed vlan remove 10','state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'show vlan',                              'state':2, 'action':'PRINT','args':["""
+"""]
+    setup_dut(dut)
 
-Vlan       Name                   Ports                Type     Authorization
----- ----------------- --------------------------- ------------ -------------
- 1           1         1/e(1-48),1/g(1-4),           other       Required
-                       2/e(1-48),2/g(1-4),
-                       3/e(1-48),3/g(1-4),
-                       4/e(1-48),4/g(1-4),
-                       5/e(1-48),5/g(1-4),
-                       6/e(1-48),6/g(1-4),ch(1-8)
-10           new vlan                                permanent   Required
+    dut.add_cmd({'cmd':'show running-config'                    , 'state':0, 'action':'PRINT','args':output_rc_0})
+    dut.add_cmd({'cmd':'show vlan'                              , 'state':0, 'action':'PRINT','args':output_vl_0})
+    dut.add_cmd({'cmd':'interface ethernet 1/e20'               , 'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
+    dut.add_cmd({'cmd':'interface ethernet 1/e20'               , 'state':0, 'action':'SET_STATE','args':[1]})
+    dut.add_cmd({'cmd':'switchport mode trunk'                  , 'state':1, 'action':'SET_STATE','args':[2]})
+    dut.add_cmd({'cmd':'switchport trunk allowed vlan add 10'   , 'state':2, 'action':'SET_STATE','args':[3]})
+    dut.add_cmd({'cmd':'show running-config'                    , 'state':3, 'action':'PRINT','args':output_rc_1})
+    dut.add_cmd({'cmd':'show vlan'                              , 'state':3, 'action':'PRINT','args':output_vl_1})
+    dut.add_cmd({'cmd':'interface ethernet 1/e20'               , 'state':3, 'action':'SET_PROMPT','args':['(config-if)#']})
+    dut.add_cmd({'cmd':'interface ethernet 1/e20'               , 'state':3, 'action':'SET_STATE','args':[4]})
+    dut.add_cmd({'cmd':'switchport trunk allowed vlan remove 10', 'state':4, 'action':'SET_STATE','args':[5]})
+    dut.add_cmd({'cmd':'show running-config'                    , 'state':5, 'action':'PRINT','args':output_rc_0})
+    dut.add_cmd({'cmd':'show vlan'                              , 'state':5, 'action':'PRINT','args':output_vl_0})
 
-    """]})
-    dut.add_cmd({'cmd':'show running-config',                    'state':2, 'action':'PRINT','args':["""
-vlan database
-vlan 10,11,26
-exit
-interface range ethernet 1/e(11-12)
-switchport mode trunk
-exit
-interface range ethernet 1/e(18-19),1/g1
-switchport mode trunk
-exit
-interface vlan 1
-ip address 10.17.39.252 255.255.255.0
-name default_vlan
-exit
-hostname nac_dev
-ip ssh server
-    """]})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
+    d.vlan.add_interface(10,'1.0.20',tagged=True)
+    assert '1.0.20' in d.vlan[1]['untagged']
     assert '1.0.20' in d.vlan[10]['tagged']
-    assert '1.0.20' in d.vlan[1]['untagged']
     d.vlan.delete_interface(10,'1.0.20')
-    assert '1.0.20' not in d.vlan[10]['tagged']
     assert '1.0.20' in d.vlan[1]['untagged']
+    assert '1.0.20' not in d.vlan[10]['tagged']
     d.close()
 
 
-def test_add_interface3(dut, log_level):
-    setup_dut(dut)
-    dut.add_cmd({'cmd':'show running-config', 'state':0, 'action':'PRINT','args':["""
+def test_add_and_delete_interface_3(dut, log_level):
+    output_rc_0 = ["""
 vlan database
 vlan 10
 exit
@@ -908,8 +781,8 @@ name default_vlan
 exit
 hostname nac_dev
 ip ssh server
-    """]})
-    dut.add_cmd({'cmd': 'show vlan',      'state':0, 'action':'PRINT','args':["""
+"""]
+    output_vl_0 = ["""
 
 Vlan       Name                   Ports                Type     Authorization
 ---- ----------------- --------------------------- ------------ -------------
@@ -920,12 +793,29 @@ Vlan       Name                   Ports                Type     Authorization
                        5/e(1-48),5/g(1-4),
                        6/e(1-48),6/g(1-4),ch(1-8)
 10           new vlan                                permanent   Required
-
-    """]})
-    dut.add_cmd({'cmd': 'interface ethernet 1/e20',             'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': 'interface ethernet 1/e20',             'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'switchport trunk native vlan 10',      'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'show vlan',                            'state':2, 'action':'PRINT','args':["""
+"""]
+    output_rc_1 = ["""
+vlan database
+vlan 10
+exit
+interface ethernet 1/e20
+switchport mode trunk
+switchport trunk native vlan 10
+exit
+interface range ethernet 1/e(11-12)
+switchport mode trunk
+exit
+interface range ethernet 1/e(18-19),1/g1
+switchport mode trunk
+exit
+interface vlan 1
+ip address 10.17.39.252 255.255.255.0
+name default_vlan
+exit
+hostname nac_dev
+ip ssh server
+"""]
+    output_vl_1 = ["""
 
 Vlan       Name                   Ports                Type     Authorization
 ---- ----------------- --------------------------- ------------ -------------
@@ -937,135 +827,26 @@ Vlan       Name                   Ports                Type     Authorization
                        6/e(1-48),6/g(1-4),ch(1-8)
 10           new vlan  1/e20                          permanent   Required
 
-    """]})
-    dut.add_cmd({'cmd':'show running-config',                    'state':2, 'action':'PRINT','args':["""
-vlan database
-vlan 10
-exit
-interface ethernet 1/e20
-switchport mode trunk
-switchport trunk native vlan 10
-exit
-interface range ethernet 1/e(11-12)
-switchport mode trunk
-exit
-interface range ethernet 1/e(18-19),1/g1
-switchport mode trunk
-exit
-interface vlan 1
-ip address 10.17.39.252 255.255.255.0
-name default_vlan
-exit
-hostname nac_dev
-ip ssh server
-    """]})
+"""]
+    setup_dut(dut)
+
+    dut.add_cmd({'cmd':'show running-config'            , 'state':0, 'action':'PRINT','args':output_rc_0})
+    dut.add_cmd({'cmd':'show vlan'                      , 'state':0, 'action':'PRINT','args':output_vl_0})
+    dut.add_cmd({'cmd':'interface ethernet 1/e20'       , 'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
+    dut.add_cmd({'cmd':'interface ethernet 1/e20'       , 'state':0, 'action':'SET_STATE','args':[1]})
+    dut.add_cmd({'cmd':'switchport trunk native vlan 10', 'state':1, 'action':'SET_STATE','args':[2]})
+    dut.add_cmd({'cmd':'show running-config'            , 'state':2, 'action':'PRINT','args':output_rc_1})
+    dut.add_cmd({'cmd':'show vlan'                      , 'state':2, 'action':'PRINT','args':output_vl_1})
+    dut.add_cmd({'cmd':'interface ethernet 1/e20'       , 'state':2, 'action':'SET_PROMPT','args':['(config-if)#']})
+    dut.add_cmd({'cmd':'interface ethernet 1/e20'       , 'state':2, 'action':'SET_STATE','args':[3]})
+    dut.add_cmd({'cmd':'no switchport trunk native vlan', 'state':3, 'action':'SET_STATE','args':[4]})
+    dut.add_cmd({'cmd':'show running-config'            , 'state':4, 'action':'PRINT','args':output_rc_0})
+    dut.add_cmd({'cmd':'show vlan'                      , 'state':4, 'action':'PRINT','args':output_vl_0})
+
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     d.vlan.add_interface(10,'1.0.20')
     assert '1.0.20' in d.vlan[10]['untagged']
-    d.close()
-
-
-def test_delete_interface3(dut, log_level):
-    setup_dut(dut)
-    dut.add_cmd({'cmd':'show running-config', 'state':0, 'action':'PRINT','args':["""
-vlan database
-vlan 10
-exit
-interface ethernet 1/e20
-switchport mode trunk
-switchport trunk native vlan 10
-exit
-interface range ethernet 1/e(11-12)
-switchport mode trunk
-exit
-interface range ethernet 1/e(18-19),1/g1
-switchport mode trunk
-exit
-interface vlan 1
-ip address 10.17.39.252 255.255.255.0
-name default_vlan
-exit
-hostname nac_dev
-ip ssh server
-    """]})
-    dut.add_cmd({'cmd': 'show vlan',      'state':0, 'action':'PRINT','args':["""
-
-Vlan       Name                   Ports                Type     Authorization
----- ----------------- --------------------------- ------------ -------------
- 1           1         1/e(1-19,21-48),1/g(1-4),    other       Required
-                       2/e(1-48),2/g(1-4),
-                       3/e(1-48),3/g(1-4),
-                       4/e(1-48),4/g(1-4),
-                       5/e(1-48),5/g(1-4),
-                       6/e(1-48),6/g(1-4),ch(1-8)
-10           new vlan  1/e20                         permanent   Required
-
-    """]})
-    dut.add_cmd({'cmd': 'interface ethernet 1/e20',             'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': 'interface ethernet 1/e20',             'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'no switchport trunk native vlan',      'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'show vlan',                            'state':2, 'action':'PRINT','args':["""
-
-Vlan       Name                   Ports                Type     Authorization
----- ----------------- --------------------------- ------------ -------------
- 1           1         1/e(1-48),1/g(1-4),          other       Required
-                       2/e(1-48),2/g(1-4),
-                       3/e(1-48),3/g(1-4),
-                       4/e(1-48),4/g(1-4),
-                       5/e(1-48),5/g(1-4),
-                       6/e(1-48),6/g(1-4),ch(1-8)
-10           new vlan                                permanent   Required
-
-    """]})
-    dut.add_cmd({'cmd':'show running-config',                    'state':2, 'action':'PRINT','args':["""
-vlan database
-vlan 10,11,26
-exit
-interface range ethernet 1/e(11-12)
-switchport mode trunk
-exit
-interface range ethernet 1/e(18-19),1/g1
-switchport mode trunk
-exit
-interface vlan 1
-ip address 10.17.39.252 255.255.255.0
-name default_vlan
-exit
-hostname nac_dev
-ip ssh server
-    """]})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
-    d.open()
-    assert '1.0.20' in d.vlan[10]['untagged']
-    assert '1.0.20' not in d.vlan[1]['untagged']
-    d.vlan.delete_interface(10,'1.0.20')
-    assert '1.0.20' not in d.vlan[10]['untagged']
-    assert '1.0.20' in d.vlan[1]['untagged']
-    d.close()
-
-
-def test_delete_interface4(dut, log_level):
-    setup_dut(dut)
-    dut.add_cmd({'cmd':'show running-config', 'state':0, 'action':'PRINT','args':["""
-    """]})
-    dut.add_cmd({'cmd': 'show vlan',      'state':0, 'action':'PRINT','args':["""
-
-Vlan       Name                   Ports                Type     Authorization
----- ----------------- --------------------------- ------------ -------------
- 1           1         1/e(1-48),1/g(1-4),          other       Required
-                       2/e(1-48),2/g(1-4),
-                       3/e(1-48),3/g(1-4),
-                       4/e(1-48),4/g(1-4),
-                       5/e(1-48),5/g(1-4),
-                       6/e(1-48),6/g(1-4),ch(1-8)
-    """]})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
-    d.open()
-    assert '1.0.20' in d.vlan[1]['untagged']
-    with pytest.raises(ValueError) as excinfo:
-        d.vlan.delete_interface(1,'1.0.20')
-    assert 'interface 1.0.20 cannot be delete from vlan 1' in excinfo.value
     d.close()
 
 

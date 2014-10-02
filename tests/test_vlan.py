@@ -93,6 +93,8 @@ VLAN ID  Name            Type    State   Member ports
 
 
 def test_vlan_dashed_list(dut, log_level):
+    if dut.mode != 'emulated':
+        pytest.skip("only on emulated")
     output_show_rcfg = ["""
 !
 interface port1.0.1-1.0.50
@@ -472,7 +474,7 @@ interface vlan 1
 !
 vlan database
  vlan 7 state enable
- vlan 20 name vlan_name state enable mtu 1300
+ vlan 30 name vlan_name state enable mtu 1300
 !
 end
 """]
@@ -504,7 +506,7 @@ VLAN ID  Name            Type    State   Member ports
                                          port1.0.48(u) port1.0.49(u)
                                          port1.0.50(u)
 7       VLAN0007         STATIC  ACTIVE  port1.0.28(t) port1.0.29(u)
-20      vlan_name        STATIC  ACTIVE
+30      vlan_name        STATIC  ACTIVE
 """]
     output_rc_2 = ["""
 !
@@ -517,7 +519,7 @@ interface vlan 1
 !
 vlan database
  vlan 7 state enable
- vlan 20 name "vlan name" state enable mtu 1400
+ vlan 30 name "vlan name" state enable mtu 1400
 !
 end
     """]
@@ -549,7 +551,7 @@ VLAN ID  Name            Type    State   Member ports
                                          port1.0.48(u) port1.0.49(u)
                                          port1.0.50(u)
 7       VLAN0007         STATIC  ACTIVE  port1.0.28(t) port1.0.29(u)
-20      "vlan name"      STATIC  ACTIVE  port1.0.42(u) port1.0.43(t)
+30      "vlan name"      STATIC  ACTIVE  port1.0.42(u) port1.0.43(t)
 """]
 
     setup_dut(dut)
@@ -558,35 +560,35 @@ VLAN ID  Name            Type    State   Member ports
     dut.add_cmd({'cmd':'show vlan all'           , 'state':0, 'action':'PRINT'     ,'args':output_va_0})
     dut.add_cmd({'cmd':'vlan database'           , 'state':0, 'action':'SET_PROMPT','args':['(config-vlan)#']})
     dut.add_cmd({'cmd':'vlan database'           , 'state':0, 'action':'SET_STATE' ,'args':[1]})
-    dut.add_cmd({'cmd':'vlan 20 name vlan_name'  , 'state':1, 'action':'SET_STATE' ,'args':[2]})
-    dut.add_cmd({'cmd':'vlan 20 mtu 1300'        , 'state':2, 'action':'SET_STATE' ,'args':[3]})
+    dut.add_cmd({'cmd':'vlan 30 name vlan_name'  , 'state':1, 'action':'SET_STATE' ,'args':[2]})
+    dut.add_cmd({'cmd':'vlan 30 mtu 1300'        , 'state':2, 'action':'SET_STATE' ,'args':[3]})
     dut.add_cmd({'cmd':'show running-config'     , 'state':3, 'action':'PRINT'     ,'args':output_rc_1})
     dut.add_cmd({'cmd':'show vlan all'           , 'state':3, 'action':'PRINT'     ,'args':output_va_1})
     dut.add_cmd({'cmd':'vlan database'           , 'state':3, 'action':'SET_PROMPT','args':['(config-vlan)#']})
     dut.add_cmd({'cmd':'vlan database'           , 'state':3, 'action':'SET_STATE' ,'args':[4]})
-    dut.add_cmd({'cmd':'vlan 20 name "vlan name"', 'state':4, 'action':'SET_STATE' ,'args':[5]})
-    dut.add_cmd({'cmd':'vlan 20 mtu 1400'        , 'state':5, 'action':'SET_STATE' ,'args':[6]})
+    dut.add_cmd({'cmd':'vlan 30 name "vlan name"', 'state':4, 'action':'SET_STATE' ,'args':[5]})
+    dut.add_cmd({'cmd':'vlan 30 mtu 1400'        , 'state':5, 'action':'SET_STATE' ,'args':[6]})
     dut.add_cmd({'cmd':'show running-config'     , 'state':6, 'action':'PRINT'     ,'args':output_rc_2})
     dut.add_cmd({'cmd':'show vlan all'           , 'state':6, 'action':'PRINT'     ,'args':output_va_2})
     dut.add_cmd({'cmd':'vlan database'           , 'state':6, 'action':'SET_PROMPT','args':['(config-vlan)#']})
     dut.add_cmd({'cmd':'vlan database'           , 'state':6, 'action':'SET_STATE' ,'args':[7]})
-    dut.add_cmd({'cmd':'no vlan 20'              , 'state':7, 'action':'SET_STATE' ,'args':[8]})
+    dut.add_cmd({'cmd':'no vlan 30'              , 'state':7, 'action':'SET_STATE' ,'args':[8]})
     dut.add_cmd({'cmd':'show running-config'     , 'state':8, 'action':'PRINT'     ,'args':output_rc_0})
     dut.add_cmd({'cmd':'show vlan all'           , 'state':8, 'action':'PRINT'     ,'args':output_va_0})
 
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
-    assert '20' not in d.vlan
-    d.vlan.create(20, mtu=1300, name='vlan_name')
-    assert d.vlan[20]['mtu'] == 1300
-    assert d.vlan[20]['name'] == 'vlan_name'
-    d.vlan.update(20, mtu=1400, name='vlan name')
-    assert d.vlan[20]['mtu'] == 1400
-    assert d.vlan[20]['name'] == 'vlan name'
-    d.vlan.delete(20)
-    assert '20' not in d.vlan
+    assert '30' not in d.vlan
+    d.vlan.create(30, mtu=1300, name='vlan_name')
+    assert d.vlan[30]['mtu'] == 1300
+    assert d.vlan[30]['name'] == 'vlan_name'
+    d.vlan.update(30, mtu=1400, name='vlan name')
+    assert d.vlan[30]['mtu'] == 1400
+    assert d.vlan[30]['name'] == 'vlan name'
+    d.vlan.delete(30)
+    assert '30' not in d.vlan
     with pytest.raises(KeyError):
-        d.vlan[20]
+        d.vlan[30]
     d.close()
 
 
@@ -636,13 +638,18 @@ VLAN ID  Name            Type    State   Member ports
     """]
     output_rc_1 = ["""
 !
-interface port1.0.1-1.0.50
+interface port1.0.1-1.0.13
  switchport
  switchport mode access
 !
 interface port1.0.14
+ switchport
  switchport mode access
  switchport access vlan 10
+!
+interface port1.0.15-1.0.50
+ switchport
+ switchport mode access
 !
 interface vlan 1
  ip address 10.17.39.253 255.255.255.0
@@ -773,13 +780,17 @@ VLAN ID  Name            Type    State   Member ports
 """]
     output_rc_1 = ["""
 !
-interface port1.0.1-1.0.50
+interface port1.0.1-1.0.14
  switchport
  switchport mode access
 !
 interface port1.0.15
  switchport mode trunk
  switchport trunk allowed vlan add 10
+!
+interface port1.0.16-1.0.50
+ switchport
+ switchport mode access
 !
 interface vlan 1
  ip address 10.17.39.253 255.255.255.0
@@ -858,15 +869,7 @@ VLAN ID  Name            Type    State   Member ports
 def test_add_and_delete_interface_3(dut, log_level):
     output_rc_0 = ["""
 !
-interface port1.0.1-1.0.15
- switchport
- switchport mode access
-!
-interface port1.0.16
- switchport
- switchport mode trunk
-!
-interface port1.0.17-1.0.50
+interface port1.0.1-1.0.50
  switchport
  switchport mode access
 !
@@ -992,7 +995,7 @@ VLAN ID  Name            Type    State   Member ports
     assert '1.0.16' in d.vlan[1]['untagged']
     assert '1.0.16' not in d.vlan[10]['untagged']
     d.vlan.add_interface(10,'1.0.16')
-    assert '1.0.16' not in d.vlan[1]['untagged']
+    assert '1.0.16' in d.vlan[1]['untagged']
     assert '1.0.16' in d.vlan[10]['untagged']
     d.vlan.delete_interface(10,'1.0.16')
     assert '1.0.16' in d.vlan[1]['untagged']
@@ -1054,7 +1057,7 @@ VLAN ID  Name            Type    State   Member ports
 
     output_rc_1 = ["""
 !
-interface port1.0.1-1.0.50
+interface port1.0.1-1.0.16
  switchport
  switchport mode access
 !
@@ -1062,6 +1065,10 @@ interface port1.0.17
  switchport
  switchport mode trunk
  switchport trunk allowed vlan add 10
+!
+interface port1.0.18-1.0.50
+ switchport
+ switchport mode access
 !
 interface vlan 1
  ip address 10.17.39.253 255.255.255.0
@@ -1137,15 +1144,7 @@ VLAN ID  Name            Type    State   Member ports
 def test_add_and_delete_interface_5(dut, log_level):
     output_rc_0 = ["""
 !
-interface port1.0.1-1.0.17
- switchport
- switchport mode access
-!
-interface port1.0.18
- switchport
- switchport mode trunk
-!
-interface port1.0.19-1.0.50
+interface port1.0.1-1.0.50
  switchport
  switchport mode access
 !

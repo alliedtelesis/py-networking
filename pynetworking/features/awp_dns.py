@@ -51,6 +51,26 @@ class awp_dns(Feature):
         self._update_dns()
 
 
+    def read(self, hostname, wait_time=20000):
+        if hostname == '':
+            raise KeyError('hostname parameter is mandatory')
+        ping_cmd = 'ping {0}'.format(hostname)
+
+        # PING ntp.inrim.it (193.204.114.105)
+        regex = 'PING\s{0}\s\((?P<ip>(\d+\.+\d+\.+\d+\.+\d+))\)'.format(hostname)
+        ifre = re.compile(regex)
+        cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
+                         {'cmd': ping_cmd, 'prompt': '\#', 'timeout': wait_time}
+                        ]}
+        output = self._device.cmd(cmds, cache=False, flush_cache=True)
+        for line in output.split('\n'):
+            self._d.log_debug("line is {0}".format(line))
+            m = ifre.match(line)
+            if m:
+                ret = m.group('ip')
+                return ret
+
+
     def delete(self, name_servers='', default_domain=''):
         self._d.log_info("remove address {0} and domain {0}".format(name_servers, default_domain))
         self._update_dns()

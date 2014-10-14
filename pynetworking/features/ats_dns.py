@@ -31,9 +31,9 @@ class ats_dns(Feature):
 
         if name_servers == '' and default_domain == '':
             raise KeyError('at least one parameter is mandatory')
-        if name_servers != '' and name_servers in self._dns.keys():
+        if name_servers != '' and name_servers in self._dns['name_servers']:
             raise KeyError('DNS server {0} already added'.format(name_servers))
-        if default_domain != '' and default_domain in self._dns.keys():
+        if default_domain != '' and default_domain in self._dns['default_domain']:
             raise KeyError('default domain {0} already added'.format(default_domain))
 
         cmds = {'cmds': [{'cmd': 'conf', 'prompt': '\(config\)\#'}]}
@@ -49,16 +49,34 @@ class ats_dns(Feature):
         self._update_dns()
 
 
+    def read(self, hostname, wait_time=20000):
+        if hostname == '':
+            raise KeyError('hostname parameter is mandatory')
+        ping_cmd = 'ping {0}'.format(hostname)
+
+        # Pinging ntp.inrim.it. (193.204.114.105) with 56 bytes of data:
+        regex = '(\r|'')Pinging\s{0}\.\s\((?P<ip>(\d+\.+\d+\.+\d+\.+\d+))\)'.format(hostname)
+        ifre = re.compile(regex)
+        cmds = {'cmds': [{'cmd': ping_cmd, 'prompt': '\#', 'timeout': wait_time}]}
+        output = self._device.cmd(cmds, cache=False, flush_cache=True)
+        for line in output.split('\n'):
+            self._d.log_debug("line is {0}".format(line))
+            m = ifre.match(line)
+            if m:
+                ret = m.group('ip')
+                return ret
+
+
     def delete(self, name_servers='', default_domain=''):
         self._d.log_info("remove address {0} and domain {0}".format(name_servers, default_domain))
         self._update_dns()
 
         if name_servers == '' and default_domain == '':
             raise KeyError('at least one parameter is mandatory')
-        if name_servers != '' and name_servers not in self._dns.keys():
+        if name_servers != '' and name_servers not in self._dns['name_servers']:
             raise KeyError('DNS server {0} not configured'.format(name_servers))
-        if default_domain != '' and default_domain not in self._dns.keys():
-            raise KeyError('domain {0} not configured'.format(default_domain))
+        if default_domain != '' and default_domain not in self._dns['default_domain']:
+            raise KeyError('default domain {0} not configured'.format(default_domain))
 
         cmds = {'cmds': [{'cmd': 'conf', 'prompt': '\(config\)\#'}]}
         if name_servers != '':
@@ -93,21 +111,27 @@ class ats_dns(Feature):
     def _update_dns(self):
         self._d.log_info("_update_dns")
         self._dns = {}
+        def_dom = ''
+        nam_srv = ''
 
         #ip domain-name com
-        #ip name-server 10.17.39.11 10.16.48.11
+        #ip name-server  10.17.39.11 10.16.48.11
         ifreDomain = re.compile('ip\s+domain-name\s+(?P<dom>\w+)')
-        ifreList = re.compile('ip\s+name-server(?P<servers>(\s+\d+\.+\d+\.+\d+\.+\d+){1,8})')
+        ifreList = re.compile('ip\s+name-server\s(?P<servers>(\s\d+\.+\d+\.+\d+\.+\d+){1,8})')
         for line in self._device.cmd("show running-config").split('\n'):
             self._d.log_debug("line is {0}".format(line))
             m = ifreDomain.match(line)
             if m:
-                self._dns['default_domain'] = m.group('dom')
+                def_dom = m.group('dom')
             m = ifreList.match(line)
             if m:
                 cfg_srv = m.group('servers')
                 for name in cfg_srv.split(' '):
-                    if name != '':
-                        self._dns['name_servers'] = self._dns['name_servers'] + ',' + m.group('dom')
+                    if nam_srv == '':
+                        nam_srv = name
+                    else:
+                        nam_srv = nam_srv + ',' + name
+
+        self._dns = {'name_servers': nam_srv, 'default_domain': def_dom}
 
         self._d.log_debug("dns {0}".format(pformat(json.dumps(self._dns))))

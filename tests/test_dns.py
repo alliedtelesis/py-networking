@@ -1,7 +1,13 @@
 import pytest
 from pynetworking import Device
-from time import sleep
-from paramiko.rsakey import RSAKey
+
+
+# On the real device, type the following to enable a default gateway if not present:
+#
+# > enable
+# # conf t
+# (config)# ip route 0.0.0.0/0 10.17.39.1
+#
 
 
 def setup_dut(dut):
@@ -14,7 +20,7 @@ Build date : Wed Sep 25 12:57:26 NZST 2013
 Build type : RELEASE
     """]})
 
-    #this sleep time is just a trick to have the ping completed
+    # wait_time is just a trick to have the ping completed
     if dut.mode != 'emulated':
         dut.wait_time = 20000
     else:

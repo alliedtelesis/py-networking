@@ -59,6 +59,8 @@ rtt min/avg/max/mdev = 21.289/23.755/28.617/2.729 ms
 
     name_server_primary = '10.17.39.11'
     name_server_secondary = '10.16.48.11'
+    name_server_list = [name_server_primary,name_server_secondary]
+    name_comma_list = '{0},{1}'.format(name_server_primary, name_server_secondary)
     domain_name = 'com'
     host_ip = '193.204.114.105'
     host_name = 'ntp.inrim.it'
@@ -85,6 +87,12 @@ rtt min/avg/max/mdev = 21.289/23.755/28.617/2.729 ms
     dut.add_cmd({'cmd': 'show running-config', 'state':5, 'action':'PRINT'    ,'args': output_1})
     dut.add_cmd({'cmd': delete_cmd_3         , 'state':5, 'action':'SET_STATE','args':[6]})
     dut.add_cmd({'cmd': 'show running-config', 'state':6, 'action':'PRINT'    ,'args': output_0})
+    dut.add_cmd({'cmd': create_cmd_1         , 'state':6, 'action':'SET_STATE','args':[7]})
+    dut.add_cmd({'cmd': create_cmd_3         , 'state':7, 'action':'SET_STATE','args':[8]})
+    dut.add_cmd({'cmd': 'show running-config', 'state':8, 'action':'PRINT'    ,'args': output_3})
+    dut.add_cmd({'cmd': delete_cmd_1         , 'state':8, 'action':'SET_STATE','args':[9]})
+    dut.add_cmd({'cmd': delete_cmd_3         , 'state':9, 'action':'SET_STATE','args':[10]})
+    dut.add_cmd({'cmd': 'show running-config', 'state':10,'action':'PRINT'    ,'args': output_0})
 
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
@@ -108,7 +116,7 @@ rtt min/avg/max/mdev = 21.289/23.755/28.617/2.729 ms
         d.dns['domain_list'] == domain_name
 
     d.dns.create(name_servers=name_server_secondary)
-    assert d.dns['name_servers'] == name_server_primary + ',' + name_server_secondary
+    assert d.dns['name_servers'] == name_comma_list
 
     with pytest.raises(KeyError) as excinfo:
         d.dns.read('') == host_ip
@@ -128,4 +136,9 @@ rtt min/avg/max/mdev = 21.289/23.755/28.617/2.729 ms
     assert d.dns['name_servers'] == ''
     with pytest.raises(KeyError) as excinfo:
         d.dns.delete(name_servers=name_server_primary)
+
+    d.dns.create(name_server_list)
+    assert d.dns['name_servers'] == name_comma_list
+    d.dns.delete(name_server_list)
+    assert d.dns['name_servers'] == ''
     d.close()

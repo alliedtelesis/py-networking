@@ -32,7 +32,7 @@ At least one parameter is mandatory.
 **Parameters**:
 
     - *name_servers*: list of strings
-        Comma separated list of name server IP addresses
+        List of name server IP addresses
         
     - *default_domain*: string
         Default domain name
@@ -63,7 +63,7 @@ At least one parameter is mandatory.
 **Parameters**:
 
     - *name_servers*: list of strings
-        Comma separated list of name server IP addresses
+        List of name server IP addresses
         
     - *default_domain*: string
         Default domain name
@@ -93,7 +93,7 @@ name_servers
 
 **Type:** String
 
-**Description**: List of name server IP addresses.
+**Description**: Comma separated list of name server IP addresses.
 
 default_domain
 """"""""""""""

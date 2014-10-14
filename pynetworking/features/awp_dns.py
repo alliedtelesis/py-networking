@@ -26,21 +26,28 @@ class awp_dns(Feature):
 
 
     def create(self, name_servers='', default_domain=''):
-        self._d.log_info("add address {0} and domain {0}".format(name_servers, default_domain))
+        self._d.log_info("add address {0} and domain {1}".format(name_servers, default_domain))
         self._update_dns()
+        name_list = []
 
         if name_servers == '' and default_domain == '':
             raise KeyError('at least one parameter is mandatory')
-        if name_servers != '' and name_servers in self._dns['name_servers']:
-            raise KeyError('DNS server {0} already added'.format(name_servers))
         if default_domain != '' and default_domain in self._dns['default_domain']:
             raise KeyError('default domain {0} already added'.format(default_domain))
+        if name_servers != '':
+            if (type(name_servers) == str):
+                name_list = [name_servers]
+            else:
+                name_list = name_servers
+            for i in range(len(name_list)):
+                if name_list[i] in self._dns['name_servers']:
+                    raise KeyError('DNS server {0} already added'.format(name_list[i]))
 
         cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
                          {'cmd': 'conf t', 'prompt': '\(config\)\#'}
                         ]}
-        if name_servers != '':
-            set_cmd = 'ip name-server {0}'.format(name_servers)
+        for i in range(len(name_list)):
+            set_cmd = 'ip name-server {0}'.format(name_list[i])
             cmds['cmds'].append({'cmd': set_cmd ,'prompt':'\(config\)\#'})
         if default_domain != '':
             set_cmd = 'ip domain-list {0}'.format(default_domain)
@@ -72,21 +79,28 @@ class awp_dns(Feature):
 
 
     def delete(self, name_servers='', default_domain=''):
-        self._d.log_info("remove address {0} and domain {0}".format(name_servers, default_domain))
+        self._d.log_info("remove address {0} and domain {1}".format(name_servers, default_domain))
         self._update_dns()
+        name_list = []
 
         if name_servers == '' and default_domain == '':
             raise KeyError('at least one parameter is mandatory')
-        if name_servers != '' and name_servers not in self._dns['name_servers']:
-            raise KeyError('DNS server {0} not configured'.format(name_servers))
         if default_domain != '' and default_domain not in self._dns['default_domain']:
             raise KeyError('default domain {0} not configured'.format(default_domain))
+        if name_servers != '':
+            if (type(name_servers) == str):
+                name_list = [name_servers]
+            else:
+                name_list = name_servers
+            for i in range(len(name_list)):
+                if name_list[i] not in self._dns['name_servers']:
+                    raise KeyError('DNS server {0} already deleted'.format(name_list[i]))
 
         cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
                          {'cmd': 'conf t', 'prompt': '\(config\)\#'}
                         ]}
-        if name_servers != '':
-            set_cmd = 'no ip name-server {0}'.format(name_servers)
+        for i in range(len(name_list)):
+            set_cmd = 'no ip name-server {0}'.format(name_list[i])
             cmds['cmds'].append({'cmd': set_cmd ,'prompt':'\(config\)\#'})
         if default_domain != '':
             set_cmd = 'no ip domain-list {0}'.format(default_domain)

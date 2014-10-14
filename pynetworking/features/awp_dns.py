@@ -99,31 +99,24 @@ class awp_dns(Feature):
         def_dom = ''
         nam_srv = ''
 
-        # Default domain is .org
-        # Domain list: .net .it
-        # Name/address lookup uses domain service
-        # Name servers are
-        # 10.17.39.11
-        # 10.16.48.11
-        ifreList = re.compile('Domain\s+list:(?P<domains>(\s\w+){1,8})')
-        ifreServ = re.compile('\d+\.+\d+\.+\d+\.+\d')
-        for line in self._device.cmd("show hosts").split('\n'):
+        # ip domain-list com
+        # ip name-server 10.17.39.11
+        ifreList = re.compile('ip\s+domain-list\s(?P<domains>(\w+))')
+        ifreServ = re.compile('ip\s+name-server\s(?P<names>(\d+\.+\d+\.+\d+\.+\d+))')
+        for line in self._device.cmd("show running-config").split('\n'):
             self._d.log_debug("line is {0}".format(line))
             m = ifreList.match(line)
             if m:
-                for ll in m.group('domains').split(' '):
-                    if def_dom == '':
-                        def_dom = ll
+                if def_dom == '':
+                    def_dom = m.group('domains')
                     # else:
-                    #     def_dom = def_dom + ',' + ll
+                    #     def_dom = def_dom + ',' + m.group('domains')
             m = ifreServ.match(line)
             if m:
-                line = line.replace('\n', '')
-                line = line.replace('\r', '')
                 if nam_srv == '':
-                    nam_srv = line
+                    nam_srv = m.group('names')
                 else:
-                    nam_srv = nam_srv + ',' + line
+                    nam_srv = nam_srv + ',' + m.group('names')
 
         self._dns = {'name_servers': nam_srv, 'default_domain': def_dom}
 

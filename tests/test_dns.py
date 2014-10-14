@@ -16,46 +16,19 @@ Build type : RELEASE
 
 
 def test_dns_crud(dut, log_level):
-    output_c_0 = ["""
+    output_0 = ["""
 """]
-    output_h_0 = ["""
-Default domain is not set
-Name/address lookup uses domain service
-"""]
-    output_c_1 = ["""
+    output_1 = ["""
 ip name-server 10.17.39.11
 """]
-    output_h_1 = ["""
-Default domain is not set
-Name/address lookup uses domain service
-Name servers are
-10.17.39.11
-
-"""]
-    output_c_2 = ["""
+    output_2 = ["""
 ip domain-list com
 ip name-server 10.17.39.11
 """]
-    output_h_2 = ["""
-Default domain is not set
-Domain list: com
-Name/address lookup uses domain service
-Name servers are
-10.17.39.11
-
-"""]
-    output_c_3 = ["""
+    output_3 = ["""
 ip domain-list com
-ip name-server 10.17.39.11 10.16.48.11
-"""]
-    output_h_3 = ["""
-Default domain is not set
-Domain list: com
-Name/address lookup uses domain service
-Name servers are
-10.17.39.11
-10.16.48.11
-
+ip name-server 10.17.39.11
+ip name-server 10.16.48.11
 """]
 
     setup_dut(dut)
@@ -71,26 +44,19 @@ Name servers are
     delete_cmd_2 = 'no ip domain-list {0}'.format(domain_name)
     delete_cmd_3 = 'no ip name-server {0}'.format(name_server_primary)
 
-    dut.add_cmd({'cmd': 'show running-config', 'state':0, 'action':'PRINT'    ,'args': output_c_0})
-    dut.add_cmd({'cmd': 'show hosts'         , 'state':0, 'action':'PRINT'    ,'args': output_h_0})
+    dut.add_cmd({'cmd': 'show running-config', 'state':0, 'action':'PRINT'    ,'args': output_0})
     dut.add_cmd({'cmd': create_cmd_1         , 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'show running-config', 'state':1, 'action':'PRINT'    ,'args': output_c_1})
-    dut.add_cmd({'cmd': 'show hosts'         , 'state':1, 'action':'PRINT'    ,'args': output_h_1})
+    dut.add_cmd({'cmd': 'show running-config', 'state':1, 'action':'PRINT'    ,'args': output_1})
     dut.add_cmd({'cmd': create_cmd_2         , 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'show running-config', 'state':2, 'action':'PRINT'    ,'args': output_c_2})
-    dut.add_cmd({'cmd': 'show hosts'         , 'state':2, 'action':'PRINT'    ,'args': output_h_2})
+    dut.add_cmd({'cmd': 'show running-config', 'state':2, 'action':'PRINT'    ,'args': output_2})
     dut.add_cmd({'cmd': create_cmd_3         , 'state':2, 'action':'SET_STATE','args':[3]})
-    dut.add_cmd({'cmd': 'show running-config', 'state':3, 'action':'PRINT'    ,'args': output_c_3})
-    dut.add_cmd({'cmd': 'show hosts'         , 'state':3, 'action':'PRINT'    ,'args': output_h_3})
+    dut.add_cmd({'cmd': 'show running-config', 'state':3, 'action':'PRINT'    ,'args': output_3})
     dut.add_cmd({'cmd': delete_cmd_1         , 'state':3, 'action':'SET_STATE','args':[4]})
-    dut.add_cmd({'cmd': 'show running-config', 'state':4, 'action':'PRINT'    ,'args': output_c_2})
-    dut.add_cmd({'cmd': 'show hosts'         , 'state':4, 'action':'PRINT'    ,'args': output_h_2})
+    dut.add_cmd({'cmd': 'show running-config', 'state':4, 'action':'PRINT'    ,'args': output_2})
     dut.add_cmd({'cmd': delete_cmd_2         , 'state':4, 'action':'SET_STATE','args':[5]})
-    dut.add_cmd({'cmd': 'show running-config', 'state':5, 'action':'PRINT'    ,'args': output_c_1})
-    dut.add_cmd({'cmd': 'show hosts'         , 'state':5, 'action':'PRINT'    ,'args': output_h_1})
+    dut.add_cmd({'cmd': 'show running-config', 'state':5, 'action':'PRINT'    ,'args': output_1})
     dut.add_cmd({'cmd': delete_cmd_3         , 'state':5, 'action':'SET_STATE','args':[6]})
-    dut.add_cmd({'cmd': 'show running-config', 'state':6, 'action':'PRINT'    ,'args': output_c_0})
-    dut.add_cmd({'cmd': 'show hosts'         , 'state':6, 'action':'PRINT'    ,'args': output_h_0})
+    dut.add_cmd({'cmd': 'show running-config', 'state':6, 'action':'PRINT'    ,'args': output_0})
 
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
@@ -107,6 +73,11 @@ Name servers are
     assert d.dns['default_domain'] == domain_name
     with pytest.raises(KeyError) as excinfo:
         d.dns.create(default_domain=domain_name)
+
+    assert 'default_domain' in d.dns.keys()
+    assert ('default_domain', domain_name) in d.dns.items()
+    with pytest.raises(KeyError) as excinfo:
+        d.dns['domain_list'] == domain_name
 
     d.dns.create(name_servers=name_server_secondary)
     assert d.dns['name_servers'] == name_server_primary + ',' + name_server_secondary

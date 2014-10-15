@@ -4,6 +4,8 @@ from pprint import pformat
 from time import sleep
 import re
 import json
+
+
 try:
     from collections import OrderedDict
 except ImportError: #pragma: no cover
@@ -44,7 +46,7 @@ class awp_mac(Feature):
         self._d.log_info(self._mac)
 
 
-    def create(self, mac, interface, forward=True, vlan=1):
+    def create(self, mac, interface, forward=True, vlan=1, sleep_time=5):
         self._d.log_info("create MAC address {0} entry".format(mac))
         self._update_mac()
 
@@ -62,11 +64,11 @@ class awp_mac(Feature):
                          {'cmd': chr(26) , 'prompt': '\#'}
                         ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
-        sleep(1)
+        sleep(sleep_time)
         self._update_mac()
 
 
-    def update(self, mac, interface, forward=True, vlan=1):
+    def update(self, mac, interface, forward=True, vlan=1, sleep_time=5):
         self._d.log_info("update MAC address {0} entry".format(mac))
         self._update_mac()
 
@@ -84,11 +86,11 @@ class awp_mac(Feature):
                          {'cmd': chr(26) , 'prompt': '\#'}
                         ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
-        sleep(1)
+        sleep(sleep_time)
         self._update_mac()
 
 
-    def delete(self, mac=''):
+    def delete(self, mac='', sleep_time=5):
         self._update_mac()
 
         if (mac == ''):
@@ -121,7 +123,7 @@ class awp_mac(Feature):
                            ]}
             self._device.cmd(cmds, cache=False, flush_cache=True)
 
-        sleep(1)
+        sleep(sleep_time)
         self._update_mac()
 
 

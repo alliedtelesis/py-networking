@@ -1,7 +1,5 @@
 import pytest
 from pynetworking import Device
-from time import sleep
-from paramiko.rsakey import RSAKey
 
 
 def setup_dut(dut):
@@ -13,6 +11,12 @@ Build name : x600-5.4.2-3.14.rel
 Build date : Wed Sep 25 12:57:26 NZST 2013
 Build type : RELEASE
     """]})
+
+    #this sleep time is just a trick to have the static entry occurring in the MAC address table
+    if dut.mode != 'emulated':
+        dut.sleep_time = 3
+    else:
+        dut.sleep_time = 0
 
 
 def test_nodots_mac_crud(dut, log_level):
@@ -78,25 +82,25 @@ VLAN port             mac            fwd
     with pytest.raises(KeyError) as excinfo:
         d.mac[missing_mac_address]
     with pytest.raises(KeyError) as excinfo:
-        d.mac.create(wrong_mac_address, ifc)
+        d.mac.create(wrong_mac_address, ifc, sleep_time=dut.sleep_time)
     assert dotted_mac not in d.mac.keys()
-    d.mac.create(mac_address, ifc)
+    d.mac.create(mac_address, ifc, sleep_time=dut.sleep_time)
     assert dotted_mac in d.mac.keys()
     assert (dotted_mac, {'vlan': '1', 'interface': ifc, 'action': 'forward', 'type': 'static'}) in d.mac.items()
     with pytest.raises(KeyError) as excinfo:
-        d.mac.create(mac_address, ifc)
-    d.mac.update(mac_address, ifu, forward=False)
+        d.mac.create(mac_address, ifc, sleep_time=dut.sleep_time)
+    d.mac.update(mac_address, ifu, forward=False, sleep_time=dut.sleep_time)
     assert dotted_mac in d.mac.keys()
     assert d.mac[dotted_mac]['interface'] == ifu
     assert (dotted_mac, {'vlan': '1', 'interface': ifu, 'action': 'discard', 'type': 'static'}) in d.mac.items()
     with pytest.raises(KeyError) as excinfo:
-        d.mac.update(missing_mac_address, ifu, forward=False)
-    d.mac.delete(mac_address)
+        d.mac.update(missing_mac_address, ifu, forward=False, sleep_time=dut.sleep_time)
+    d.mac.delete(mac_address, sleep_time=dut.sleep_time)
     assert dotted_mac not in d.mac.keys()
     with pytest.raises(KeyError) as excinfo:
-        d.mac.delete(mac_address)
+        d.mac.delete(mac_address, sleep_time=dut.sleep_time)
     with pytest.raises(KeyError) as excinfo:
-        d.mac.delete('0000.cd1d.7eb0')
+        d.mac.delete('0000.cd1d.7eb0', sleep_time=dut.sleep_time)
     d.close()
 
 
@@ -142,11 +146,11 @@ VLAN port             mac            fwd
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert dotted_mac not in d.mac.keys()
-    d.mac.create(mac_address, ifc, forward=False)
+    d.mac.create(mac_address, ifc, forward=False, sleep_time=dut.sleep_time)
     assert (dotted_mac, {'vlan': '1', 'interface': ifc, 'action': 'discard', 'type': 'static'}) in d.mac.items()
-    d.mac.update(mac_address, ifu, forward=False)
+    d.mac.update(mac_address, ifu, forward=False, sleep_time=dut.sleep_time)
     assert (dotted_mac, {'vlan': '1', 'interface': ifu, 'action': 'discard', 'type': 'static'}) in d.mac.items()
-    d.mac.delete(mac_address)
+    d.mac.delete(mac_address, sleep_time=dut.sleep_time)
     assert dotted_mac not in d.mac.keys()
     d.close()
 
@@ -193,11 +197,11 @@ VLAN port             mac            fwd
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert dotted_mac not in d.mac.keys()
-    d.mac.create(mac_address, ifc)
+    d.mac.create(mac_address, ifc, sleep_time=dut.sleep_time)
     assert (dotted_mac, {'vlan': '1', 'interface': ifc, 'action': 'forward', 'type': 'static'}) in d.mac.items()
-    d.mac.update(mac_address, ifu, forward=False)
+    d.mac.update(mac_address, ifu, forward=False, sleep_time=dut.sleep_time)
     assert (dotted_mac, {'vlan': '1', 'interface': ifu, 'action': 'discard', 'type': 'static'}) in d.mac.items()
-    d.mac.delete(mac_address)
+    d.mac.delete(mac_address, sleep_time=dut.sleep_time)
     assert dotted_mac not in d.mac.keys()
     d.close()
 
@@ -244,11 +248,11 @@ VLAN port             mac            fwd
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert dotted_mac not in d.mac.keys()
-    d.mac.create(mac_address, ifc)
+    d.mac.create(mac_address, ifc, sleep_time=dut.sleep_time)
     assert (dotted_mac, {'vlan': '1', 'interface': ifc, 'action': 'forward', 'type': 'static'}) in d.mac.items()
-    d.mac.update(mac_address, ifu, forward=False)
+    d.mac.update(mac_address, ifu, forward=False, sleep_time=dut.sleep_time)
     assert (dotted_mac, {'vlan': '1', 'interface': ifu, 'action': 'discard', 'type': 'static'}) in d.mac.items()
-    d.mac.delete(mac_address)
+    d.mac.delete(mac_address, sleep_time=dut.sleep_time)
     assert dotted_mac not in d.mac.keys()
     d.close()
 
@@ -281,8 +285,8 @@ VLAN port             mac            fwd
 
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
-    d.mac.create(mac_address, ifc)
+    d.mac.create(mac_address, ifc, sleep_time=dut.sleep_time)
     assert d.mac._check_static_entry_presence() == True
-    d.mac.delete()
+    d.mac.delete(sleep_time=dut.sleep_time)
     assert d.mac._check_static_entry_presence() == False
     d.close()

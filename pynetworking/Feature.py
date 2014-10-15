@@ -9,5 +9,3 @@ class Feature(object):
 
     def load_config(self, config):  #pragma: no cover
         pass
-
-

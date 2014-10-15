@@ -265,5 +265,3 @@ class Device(object):
             self._proxy.start()
             sleep(1)
             self.log_debug("proxy process started")
-
-

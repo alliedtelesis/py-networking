@@ -14,5 +14,3 @@ for name,info in dev.interface.items():
         )
 
 dev.close()
-
-

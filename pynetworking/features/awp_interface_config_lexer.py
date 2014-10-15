@@ -85,5 +85,3 @@ class InterfaceConfigLexer(object):
             else:
                 result[tok.value[0]] = {tok.type.replace('_',' '):tok.value[1]}
         return result
-
-

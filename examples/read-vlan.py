@@ -16,5 +16,3 @@ for vid,info in dev.vlan.items():
         )
 
 dev.close()
-
-

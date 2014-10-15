@@ -284,6 +284,7 @@ class DUTd(Process):
 def dut(request):
     host = request.config.getoption("--dut-host")
     daemon = DUTd(host=host)
+
     def fin():
         daemon.terminate()
         daemon.join()
@@ -291,14 +292,13 @@ def dut(request):
     daemon.start()
     return daemon
 
+
 def pytest_addoption(parser):
     parser.addoption("--log", default='notset', action="store", help="show log messages")
     parser.addoption("--dut-host", default='127.0.0.1', action="store", help="dut hostname or address")
+
 
 @pytest.fixture(scope="module")
 def log_level(request):
     log_level = request.config.getoption("--log")
     return log_level
-
-
-

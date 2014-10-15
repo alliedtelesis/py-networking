@@ -203,5 +203,3 @@ class ats_file(Feature):
                                    'mtime': m.group('time')
                                   }
         self._d.log_debug("File {0}".format(pformat(json.dumps(self._file))))
-
-

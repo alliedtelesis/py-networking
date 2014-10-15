@@ -101,5 +101,3 @@ class VlanInterfaceConfigLexer(object):
             else:
                 result[tok.value[0]] = {t:tok.value[1]}
         return result
-
-

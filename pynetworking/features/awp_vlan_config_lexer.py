@@ -100,4 +100,3 @@ class VlanConfigLexer(object):
                 result[tok.value[0]] = {tok.type:tok.value[1]}
 
         return result
-

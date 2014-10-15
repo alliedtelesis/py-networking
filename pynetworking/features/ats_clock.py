@@ -5,7 +5,8 @@ import re
 import json
 import pytz
 from datetime import datetime, timedelta
-from pytz import timezone
+
+
 try:
     from collections import OrderedDict
 except ImportError: #pragma: no cover
@@ -22,10 +23,8 @@ class ats_clock(Feature):
         self._d._clock = {}
         self._d.log_debug("loading feature")
 
-
     def load_config(self, config):
         self._d.log_info("loading config")
-
 
     def update(self, datetime=None, timezone=None):
         self._d.log_info("update")
@@ -43,7 +42,7 @@ class ats_clock(Feature):
             month = datetime.strftime('%b')
             year = datetime.strftime('%Y')
 
-            #clock set 14:00:00 25 Jan 2008
+            # clock set 14:00:00 25 Jan 2008
             set_cmd = "clock set {0}:{1}:{2} {3} {4} {5}".format(hh, mm, ss, day, month, year)
             cmds = {'cmds':[{'cmd': set_cmd , 'prompt':'\#'}]}
 

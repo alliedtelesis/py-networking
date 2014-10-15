@@ -58,6 +58,3 @@ class VlanStatusLexer(object):
             elif tok.type == 'INTERFACE' and tok.value[2] == 't':
                 result[tok.value[0]]['tagged'] += (tok.value[1],)
         return result
-
-
-

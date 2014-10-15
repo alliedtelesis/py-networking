@@ -167,6 +167,7 @@ class ats_interface(Feature):
 
         self._d.log_debug("Status {0}".format(pformat(json.dumps(self._interface))))
 
+
     def _to_ifn_native(self, ifn):
         self._d.log_info("_to_ifn_native "+ifn)
         stack_no = ifn.split('.')[0]
@@ -177,4 +178,3 @@ class ats_interface(Feature):
             return "{0}/g{1}".format(stack_no, if_no-48)
         else:
             return "{0}/e{1}".format(stack_no, if_no)
-

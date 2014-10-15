@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from paramiko import SSHException, Transport
 import re
-# import logging
 import sys
 import socket
 from time import sleep, time

@@ -99,6 +99,3 @@ class awp_interface(Feature):
                     self._d.log_debug("Updating {0} with {1}".format(ifn,ifc))
                     self._interface[ifn] = dict(self._interface[ifn].items() + ifc.items())
         self._d.log_debug("Loaded awp_interface {0}".format(pformat(json.dumps(self._interface))))
-
-
-

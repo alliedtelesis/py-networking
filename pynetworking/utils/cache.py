@@ -7,8 +7,10 @@ except ImportError: #pragma: no cover
 from time import time
 import json
 
+
 class CacheMissException(Exception):
     pass
+
 
 class Cache(object):
     def __init__(self, enable=True, default_timeout=30):
@@ -36,4 +38,3 @@ class Cache(object):
 
     def flush(self):
         self.cache = {}
-

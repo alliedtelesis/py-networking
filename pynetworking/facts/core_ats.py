@@ -1,5 +1,6 @@
 import re
 
+
 def core_ats(dev):
     dev.log_info("core_ats")
     ret = {}
@@ -65,4 +66,3 @@ def core_ats(dev):
         dev.log_warn("cannot capture serial number")
 
     return ret
-

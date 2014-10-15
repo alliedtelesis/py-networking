@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from paramiko import SSHException, Transport
 import re
-import logging
+# import logging
 import sys
 import socket
 from time import sleep, time
@@ -9,12 +9,15 @@ import zmq
 import json
 from pynetworking.utils import Cache, CacheMissException
 
+
 # suppress logging from paramiko module
 import logging
 log=logging.getLogger('paramiko').setLevel(logging.CRITICAL)
 
+
 class ProxyException(Exception):
     pass
+
 
 def SSHProxy(device):
     device.log_info("starting SSHProxy on {0} for device {1}:{2}".format(device._proxy_url, device._host,device._port))

@@ -1,19 +1,16 @@
 # -*- coding: utf-8 -*-
-from paramiko import SSHClient, AutoAddPolicy
-from pprint import pprint,pformat
+from pprint import pformat
 import yaml
 import re
 import logging
 import sys
 import zmq
-import socket
 import json
 import inspect
 import traceback
-from os import listdir,unlink
+from os import listdir
 from os.path import dirname, isfile, join
 from jinja2 import Template
-from pynetworking import Feature
 from pynetworking import SSHProxy
 from multiprocessing import Process
 from time import sleep

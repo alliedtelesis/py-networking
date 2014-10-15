@@ -6,7 +6,14 @@ import json
 import os
 import getpass
 import socket
+import tftpy
 from tempfile import mkstemp
+
+
+try:
+    from collections import OrderedDict
+except ImportError: #pragma: no cover
+    from ordereddict import OrderedDict
 
 
 class ats_file(Feature):

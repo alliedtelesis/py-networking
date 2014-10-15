@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 import re
 import ply.lex as lex
-from pprint import pprint
+
+
 try:
     from collections import OrderedDict
 except ImportError: #pragma: no cover
     from ordereddict import OrderedDict
+
 
 class InterfaceStatusLexer(object):
     states = (

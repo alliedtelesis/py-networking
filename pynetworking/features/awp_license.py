@@ -4,7 +4,8 @@ from pprint import pformat
 import re
 import json
 import os
-import socket
+
+
 try:
     from collections import OrderedDict
 except ImportError: #pragma: no cover

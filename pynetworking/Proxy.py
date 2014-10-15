@@ -1,14 +1,9 @@
 # -*- coding: utf-8 -*-
-from paramiko import SSHClient, AutoAddPolicy, SSHException, Transport
-from pprint import pprint
-import yaml
+from paramiko import SSHException, Transport
 import re
 import logging
 import sys
 import socket
-from os import listdir
-from os.path import dirname, isfile, join
-from multiprocessing import Process
 from time import sleep, time
 import zmq
 import json

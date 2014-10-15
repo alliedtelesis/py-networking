@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 import sys
 import os
-import glob
-from setuptools import setup, find_packages, Command
+from setuptools import setup, Command
 from setuptools.command.test import test as TestCommand
 import versioneer
 
@@ -41,7 +40,7 @@ class DocCommand(Command):
         pass
     def run(self):
         from sphinx.application import Sphinx
-        from sphinx.util.console import darkred, nocolor
+        from sphinx.util.console import darkred
         import subprocess
 
         self.source_dir = os.path.abspath('srcdoc')

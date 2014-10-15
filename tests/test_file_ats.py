@@ -6,8 +6,6 @@ import threading
 import getpass
 
 from pynetworking import Device
-from time import sleep
-from paramiko.rsakey import RSAKey
 
 
 def tftp_make_dir(tftp_client_dir, tftp_server_dir):

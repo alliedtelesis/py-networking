@@ -1,6 +1,5 @@
-from pynetworking import Device, DeviceException
-from pprint import pprint
 import re
+
 
 def core_awp(dev):
     ret = {}

@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
-import re
-from time import sleep
 import os
-import socket
 import logging
-import zmq
-import json
+
 
 log = logging.getLogger(__name__)
+
 
 class awp_system(object):
     """

@@ -1,7 +1,5 @@
 import pytest
 from pynetworking import Device
-from time import sleep
-from paramiko.rsakey import RSAKey
 
 
 def setup_dut(dut):

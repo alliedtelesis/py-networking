@@ -1,19 +1,11 @@
 # -*- coding: utf-8 -*-
 import re
-from time import sleep
-from pprint import pformat
-import socket
 import logging
-import zmq
-import json
 import os
 
-try:
-    from collections import OrderedDict
-except ImportError: #pragma: no cover
-    from ordereddict import OrderedDict
 
 log = logging.getLogger(__name__)
+
 
 class ats_system(object):
     """

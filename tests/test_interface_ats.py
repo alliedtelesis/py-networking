@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import pytest
 from pynetworking import Device
-from time import sleep
-from jinja2 import Template
 
 
 ats_supported_sw_version = '3.0.0.44'

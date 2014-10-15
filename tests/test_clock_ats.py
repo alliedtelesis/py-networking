@@ -1,12 +1,7 @@
 import pytest
-import os
-import socket
 from pynetworking import Device
-from time import sleep
-from paramiko.rsakey import RSAKey
-from datetime import datetime, timedelta
+from datetime import datetime
 from pytz import timezone
-import pytz
 
 def setup_dut(dut):
     dut.reset()
@@ -115,7 +110,8 @@ Offset is UTC+8
 
     setup_dut(dut)
 
-    dt = datetime.now()
+    # tests use a fixed date, otherwise they can fail depending on the current date
+    dt = datetime(2014,9,20)    # dt = datetime.now()
 
     tz1 = timezone('Europe/Rome')
     tz2 = timezone('America/Montevideo')
@@ -147,28 +143,28 @@ Offset is UTC+8
     with pytest.raises(KeyError) as excinfo:
         assert d.clock['calendar'] == ''
 
-    d.clock.update(timezone=tz1)
+    d.clock.update(datetime=dt,timezone=tz1)
     assert d.clock['timezone_name'] == 'CEST'
     assert d.clock['timezone_offset'] == '+02:00'
     assert d.clock['summertime_start'] == 'Last Sunday in March at 02:00:00'
     assert d.clock['summertime_end'] == 'Last Sunday in October at 03:00:00'
     assert d.clock['summertime_offset'] == '60'
 
-    d.clock.update(timezone=tz2)
+    d.clock.update(datetime=dt,timezone=tz2)
     assert d.clock['timezone_name'] == 'UYT'
     assert d.clock['timezone_offset'] == '-03:00'
     assert d.clock['summertime_start'] == 'First Sunday in October at 02:00:00'
     assert d.clock['summertime_end'] == 'Second Sunday in March at 02:00:00'
     assert d.clock['summertime_offset'] == '60'
 
-    d.clock.update(timezone=tz3)
+    d.clock.update(datetime=dt,timezone=tz3)
     assert d.clock['timezone_name'] == 'AEST'
     assert d.clock['timezone_offset'] == '+10:00'
     assert d.clock['summertime_start'] == 'First Sunday in October at 02:00:00'
     assert d.clock['summertime_end'] == 'First Sunday in April at 03:00:00'
     assert d.clock['summertime_offset'] == '60'
 
-    d.clock.update(timezone=tz4)
+    d.clock.update(datetime=dt,timezone=tz4)
     assert d.clock['timezone_name'] == 'EDT'
     assert d.clock['timezone_offset'] == '-04:00'
     assert d.clock['summertime_start'] == 'Second Sunday in March at 02:00:00'

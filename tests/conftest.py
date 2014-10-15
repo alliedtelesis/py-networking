@@ -1,13 +1,10 @@
 import pytest
-import sys
 import re
 import os
 import shutil
-import urllib
 import urllib2
 from hashlib import md5
-from pprint import pprint
-from multiprocessing import Process, Value, Array, Manager
+from multiprocessing import Process, Manager
 from ctypes import c_char_p, c_int
 from time import sleep
 from twisted.conch import avatar, recvline
@@ -15,11 +12,11 @@ from twisted.conch.interfaces import IConchUser, ISession
 from twisted.conch.ssh import factory, keys, session
 from twisted.conch.insults import insults
 from twisted.cred import portal, checkers
-from twisted.internet import reactor, protocol
-from twisted.internet.error import ProcessTerminated,ProcessDone
+from twisted.internet import reactor
 from zope.interface import implements
-from twisted.python import failure, log, logfile
+from twisted.python import log, logfile
 from os.path import join
+
 
 class Emulator(recvline.HistoricRecvLine):
     def __init__(self, user, parent, cmd=None):

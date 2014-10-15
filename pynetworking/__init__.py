@@ -1,6 +1,4 @@
 # Import python libs
-import os
-import sys
 import warnings
 
 # All salt related deprecation warnings should be shown once each!
@@ -18,7 +16,7 @@ warnings.filterwarnings(
       DeprecationWarning
 )
 
-from pynetworking.Proxy import SSHProxy, ProxyException
+from pynetworking.Proxy import SSHProxy
 from pynetworking.Device import Device
 from pynetworking.Device import DeviceException
 from pynetworking.Feature import Feature

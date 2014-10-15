@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 import re
 import json
-import ply.lex as lex
 from pprint import pformat
 from pynetworking import Feature
-from pprint import pprint
 from pynetworking.features.awp_interface_config_lexer import InterfaceConfigLexer
 from pynetworking.features.awp_interface_status_lexer import InterfaceStatusLexer
+
 
 class awp_interface(Feature):
     """

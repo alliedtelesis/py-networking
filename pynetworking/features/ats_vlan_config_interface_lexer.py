@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 import ply.lex as lex
-from pprint import pprint
+
 
 class VlanInterfaceConfigLexer(object):
     states = (

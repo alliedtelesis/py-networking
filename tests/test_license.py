@@ -1,14 +1,11 @@
 import pytest
-import logging
 import os
 import socket
 import tftpy
 import threading
 import getpass
-from pynetworking import Device, DeviceException
-from time import sleep
-from paramiko.rsakey import RSAKey
-from pprint import pprint
+from pynetworking import Device
+
 
 def setup_dut(dut):
     dut.reset()

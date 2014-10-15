@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import pytest
 from pynetworking import Device
-from time import sleep
 from jinja2 import Template
 
 

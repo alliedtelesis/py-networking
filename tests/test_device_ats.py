@@ -7,9 +7,6 @@ import threading
 import getpass
 
 from pynetworking import Device, DeviceException
-from time import sleep
-from paramiko.rsakey import RSAKey
-from pprint import pprint
 
 
 def setup_dut(dut):

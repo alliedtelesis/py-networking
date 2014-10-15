@@ -10,8 +10,9 @@ Contents
     clock
     file
     interface
-    mac
     license
+    mac
+    ntp
     user
     vlan
     cookbook

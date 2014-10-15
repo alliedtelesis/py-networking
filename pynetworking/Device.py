@@ -138,7 +138,6 @@ class Device(object):
         cmd['flush_cache'] = flush_cache
 
         self._start_proxy()
-        sleep(1)
         try:
             context = zmq.Context()
             skt = context.socket(zmq.REQ)
@@ -267,6 +266,7 @@ class Device(object):
                               args=(self,)
                             )
             self._proxy.start()
+            sleep(1)
             self.log_debug("proxy process started")
 
 

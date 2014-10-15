@@ -6,6 +6,7 @@ from pynetworking import Device, DeviceException
 from time import sleep
 from paramiko.rsakey import RSAKey
 from pprint import pprint
+from tempfile import NamedTemporaryFile
 
 def setup_dut(dut):
     dut.reset()
@@ -67,6 +68,24 @@ def setup_test_firmware_upgrade(dut, release_file):
 def clean_test_firmware_upgrade(dut, release_file):
     if (dut.mode == 'emulated'):
         os.remove(release_file)
+
+
+def test_device(dut, log_level):
+    setup_dut(dut)
+    with pytest.raises(ValueError) as excinfo:
+        d=Device(host=dut.host,port=dut.port,protocol='snmp',log_level=log_level)
+    assert str(excinfo.value) == 'Unsupported protocol snmp'
+    with pytest.raises(ValueError) as excinfo:
+        d=Device(host=dut.host,port=dut.port,protocol='serial',log_level=log_level)
+    assert str(excinfo.value) == 'Protocol serial is not supported'
+    tmpfile = NamedTemporaryFile()
+    tmpname = 'file://' + tmpfile.name
+    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level,log_output=tmpname,os='awp')
+    d.open()
+    old_log_level = d.log_level
+    d.log_level = 'debug'
+    assert d.log_level == getattr(logging, 'debug'.upper())
+    d.close()
 
 
 def test_open_close1(dut, log_level):

@@ -99,9 +99,8 @@ def setup_test_certificate(dut, cert_file, label, key, mac='', tftp_server=False
 
 
 def clean_test_environment(dut, cert_file):
-    if (dut.mode == 'emulated'):
-        if (os.path.exists(cert_file) == True):
-            os.remove(cert_file)
+    if (os.path.exists(cert_file) == True):
+        os.remove(cert_file)
     tftp_client_dir = './tftp_client_dir'
     if (os.path.exists(tftp_client_dir) == True):
         os.rmdir(tftp_client_dir)
@@ -260,6 +259,8 @@ Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
     assert d.license[label]['releases'] == ''
     d.license.delete(label=label)
     assert label not in d.license.keys()
+    if cert_file in d.file.keys():
+        d.file.delete(cert_file)
     d.close()
 
     clean_test_environment(dut, cert_name)
@@ -329,6 +330,7 @@ Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
     with pytest.raises(KeyError) as excinfo:
         d.license.set_license(certificate=false_cert_url)
     assert label not in d.license.keys()
+    assert cert_file not in d.file.keys()
     d.license.set_license(certificate=cert_url)
     assert label in d.license.keys()
     assert d.license[label]['features'] == 'BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT, VRF-LITE, VRF-LITE-63'
@@ -403,6 +405,7 @@ Release                       : 5.4.4
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
     assert label not in d.license.keys()
+    assert cert_file not in d.file.keys()
     d.license.set_license(certificate=cert_url)
     assert label in d.license.keys()
     assert d.license[label]['features'] == ''

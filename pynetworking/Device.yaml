@@ -6,17 +6,21 @@ system: ats_system
 
 features:
 {% if os == 'awp' %}
-  vlan: awp_vlan
   interface: awp_interface
+  vlan: awp_vlan
   user: awp_user
   file: awp_file
   license: awp_license
   mac: awp_mac
+  clock: awp_clock
+  ntp: awp_ntp
 {% elif os == 'ats' %}
   interface: ats_interface
   vlan: ats_vlan
   user: ats_user
   file: ats_file
   mac: ats_mac
+  clock: ats_clock
+  ntp: ats_ntp
 {% endif %}
 

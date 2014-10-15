@@ -52,6 +52,8 @@ class ats_clock(Feature):
         if (timezone != None):
             # set the timezone
             loc_now = self._now()
+            if datetime != None:
+                loc_now = datetime
             loc_dt = timezone.localize(loc_now)
             tz_name = loc_dt.strftime('%Z')
             offset = loc_dt.strftime('%z')

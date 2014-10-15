@@ -15,9 +15,13 @@ from pynetworking import SSHProxy
 from multiprocessing import Process
 from time import sleep
 from tempfile import NamedTemporaryFile
+from mock import MagicMock
+from mock import patch
+
 
 class DeviceException(Exception):
     pass
+
 
 class Device(object):
     """ test doc
@@ -35,6 +39,8 @@ class Device(object):
         self._password = password
         self._protocol = protocol
         self._port = port
+
+        self._unittest = False
 
         self._log_level = getattr(logging, log_level.upper())
         hdl = logging.StreamHandler()
@@ -100,18 +106,50 @@ class Device(object):
             self.log_debug("ping down")
             return False
 
+
     def open(self):
+        if self._unittest == False:
+            self._open()
+        else:
+            self.log_info("unittest open")
+
+            frm = inspect.stack()[1]
+            mod = inspect.getmodule(frm[0])
+            feat = mod.__name__.split('_')[1]
+            os = mod.__name__.split('_')[-1]
+            if feat == os:
+                os = 'awp'
+            if feat == 'device' or os == 'coverage':
+                self._open()
+                return
+
+            yaml_load_mocked = MagicMock()
+            load_facts_mocked = MagicMock()
+            with patch('pynetworking.Device._load_core_facts', load_facts_mocked):
+                with patch('yaml.load', yaml_load_mocked):
+                    yaml_load_mocked.return_value = self._mock_load_features(os=os, feat=feat)
+                    load_facts_mocked.side_effect = self._mock_load_facts(os)
+
+                    self.cmd({'cmds': [{'cmd': '_status', 'prompt': ''}]})
+                    self._load_core_facts()
+                    self._load_features()
+                    self.load_system()
+
+
+    def _open(self):
         self.log_info("open")
         self.cmd({'cmds':[{'cmd': '_status', 'prompt':''}]})
         self._load_core_facts()
         self._load_features()
         self.load_system()
 
+
     def close(self):
         self.log_info("close")
         if isinstance(self._proxy,Process) and (isinstance(self._proxy,Process) and self._proxy.is_alive()):
             self.cmd({'cmds':[{'cmd':'_exit', 'prompt': ''}]})
             self._proxy.join(10)
+
 
     def cmd(self, cmd, use_cache=True, cache=False, flush_cache=False):
         timeout=12000
@@ -160,6 +198,7 @@ class Device(object):
             self.log_warn("ZMQError {0}".format(repr(e)))
             raise DeviceException("ZMQError {0}".format(repr(e)))
 
+
     def _load_core_facts(self):
         self.log_info("loading core facts")
         facts_dir = "{0}/facts/".format(dirname(__file__))
@@ -183,6 +222,7 @@ class Device(object):
             if 'os' not in self._facts:
                 self.close()
                 raise DeviceException("device not supported")
+
 
     def _load_features(self):
         self.log_info("loading features")
@@ -231,6 +271,7 @@ class Device(object):
         for fname,fobj in self._features.items():
             fobj.load_config(cfg)
 
+
     def log_debug(self, msg):
         self._logger(msg,'debug')
 
@@ -246,6 +287,7 @@ class Device(object):
     def log_critical(self, msg):
         self._logger(msg,'critical')
 
+
     def _logger(self, msg, level):
         (frame, filename, lineno, function_name, lines, index) = inspect.getouterframes(inspect.currentframe())[2]
         filename = filename.split('pynetworking/')[1]
@@ -253,6 +295,7 @@ class Device(object):
         log = logging.getLogger(self._host)
         if self._log_level != 0:
             getattr(log, level)(msg)
+
 
     def _start_proxy(self):
         self.log_debug("_start_proxy")
@@ -265,3 +308,27 @@ class Device(object):
             self._proxy.start()
             sleep(1)
             self.log_debug("proxy process started")
+
+
+    def _mock_load_features(self, os, feat):
+        # comment test_openclose3 and test_firmware_upgrade_544_unlicensed ---> 42 seconds vs 142
+        # if feat == 'device' and os == 'awp':
+        #     return {'system': os + '_system', 'features': {'file': os + '_file', 'vlan': os + '_vlan'}}
+        # comment test_facts_1 and test_facts_2 ---> 8 seconds vs 18
+        # if feat == 'device' and os == 'ats':
+        #     return {'system': os + '_system', 'features': {'file': os + '_file', 'vlan': os + '_vlan'}}
+        if feat == 'license':
+            return {'system': os + '_system', 'features': {'license': os + '_license', 'file': os + '_file'}}
+        if feat == 'vlan' and os == 'ats':
+            return {'system': os + '_system', 'features': {'interface': os + '_interface', 'vlan': os + '_vlan'}}
+        return {'system': os + '_system', 'features': {feat: os + '_' + feat}}
+
+
+    def _mock_load_facts(self, os):
+        if (os == 'ats'):
+            self._facts = {'model': u'AT-8000S/24', 'version': u'3.0.0.44', 'unit_number': u'1', 'os': 'ats', 'serial_number': u'1122334455', 'boot version': u'1.0.1.07', 'hardware_rev': u'00.01.00'}
+            return
+        if (os == 'awp'):
+            self._facts = {'build_date': u'Wed Sep 25 12:57:26 NZST 2013', 'version': u'5.4.2', 'sw_release': u'5.4.2', 'build_name': u'x600-5.4.2-3.14.rel', 'os': 'awp', 'build_type': u'RELEASE'}
+            return
+        self._facts = {}

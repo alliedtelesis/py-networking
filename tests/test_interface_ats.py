@@ -50,9 +50,9 @@ def test_show_system(dut, log_level):
     setup_dut(dut)
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
-    assert (d.model in ats_supported_model)
+    assert (d.facts['model'] in ats_supported_model)
     global ats_model_port_number
-    ats_model_port_number = d.model[len(ats_basic_supported_model) + 1:]
+    ats_model_port_number = d.facts['model'][len(ats_basic_supported_model) + 1:]
     d.close()
 
 
@@ -62,7 +62,7 @@ def test_show_version(dut, log_level):
     setup_dut(dut)
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
-    assert (d.sw_version == ats_supported_sw_version)
+    assert (d.facts['version'] == ats_supported_sw_version)
     d.close()
 
 

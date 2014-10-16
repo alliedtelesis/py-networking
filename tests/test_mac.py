@@ -4,7 +4,7 @@ from pynetworking import Device
 
 def setup_dut(dut):
     dut.reset()
-    dut.add_cmd({'cmd':'show version',        'state':-1, 'action': 'PRINT','args':["""
+    dut.add_cmd({'cmd':'show version',        'state':-1, 'action': 'PRINT', 'args': ["""
 AlliedWare Plus (TM) 5.4.2 09/25/13 12:57:26
 
 Build name : x600-5.4.2-3.14.rel
@@ -12,7 +12,7 @@ Build date : Wed Sep 25 12:57:26 NZST 2013
 Build type : RELEASE
     """]})
 
-    #this sleep time is just a trick to have the static entry occurring in the MAC address table
+    # this sleep time is just a trick to have the static entry occurring in the MAC address table
     if dut.mode != 'emulated':
         dut.sleep_time = 3
     else:
@@ -68,14 +68,14 @@ VLAN port             mac            fwd
     update_cmd = 'mac address-table static ' + dotted_mac + ' discard interface ' + ifu + ' vlan 1'
     delete_cmd = 'no mac address-table static ' + dotted_mac + ' discard interface ' + ifu + ' vlan 1'
 
-    dut.add_cmd({'cmd': 'show running-config'   , 'state':0, 'action':'PRINT'    ,'args': output_a})
-    dut.add_cmd({'cmd': 'show mac address-table', 'state':0, 'action':'PRINT'    ,'args': output_0})
-    dut.add_cmd({'cmd': create_cmd              , 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'show mac address-table', 'state':1, 'action':'PRINT'    ,'args': output_1})
-    dut.add_cmd({'cmd': update_cmd              , 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'show mac address-table', 'state':2, 'action':'PRINT'    ,'args': output_2})
-    dut.add_cmd({'cmd': delete_cmd              , 'state':2, 'action':'SET_STATE','args':[3]})
-    dut.add_cmd({'cmd': 'show mac address-table', 'state':3, 'action':'PRINT'    ,'args': output_0})
+    dut.add_cmd({'cmd': 'show running-config', 'state':0, 'action': 'PRINT', 'args': output_a})
+    dut.add_cmd({'cmd': 'show mac address-table', 'state':0, 'action': 'PRINT', 'args': output_0})
+    dut.add_cmd({'cmd': create_cmd, 'state':0, 'action': 'SET_STATE', 'args':[1]})
+    dut.add_cmd({'cmd': 'show mac address-table', 'state':1, 'action': 'PRINT', 'args': output_1})
+    dut.add_cmd({'cmd': update_cmd, 'state':1, 'action': 'SET_STATE', 'args':[2]})
+    dut.add_cmd({'cmd': 'show mac address-table', 'state':2, 'action': 'PRINT', 'args': output_2})
+    dut.add_cmd({'cmd': delete_cmd, 'state':2, 'action': 'SET_STATE', 'args':[3]})
+    dut.add_cmd({'cmd': 'show mac address-table', 'state':3, 'action': 'PRINT', 'args': output_0})
 
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
@@ -135,13 +135,13 @@ VLAN port             mac            fwd
     update_cmd = 'mac address-table static ' + dotted_mac + ' discard interface ' + ifu + ' vlan 1'
     delete_cmd = 'no mac address-table static ' + dotted_mac + ' discard interface ' + ifu + ' vlan 1'
 
-    dut.add_cmd({'cmd': 'show mac address-table', 'state':0, 'action':'PRINT'    ,'args': output_0})
-    dut.add_cmd({'cmd': create_cmd              , 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'show mac address-table', 'state':1, 'action':'PRINT'    ,'args': output_1})
-    dut.add_cmd({'cmd': update_cmd              , 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'show mac address-table', 'state':2, 'action':'PRINT'    ,'args': output_2})
-    dut.add_cmd({'cmd': delete_cmd              , 'state':2, 'action':'SET_STATE','args':[3]})
-    dut.add_cmd({'cmd': 'show mac address-table', 'state':3, 'action':'PRINT'    ,'args': output_0})
+    dut.add_cmd({'cmd': 'show mac address-table', 'state':0, 'action': 'PRINT', 'args': output_0})
+    dut.add_cmd({'cmd': create_cmd, 'state':0, 'action': 'SET_STATE', 'args':[1]})
+    dut.add_cmd({'cmd': 'show mac address-table', 'state':1, 'action': 'PRINT', 'args': output_1})
+    dut.add_cmd({'cmd': update_cmd, 'state':1, 'action': 'SET_STATE', 'args':[2]})
+    dut.add_cmd({'cmd': 'show mac address-table', 'state':2, 'action': 'PRINT', 'args': output_2})
+    dut.add_cmd({'cmd': delete_cmd, 'state':2, 'action': 'SET_STATE', 'args':[3]})
+    dut.add_cmd({'cmd': 'show mac address-table', 'state':3, 'action': 'PRINT', 'args': output_0})
 
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
@@ -186,13 +186,13 @@ VLAN port             mac            fwd
     update_cmd = 'mac address-table static ' + dotted_mac + ' discard interface ' + ifu + ' vlan 1'
     delete_cmd = 'no mac address-table static ' + dotted_mac + ' discard interface ' + ifu + ' vlan 1'
 
-    dut.add_cmd({'cmd': 'show mac address-table', 'state':0, 'action':'PRINT'    ,'args': output_0})
-    dut.add_cmd({'cmd': create_cmd              , 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'show mac address-table', 'state':1, 'action':'PRINT'    ,'args': output_1})
-    dut.add_cmd({'cmd': update_cmd              , 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'show mac address-table', 'state':2, 'action':'PRINT'    ,'args': output_2})
-    dut.add_cmd({'cmd': delete_cmd              , 'state':2, 'action':'SET_STATE','args':[3]})
-    dut.add_cmd({'cmd': 'show mac address-table', 'state':3, 'action':'PRINT'    ,'args': output_0})
+    dut.add_cmd({'cmd': 'show mac address-table', 'state':0, 'action': 'PRINT', 'args': output_0})
+    dut.add_cmd({'cmd': create_cmd, 'state':0, 'action': 'SET_STATE', 'args':[1]})
+    dut.add_cmd({'cmd': 'show mac address-table', 'state':1, 'action': 'PRINT', 'args': output_1})
+    dut.add_cmd({'cmd': update_cmd, 'state':1, 'action': 'SET_STATE', 'args':[2]})
+    dut.add_cmd({'cmd': 'show mac address-table', 'state':2, 'action': 'PRINT', 'args': output_2})
+    dut.add_cmd({'cmd': delete_cmd, 'state':2, 'action': 'SET_STATE', 'args':[3]})
+    dut.add_cmd({'cmd': 'show mac address-table', 'state':3, 'action': 'PRINT', 'args': output_0})
 
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
@@ -237,13 +237,13 @@ VLAN port             mac            fwd
     update_cmd = 'mac address-table static ' + dotted_mac + ' discard interface ' + ifu + ' vlan 1'
     delete_cmd = 'no mac address-table static ' + dotted_mac + ' discard interface ' + ifu + ' vlan 1'
 
-    dut.add_cmd({'cmd': 'show mac address-table', 'state':0, 'action':'PRINT'    ,'args': output_0})
-    dut.add_cmd({'cmd': create_cmd              , 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'show mac address-table', 'state':1, 'action':'PRINT'    ,'args': output_1})
-    dut.add_cmd({'cmd': update_cmd              , 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'show mac address-table', 'state':2, 'action':'PRINT'    ,'args': output_2})
-    dut.add_cmd({'cmd': delete_cmd              , 'state':2, 'action':'SET_STATE','args':[3]})
-    dut.add_cmd({'cmd': 'show mac address-table', 'state':3, 'action':'PRINT'    ,'args': output_0})
+    dut.add_cmd({'cmd': 'show mac address-table', 'state':0, 'action': 'PRINT', 'args': output_0})
+    dut.add_cmd({'cmd': create_cmd, 'state':0, 'action': 'SET_STATE', 'args':[1]})
+    dut.add_cmd({'cmd': 'show mac address-table', 'state':1, 'action': 'PRINT', 'args': output_1})
+    dut.add_cmd({'cmd': update_cmd, 'state':1, 'action': 'SET_STATE', 'args':[2]})
+    dut.add_cmd({'cmd': 'show mac address-table', 'state':2, 'action': 'PRINT', 'args': output_2})
+    dut.add_cmd({'cmd': delete_cmd, 'state':2, 'action': 'SET_STATE', 'args':[3]})
+    dut.add_cmd({'cmd': 'show mac address-table', 'state':3, 'action': 'PRINT', 'args': output_0})
 
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
@@ -277,11 +277,11 @@ VLAN port             mac            fwd
     ifc = 'port1.0.2'
     create_cmd = 'mac address-table static ' + dotted_mac + ' forward interface ' + ifc + ' vlan 1'
 
-    dut.add_cmd({'cmd': 'show mac address-table'        , 'state':0, 'action':'PRINT'    ,'args': output_0})
-    dut.add_cmd({'cmd': create_cmd                      , 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'show mac address-table'        , 'state':1, 'action':'PRINT'    ,'args': output_1})
-    dut.add_cmd({'cmd': 'clear mac address-table static', 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'show mac address-table'        , 'state':2, 'action':'PRINT'    ,'args': output_0})
+    dut.add_cmd({'cmd': 'show mac address-table', 'state':0, 'action': 'PRINT', 'args': output_0})
+    dut.add_cmd({'cmd': create_cmd, 'state':0, 'action': 'SET_STATE', 'args':[1]})
+    dut.add_cmd({'cmd': 'show mac address-table', 'state':1, 'action': 'PRINT', 'args': output_1})
+    dut.add_cmd({'cmd': 'clear mac address-table static', 'state':1, 'action': 'SET_STATE', 'args':[2]})
+    dut.add_cmd({'cmd': 'show mac address-table', 'state':2, 'action': 'PRINT', 'args': output_0})
 
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()

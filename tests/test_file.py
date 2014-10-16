@@ -6,7 +6,7 @@ from pynetworking import Device
 
 def setup_dut(dut):
     dut.reset()
-    dut.add_cmd({'cmd':'show version',        'state':-1, 'action': 'PRINT','args':["""
+    dut.add_cmd({'cmd':'show version',        'state':-1, 'action': 'PRINT', 'args': ["""
 AlliedWare Plus (TM) 5.4.2 09/25/13 12:57:26
 
 Build name : x600-5.4.2-3.14.rel
@@ -48,7 +48,7 @@ interface vlan1
 end
 """
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'dir'   , 'state':0, 'action':'PRINT','args': dir_0})
+    dut.add_cmd({'cmd': 'dir', 'state':0, 'action': 'PRINT', 'args': dir_0})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'default.cfg' in d.file.keys()
@@ -90,9 +90,9 @@ def test_create_empty_file(dut, log_level):
     setup_dut(dut)
     host_file_name = 'test_file_0.cfg'
     create_cmd = 'copy\s+http://{0}:\d+/test_file_0.cfg\s+test_file_0.cfg'.format(socket.gethostbyname(socket.getfqdn()))
-    dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
-    dut.add_cmd({'cmd': create_cmd, 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'dir'     , 'state':1, 'action':'PRINT','args': dir_1})
+    dut.add_cmd({'cmd': 'dir', 'state':0, 'action': 'PRINT', 'args': dir_0})
+    dut.add_cmd({'cmd': create_cmd, 'state':0, 'action': 'SET_STATE', 'args':[1]})
+    dut.add_cmd({'cmd': 'dir', 'state':1, 'action': 'PRINT', 'args': dir_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert host_file_name not in d.file.keys()
@@ -153,9 +153,9 @@ end
     myfile.write(host_content)
     myfile.close()
     create_cmd = 'copy\s+http://{0}:\d+/local.cfg\s+test_file_1.cfg'.format(socket.gethostbyname(socket.getfqdn()))
-    dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
-    dut.add_cmd({'cmd': create_cmd, 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'dir'     , 'state':1, 'action':'PRINT','args': dir_1})
+    dut.add_cmd({'cmd': 'dir', 'state':0, 'action': 'PRINT', 'args': dir_0})
+    dut.add_cmd({'cmd': create_cmd, 'state':0, 'action': 'SET_STATE', 'args':[1]})
+    dut.add_cmd({'cmd': 'dir', 'state':1, 'action': 'PRINT', 'args': dir_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'test_file_1.cfg' not in d.file.keys()
@@ -215,9 +215,9 @@ end
     setup_dut(dut)
     host_file_name = 'test_file_2.cfg'
     create_cmd = 'copy\s+http://{0}:\d+/test_file_2.cfg\s+test_file_2.cfg'.format(socket.gethostbyname(socket.getfqdn()))
-    dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
-    dut.add_cmd({'cmd': create_cmd, 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'dir'     , 'state':1, 'action':'PRINT','args': dir_1})
+    dut.add_cmd({'cmd': 'dir', 'state':0, 'action': 'PRINT', 'args': dir_0})
+    dut.add_cmd({'cmd': create_cmd, 'state':0, 'action': 'SET_STATE', 'args':[1]})
+    dut.add_cmd({'cmd': 'dir', 'state':1, 'action': 'PRINT', 'args': dir_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'test_file_2.cfg' not in d.file.keys()
@@ -276,12 +276,12 @@ end
 """
     setup_dut(dut)
     create_cmd = 'copy\s+http://{0}:\d+/test_file_r.cfg\s+test_file_r.cfg'.format(socket.gethostbyname(socket.getfqdn()))
-    dut.add_cmd({'cmd': 'dir'                      , 'state':0, 'action':'PRINT','args': dir_0})
-    dut.add_cmd({'cmd': create_cmd                 , 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'dir'                      , 'state':1, 'action':'PRINT','args': dir_1})
-    dut.add_cmd({'cmd': 'show file test_file_r.cfg', 'state':1, 'action':'PRINT','args': [host_content]})
-    dut.add_cmd({'cmd': 'delete test_file_r.cfg'   , 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'dir'                      , 'state':2, 'action':'PRINT','args': dir_0})
+    dut.add_cmd({'cmd': 'dir', 'state':0, 'action': 'PRINT', 'args': dir_0})
+    dut.add_cmd({'cmd': create_cmd, 'state':0, 'action': 'SET_STATE', 'args':[1]})
+    dut.add_cmd({'cmd': 'dir', 'state':1, 'action': 'PRINT', 'args': dir_1})
+    dut.add_cmd({'cmd': 'show file test_file_r.cfg', 'state':1, 'action': 'PRINT', 'args': [host_content]})
+    dut.add_cmd({'cmd': 'delete test_file_r.cfg', 'state':1, 'action': 'SET_STATE', 'args':[2]})
+    dut.add_cmd({'cmd': 'dir', 'state':2, 'action': 'PRINT', 'args': dir_0})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'test_file_r.cfg' not in d.file.keys()
@@ -327,7 +327,7 @@ ip address 10.17.39.253/24
 end
 """
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'dir'   , 'state':0, 'action':'PRINT','args': dir_0})
+    dut.add_cmd({'cmd': 'dir', 'state':0, 'action': 'PRINT', 'args': dir_0})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'default.cfg' in d.file.keys()
@@ -395,9 +395,9 @@ end
     name = 'test_file_1.cfg'
     update_cmd = 'copy\s+http://{0}:\d+/test_file_1.cfg\s+test_file_1.cfg'.format(socket.gethostbyname(socket.getfqdn()))
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
-    dut.add_cmd({'cmd': update_cmd, 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'dir'     , 'state':1, 'action':'PRINT','args': dir_1})
+    dut.add_cmd({'cmd': 'dir', 'state':0, 'action': 'PRINT', 'args': dir_0})
+    dut.add_cmd({'cmd': update_cmd, 'state':0, 'action': 'SET_STATE', 'args':[1]})
+    dut.add_cmd({'cmd': 'dir', 'state':1, 'action': 'PRINT', 'args': dir_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'test_file_1.cfg' in d.file.keys()
@@ -462,9 +462,9 @@ end
     myfile.close()
     update_cmd = 'copy\s+http://{0}:\d+/temp.cfg\s+test_file_1.cfg'.format(socket.gethostbyname(socket.getfqdn()))
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
-    dut.add_cmd({'cmd': update_cmd, 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'dir'     , 'state':1, 'action':'PRINT','args': dir_1})
+    dut.add_cmd({'cmd': 'dir', 'state':0, 'action': 'PRINT', 'args': dir_0})
+    dut.add_cmd({'cmd': update_cmd, 'state':0, 'action': 'SET_STATE', 'args':[1]})
+    dut.add_cmd({'cmd': 'dir', 'state':1, 'action': 'PRINT', 'args': dir_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'test_file_1.cfg' in d.file.keys()
@@ -542,11 +542,11 @@ end
     update_cmd = 'copy\s+http://{0}:\d+/test_file_1.cfg\s+test_file_3.cfg'.format(socket.gethostbyname(socket.getfqdn()))
     delete_cmd = 'delete test_file_1.cfg'
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
-    dut.add_cmd({'cmd': update_cmd, 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'dir'     , 'state':1, 'action':'PRINT','args': dir_1})
-    dut.add_cmd({'cmd': delete_cmd, 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'dir'     , 'state':2, 'action':'PRINT','args': dir_2})
+    dut.add_cmd({'cmd': 'dir', 'state':0, 'action': 'PRINT', 'args': dir_0})
+    dut.add_cmd({'cmd': update_cmd, 'state':0, 'action': 'SET_STATE', 'args':[1]})
+    dut.add_cmd({'cmd': 'dir', 'state':1, 'action': 'PRINT', 'args': dir_1})
+    dut.add_cmd({'cmd': delete_cmd, 'state':1, 'action': 'SET_STATE', 'args':[2]})
+    dut.add_cmd({'cmd': 'dir', 'state':2, 'action': 'PRINT', 'args': dir_2})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'test_file_1.cfg' in d.file.keys()
@@ -598,13 +598,13 @@ def test_remove_files(dut, log_level):
       735 -rw- Aug 23 2013 08:48:35  exception.log
 """]
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'dir'                   , 'state':0, 'action':'PRINT','args': dir_0})
-    dut.add_cmd({'cmd': 'delete test_file_0.cfg', 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'dir'                   , 'state':1, 'action':'PRINT','args': dir_1})
-    dut.add_cmd({'cmd': 'delete test_file_2.cfg', 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'dir'                   , 'state':2, 'action':'PRINT','args': dir_2})
-    dut.add_cmd({'cmd': 'delete test_file_3.cfg', 'state':2, 'action':'SET_STATE','args':[3]})
-    dut.add_cmd({'cmd': 'dir'                   , 'state':3, 'action':'PRINT','args': dir_3})
+    dut.add_cmd({'cmd': 'dir', 'state':0, 'action': 'PRINT', 'args': dir_0})
+    dut.add_cmd({'cmd': 'delete test_file_0.cfg', 'state':0, 'action': 'SET_STATE', 'args':[1]})
+    dut.add_cmd({'cmd': 'dir', 'state':1, 'action': 'PRINT', 'args': dir_1})
+    dut.add_cmd({'cmd': 'delete test_file_2.cfg', 'state':1, 'action': 'SET_STATE', 'args':[2]})
+    dut.add_cmd({'cmd': 'dir', 'state':2, 'action': 'PRINT', 'args': dir_2})
+    dut.add_cmd({'cmd': 'delete test_file_3.cfg', 'state':2, 'action': 'SET_STATE', 'args':[3]})
+    dut.add_cmd({'cmd': 'dir', 'state':3, 'action': 'PRINT', 'args': dir_3})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'test_file_0.cfg' in d.file.keys()

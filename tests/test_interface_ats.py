@@ -21,14 +21,14 @@ Port     Type         Duplex  Speed  Neg      control  State   Pressure Mode
 def setup_dut(dut):
     dut.reset()
     dut.prompt = '#'
-    dut.add_cmd({'cmd':'show version', 'state':-1, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd':'show version', 'state':-1, 'action': 'PRINT', 'args':["""
 
         Unit             SW version         Boot version         HW version      
 ------------------- ------------------- ------------------- ------------------- 
          1               3.0.0.44            1.0.1.07            00.01.00       
 
     """]})
-    dut.add_cmd({'cmd':'show system', 'state':-1, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd':'show system', 'state':-1, 'action': 'PRINT', 'args':["""
 
 Unit        Type         
 ---- ------------------- 
@@ -78,7 +78,7 @@ def test_get_interface(dut, log_level):
     if dut.mode != 'emulated':
         pytest.skip("only on emulated")
     setup_dut(dut)
-    dut.add_cmd({'cmd':'show interfaces status', 'state':0, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd':'show interfaces status', 'state':0, 'action': 'PRINT', 'args':["""
 
                                              Flow Link          Back   Mdix
 Port     Type         Duplex  Speed Neg      ctrl State       Pressure Mode
@@ -125,7 +125,7 @@ Port     Type         Duplex  Speed Neg      ctrl State       Pressure Mode
 2/e3          --        --      --     --     --  Not Present    --     --    
     """]})
 
-    dut.add_cmd({'cmd':'show interfaces configuration', 'state':0, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd':'show interfaces configuration', 'state':0, 'action': 'PRINT', 'args':["""
                                                Flow    Admin     Back   Mdix
 Port     Type         Duplex  Speed  Neg      control  State   Pressure Mode
 -------- ------------ ------  -----  -------- -------  -----   -------- ----
@@ -190,7 +190,7 @@ Port     Type         Duplex  Speed  Neg      control  State   Pressure Mode
 2/e7          --      Full      --   Enabled  Off      Up      Disabled Auto
     """]})
 
-    dut.add_cmd({'cmd':'show interfaces description', 'state':0, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd':'show interfaces description', 'state':0, 'action': 'PRINT', 'args':["""
 Port      Description
 -------   -----------
 1/e1
@@ -293,7 +293,7 @@ def test_enable_interface(dut, log_level):
         entry = '1/e%-2d    100M-Copper  Full    100    Enabled  Off      Up      Disabled Auto\n' % (interface)
         show_interface += entry
 
-    dut.add_cmd({'cmd': 'show interfaces configuration',       'state':0, 'action':'PRINT','args':[show_interface]})
+    dut.add_cmd({'cmd': 'show interfaces configuration',       'state':0, 'action': 'PRINT', 'args':[show_interface]})
 
     print('\nAdd here code to test enabling and disabling of interfaces')
 
@@ -304,7 +304,7 @@ def test_enable_interface(dut, log_level):
 
 def test_update_description(dut, log_level):
     setup_dut(dut)
-    dut.add_cmd({'cmd':'show interfaces status', 'state':-1, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd':'show interfaces status', 'state':-1, 'action': 'PRINT', 'args':["""
 
                                              Flow Link          Back   Mdix
 Port     Type         Duplex  Speed Neg      ctrl State       Pressure Mode
@@ -351,7 +351,7 @@ Port     Type         Duplex  Speed Neg      ctrl State       Pressure Mode
 2/e3          --        --      --     --     --  Not Present    --     --
     """]})
 
-    dut.add_cmd({'cmd':'show interfaces configuration', 'state':-1, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd':'show interfaces configuration', 'state':-1, 'action': 'PRINT', 'args':["""
                                                Flow    Admin     Back   Mdix
 Port     Type         Duplex  Speed  Neg      control  State   Pressure Mode
 -------- ------------ ------  -----  -------- -------  -----   -------- ----
@@ -416,7 +416,7 @@ Port     Type         Duplex  Speed  Neg      control  State   Pressure Mode
 2/e7          --      Full      --   Enabled  Off      Up      Disabled Auto
     """]})
 
-    dut.add_cmd({'cmd':'show interfaces description', 'state':0, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd':'show interfaces description', 'state':0, 'action': 'PRINT', 'args':["""
 Port      Description
 -------   -----------
 1/e1
@@ -475,10 +475,10 @@ Port      Description
 2/e2
 2/e3
     """]})
-    dut.add_cmd({'cmd': 'interface ethernet 1/e18',         'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': 'interface ethernet 1/e18',         'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'description "test description"',   'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'show interfaces description',      'state':2, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd': 'interface ethernet 1/e18',         'state':0, 'action': 'SET_PROMPT', 'args':['(config-if)#']})
+    dut.add_cmd({'cmd': 'interface ethernet 1/e18',         'state':0, 'action': 'SET_STATE', 'args':[1]})
+    dut.add_cmd({'cmd': 'description "test description"',   'state':1, 'action': 'SET_STATE', 'args':[2]})
+    dut.add_cmd({'cmd': 'show interfaces description',      'state':2, 'action': 'PRINT', 'args':["""
 Port      Description
 -------   -----------
 1/e1
@@ -537,10 +537,10 @@ Port      Description
 2/e2
 2/e3
     """]})
-    dut.add_cmd({'cmd': 'interface ethernet 1/g1',          'state':2, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': 'interface ethernet 1/g1',          'state':2, 'action':'SET_STATE','args':[3]})
-    dut.add_cmd({'cmd': 'description test_description',     'state':3, 'action':'SET_STATE','args':[4]})
-    dut.add_cmd({'cmd': 'show interfaces description',      'state':4, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd': 'interface ethernet 1/g1',          'state':2, 'action': 'SET_PROMPT', 'args':['(config-if)#']})
+    dut.add_cmd({'cmd': 'interface ethernet 1/g1',          'state':2, 'action': 'SET_STATE', 'args':[3]})
+    dut.add_cmd({'cmd': 'description test_description',     'state':3, 'action': 'SET_STATE', 'args':[4]})
+    dut.add_cmd({'cmd': 'show interfaces description',      'state':4, 'action': 'PRINT', 'args':["""
 Port      Description
 -------   -----------
 1/e1
@@ -612,7 +612,7 @@ def test_update_interface_48(dut, log_level):
     if dut.mode != 'emulated':
         pytest.skip("only on emulated")
     setup_dut(dut)
-    dut.add_cmd({'cmd':'show system', 'state':-1, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd':'show system', 'state':-1, 'action': 'PRINT', 'args':["""
 
 Unit        Type
 ---- -------------------
@@ -626,7 +626,7 @@ Unit     Up time
 Unit Number:   1
 Serial number:    8675309
     """]})
-    dut.add_cmd({'cmd':'show interfaces status', 'state':-1, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd':'show interfaces status', 'state':-1, 'action': 'PRINT', 'args':["""
 
                                              Flow Link          Back   Mdix
 Port     Type         Duplex  Speed Neg      ctrl State       Pressure Mode
@@ -673,7 +673,7 @@ Port     Type         Duplex  Speed Neg      ctrl State       Pressure Mode
 2/e3          --        --      --     --     --  Not Present    --     --
     """]})
 
-    dut.add_cmd({'cmd':'show interfaces configuration', 'state':-1, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd':'show interfaces configuration', 'state':-1, 'action': 'PRINT', 'args':["""
                                                Flow    Admin     Back   Mdix
 Port     Type         Duplex  Speed  Neg      control  State   Pressure Mode
 -------- ------------ ------  -----  -------- -------  -----   -------- ----
@@ -738,7 +738,7 @@ Port     Type         Duplex  Speed  Neg      control  State   Pressure Mode
 2/e7          --      Full      --   Enabled  Off      Up      Disabled Auto
     """]})
 
-    dut.add_cmd({'cmd':'show interfaces description', 'state':0, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd':'show interfaces description', 'state':0, 'action': 'PRINT', 'args':["""
 Port      Description
 -------   -----------
 1/e1
@@ -797,10 +797,10 @@ Port      Description
 2/e2
 2/e3
     """]})
-    dut.add_cmd({'cmd': 'interface ethernet 1/e18',         'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': 'interface ethernet 1/e18',         'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'description "test description"',   'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'show interfaces description',      'state':2, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd': 'interface ethernet 1/e18',         'state':0, 'action': 'SET_PROMPT', 'args':['(config-if)#']})
+    dut.add_cmd({'cmd': 'interface ethernet 1/e18',         'state':0, 'action': 'SET_STATE', 'args':[1]})
+    dut.add_cmd({'cmd': 'description "test description"',   'state':1, 'action': 'SET_STATE', 'args':[2]})
+    dut.add_cmd({'cmd': 'show interfaces description',      'state':2, 'action': 'PRINT', 'args':["""
 Port      Description
 -------   -----------
 1/e1
@@ -859,10 +859,10 @@ Port      Description
 2/e2
 2/e3
     """]})
-    dut.add_cmd({'cmd': 'interface ethernet 1/g1',          'state':2, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': 'interface ethernet 1/g1',          'state':2, 'action':'SET_STATE','args':[3]})
-    dut.add_cmd({'cmd': 'description test_description',     'state':3, 'action':'SET_STATE','args':[4]})
-    dut.add_cmd({'cmd': 'show interfaces description',      'state':4, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd': 'interface ethernet 1/g1',          'state':2, 'action': 'SET_PROMPT', 'args':['(config-if)#']})
+    dut.add_cmd({'cmd': 'interface ethernet 1/g1',          'state':2, 'action': 'SET_STATE', 'args':[3]})
+    dut.add_cmd({'cmd': 'description test_description',     'state':3, 'action': 'SET_STATE', 'args':[4]})
+    dut.add_cmd({'cmd': 'show interfaces description',      'state':4, 'action': 'PRINT', 'args':["""
 Port      Description
 -------   -----------
 1/e1

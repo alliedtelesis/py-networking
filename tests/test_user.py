@@ -4,7 +4,7 @@ from pynetworking import Device
 
 def setup_dut(dut):
     dut.reset()
-    dut.add_cmd({'cmd':'show version',        'state':-1, 'action': 'PRINT','args':["""
+    dut.add_cmd({'cmd':'show version',        'state':-1, 'action': 'PRINT', 'args':["""
 AlliedWare Plus (TM) 5.4.2 09/25/13 12:57:26
 
 Build name : x600-5.4.2-3.14.rel
@@ -56,9 +56,9 @@ interface vlan1
 end
 """]
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'show running-config'                         , 'state':0, 'action':'PRINT','args': config_0})
-    dut.add_cmd({'cmd': 'username testuser privilege 5 password enemy', 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'show running-config'                         , 'state':1, 'action':'PRINT','args': config_1})
+    dut.add_cmd({'cmd': 'show running-config', 'state':0, 'action': 'PRINT', 'args': config_0})
+    dut.add_cmd({'cmd': 'username testuser privilege 5 password enemy', 'state':0, 'action': 'SET_STATE', 'args':[1]})
+    dut.add_cmd({'cmd': 'show running-config', 'state':1, 'action': 'PRINT', 'args': config_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'testuser' not in d.user.keys()
@@ -133,11 +133,11 @@ interface vlan1
 end
 """]
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'show running-config'              , 'state':0, 'action':'PRINT','args': config_0})
-    dut.add_cmd({'cmd': 'username testuser password newpwd', 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'show running-config'              , 'state':1, 'action':'PRINT','args': config_1})
-    dut.add_cmd({'cmd': 'username testuser password enemy' , 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'show running-config'              , 'state':2, 'action':'PRINT','args': config_2})
+    dut.add_cmd({'cmd': 'show running-config', 'state':0, 'action': 'PRINT', 'args': config_0})
+    dut.add_cmd({'cmd': 'username testuser password newpwd', 'state':0, 'action': 'SET_STATE', 'args':[1]})
+    dut.add_cmd({'cmd': 'show running-config', 'state':1, 'action': 'PRINT', 'args': config_1})
+    dut.add_cmd({'cmd': 'username testuser password enemy', 'state':1, 'action': 'SET_STATE', 'args':[2]})
+    dut.add_cmd({'cmd': 'show running-config', 'state':2, 'action': 'PRINT', 'args': config_2})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     old_pwd = d.user['testuser']['password']
@@ -215,11 +215,11 @@ interface vlan1
 end
 """]
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'show running-config'          , 'state':0, 'action':'PRINT','args': config_0})
-    dut.add_cmd({'cmd': 'username testuser privilege 1', 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'show running-config'          , 'state':1, 'action':'PRINT','args': config_1})
-    dut.add_cmd({'cmd': 'username testuser privilege 5', 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'show running-config'          , 'state':2, 'action':'PRINT','args': config_2})
+    dut.add_cmd({'cmd': 'show running-config', 'state':0, 'action': 'PRINT', 'args': config_0})
+    dut.add_cmd({'cmd': 'username testuser privilege 1', 'state':0, 'action': 'SET_STATE', 'args':[1]})
+    dut.add_cmd({'cmd': 'show running-config', 'state':1, 'action': 'PRINT', 'args': config_1})
+    dut.add_cmd({'cmd': 'username testuser privilege 5', 'state':1, 'action': 'SET_STATE', 'args':[2]})
+    dut.add_cmd({'cmd': 'show running-config', 'state':2, 'action': 'PRINT', 'args': config_2})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert d.user['testuser']['privilege_level'] == '5'
@@ -273,9 +273,9 @@ interface vlan1
 end
 """]
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'show running-config' , 'state':0, 'action':'PRINT','args': config_0})
-    dut.add_cmd({'cmd': 'no username testuser', 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'show running-config' , 'state':1, 'action':'PRINT','args': config_1})
+    dut.add_cmd({'cmd': 'show running-config', 'state':0, 'action': 'PRINT', 'args': config_0})
+    dut.add_cmd({'cmd': 'no username testuser', 'state':0, 'action': 'SET_STATE', 'args':[1]})
+    dut.add_cmd({'cmd': 'show running-config', 'state':1, 'action': 'PRINT', 'args': config_1})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     d.user.delete("testuser")
@@ -376,13 +376,13 @@ end
     re_enc_pwd_2 = '\$1\$CEgGZi0q\$3JfHL/fM2F5YS47c/54ZQ\.'
 
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'show running-config'                                                 , 'state':0, 'action':'PRINT','args': config_0})
-    dut.add_cmd({'cmd': 'username\s+encuser\s+privilege\s+10\s+password\s+8\s+' + re_enc_pwd_1, 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'show running-config'                                                 , 'state':1, 'action':'PRINT','args': config_1})
-    dut.add_cmd({'cmd': 'username\s+encuser\s+password\s+8\s+' + re_enc_pwd_2                 , 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'show running-config'                                                 , 'state':2, 'action':'PRINT','args': config_2})
-    dut.add_cmd({'cmd': 'no username encuser'                                                 , 'state':2, 'action':'SET_STATE','args':[3]})
-    dut.add_cmd({'cmd': 'show running-config'                                                 , 'state':3, 'action':'PRINT','args': config_3})
+    dut.add_cmd({'cmd': 'show running-config', 'state':0, 'action': 'PRINT', 'args': config_0})
+    dut.add_cmd({'cmd': 'username\s+encuser\s+privilege\s+10\s+password\s+8\s+' + re_enc_pwd_1, 'state':0, 'action': 'SET_STATE', 'args':[1]})
+    dut.add_cmd({'cmd': 'show running-config', 'state':1, 'action': 'PRINT', 'args': config_1})
+    dut.add_cmd({'cmd': 'username\s+encuser\s+password\s+8\s+' + re_enc_pwd_2, 'state':1, 'action': 'SET_STATE', 'args':[2]})
+    dut.add_cmd({'cmd': 'show running-config', 'state':2, 'action': 'PRINT', 'args': config_2})
+    dut.add_cmd({'cmd': 'no username encuser', 'state':2, 'action': 'SET_STATE', 'args':[3]})
+    dut.add_cmd({'cmd': 'show running-config', 'state':3, 'action': 'PRINT', 'args': config_3})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'encuser' not in d.user.keys()

@@ -4,8 +4,8 @@ import pytest
 
 def test_cache1():
     c = Cache(default_timeout=2)
-    cmds = {'cmds':[{'cmd': 'show vlan',            'prompt':'\#'},
-                    {'cmd': 'show interface',       'prompt':'\#'},
+    cmds = {'cmds':[{'cmd': 'show vlan', 'prompt': '\#'},
+                    {'cmd': 'show interface', 'prompt': '\#'},
                     ]
             }
     cmd_output = 'this is a test output'
@@ -18,8 +18,8 @@ def test_cache1():
 
 def test_cache2():
     c = Cache(default_timeout=2)
-    cmds = {'cmds':[{'cmd': 'show vlan',            'prompt':'\#'},
-                    {'cmd': 'show interface',       'prompt':'\#'},
+    cmds = {'cmds':[{'cmd': 'show vlan', 'prompt': '\#'},
+                    {'cmd': 'show interface', 'prompt': '\#'},
                     ]
             }
     cmd_output = 'this is a test output'
@@ -32,12 +32,11 @@ def test_cache2():
 
 def test_cache3():
     c = Cache(default_timeout=2)
-    cmds1 = {'cmds':[{'cmd': 'show vlan',            'prompt':'\#'},
-                    {'cmd': 'show interface',       'prompt':'\#'},
-                    ]
-            }
-    cmds2 = {'cmds':[{'cmd': 'show vlan1',            'prompt':'\#'},
-                    {'cmd': 'show interface1',       'prompt':'\#'},
+    cmds1 = {'cmds': [{'cmd': 'show vlan', 'prompt': '\#'},
+                      {'cmd': 'show interface', 'prompt':'\#'},
+                      ]}
+    cmds2 = {'cmds':[{'cmd': 'show vlan1', 'prompt': '\#'},
+                    {'cmd': 'show interface1', 'prompt': '\#'},
                     ]
             }
     cmd_output1 = 'this is a test output 1'

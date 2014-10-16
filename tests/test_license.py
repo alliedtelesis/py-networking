@@ -9,7 +9,7 @@ from pynetworking import Device
 
 def setup_dut(dut):
     dut.reset()
-    dut.add_cmd({'cmd':'show system',         'state':0, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd':'show system',         'state':0, 'action': 'PRINT', 'args': ["""
 Switch System Status                                   Fri Mar 21 15:45:13 2014
 
 Board       ID  Bay   Board Name                         Rev   Serial number
@@ -39,7 +39,7 @@ System Contact
 System Location
 
     """]})
-    dut.add_cmd({'cmd':'show version',        'state':0, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd':'show version',        'state':0, 'action': 'PRINT', 'args':["""
 AlliedWare Plus (TM) 5.4.2 09/25/13 12:57:26
 
 Build name : x600-5.4.2-3.14.rel
@@ -159,11 +159,11 @@ Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
     set_cmd = 'license {0} {1}'.format(label, key)
     delete_cmd = 'no license {0}'.format(label)
 
-    dut.add_cmd({'cmd': 'show license', 'state':0, 'action':'PRINT','args': output_0})
-    dut.add_cmd({'cmd': set_cmd       , 'state':0, 'action':'SET_STATE','args': [1]})
-    dut.add_cmd({'cmd': 'show license', 'state':1, 'action':'PRINT','args': output_1})
-    dut.add_cmd({'cmd': delete_cmd    , 'state':1, 'action':'SET_STATE','args': [2]})
-    dut.add_cmd({'cmd': 'show license', 'state':2, 'action':'PRINT','args': output_0})
+    dut.add_cmd({'cmd': 'show license', 'state':0, 'action': 'PRINT', 'args': output_0})
+    dut.add_cmd({'cmd': set_cmd, 'state':0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'show license', 'state':1, 'action': 'PRINT', 'args': output_1})
+    dut.add_cmd({'cmd': delete_cmd, 'state':1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd': 'show license', 'state':2, 'action': 'PRINT', 'args': output_0})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
     with pytest.raises(KeyError) as excinfo:
@@ -240,11 +240,11 @@ Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
     set_cmd = 'license certificate {0}'.format(cert_file)
     delete_cmd = 'no license {0}'.format(label)
 
-    dut.add_cmd({'cmd': 'show license', 'state':0, 'action':'PRINT','args': output_0})
-    dut.add_cmd({'cmd': set_cmd       , 'state':0, 'action':'SET_STATE','args': [1]})
-    dut.add_cmd({'cmd': 'show license', 'state':1, 'action':'PRINT','args': output_1})
-    dut.add_cmd({'cmd': delete_cmd    , 'state':1, 'action':'SET_STATE','args': [2]})
-    dut.add_cmd({'cmd': 'show license', 'state':2, 'action':'PRINT','args': output_0})
+    dut.add_cmd({'cmd': 'show license', 'state':0, 'action': 'PRINT', 'args': output_0})
+    dut.add_cmd({'cmd': set_cmd, 'state':0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'show license', 'state':1, 'action': 'PRINT', 'args': output_1})
+    dut.add_cmd({'cmd': delete_cmd, 'state':1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd': 'show license', 'state':2, 'action': 'PRINT', 'args': output_0})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
     with pytest.raises(KeyError) as excinfo:
@@ -317,11 +317,11 @@ Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
     set_cmd = 'license certificate {0}'.format(cert_url)
     delete_cmd = 'no license {0}'.format(label)
 
-    dut.add_cmd({'cmd': 'show license', 'state':0, 'action':'PRINT','args': output_0})
-    dut.add_cmd({'cmd': set_cmd       , 'state':0, 'action':'SET_STATE','args': [1]})
-    dut.add_cmd({'cmd': 'show license', 'state':1, 'action':'PRINT','args': output_1})
-    dut.add_cmd({'cmd': delete_cmd    , 'state':1, 'action':'SET_STATE','args': [2]})
-    dut.add_cmd({'cmd': 'show license', 'state':2, 'action':'PRINT','args': output_0})
+    dut.add_cmd({'cmd': 'show license', 'state':0, 'action': 'PRINT', 'args': output_0})
+    dut.add_cmd({'cmd': set_cmd, 'state':0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'show license', 'state':1, 'action': 'PRINT', 'args': output_1})
+    dut.add_cmd({'cmd': delete_cmd, 'state':1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd': 'show license', 'state':2, 'action': 'PRINT', 'args': output_0})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
     with pytest.raises(KeyError) as excinfo:
@@ -394,11 +394,11 @@ Release                       : 5.4.4
     set_cmd = 'license certificate {0}'.format(cert_url)
     delete_cmd = 'no license {0}'.format(label)
 
-    dut.add_cmd({'cmd': 'show license', 'state':0, 'action':'PRINT','args': output_0})
-    dut.add_cmd({'cmd': set_cmd       , 'state':0, 'action':'SET_STATE','args': [1]})
-    dut.add_cmd({'cmd': 'show license', 'state':1, 'action':'PRINT','args': output_1})
-    dut.add_cmd({'cmd': delete_cmd    , 'state':1, 'action':'SET_STATE','args': [2]})
-    dut.add_cmd({'cmd': 'show license', 'state':2, 'action':'PRINT','args': output_0})
+    dut.add_cmd({'cmd': 'show license', 'state':0, 'action': 'PRINT', 'args': output_0})
+    dut.add_cmd({'cmd': set_cmd, 'state':0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'show license', 'state':1, 'action': 'PRINT', 'args': output_1})
+    dut.add_cmd({'cmd': delete_cmd, 'state':1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd': 'show license', 'state':2, 'action': 'PRINT', 'args': output_0})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
     d.open()
     assert label not in d.license.keys()

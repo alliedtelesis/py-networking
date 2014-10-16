@@ -27,7 +27,7 @@ Interface {{ interface }}
 
 def setup_dut(dut):
     dut.reset()
-    dut.add_cmd({'cmd':'show version', 'state':-1, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd':'show version', 'state':-1, 'action': 'PRINT', 'args':["""
 
 AlliedWare Plus (TM) 5.4.2 09/25/13 12:57:26
 
@@ -35,7 +35,7 @@ Build name : x600-5.4.2-3.14.rel
 Build date : Wed Sep 25 12:57:26 NZST 2013
 Build type : RELEASE
     """]})
-    dut.add_cmd({'cmd':'show running-config', 'state':0, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd':'show running-config', 'state':0, 'action': 'PRINT', 'args':["""
 !
 interface port1.0.1-1.0.10
  description test1
@@ -93,7 +93,7 @@ def test_config(dut, log_level):
                 'hardware' : 'VLAN',
                } 
         show_interface += show_interface_template.render(env).encode('ascii','ignore')
-    dut.add_cmd({'cmd':'show interface', 'state':0, 'action':'PRINT','args':[show_interface]})
+    dut.add_cmd({'cmd':'show interface', 'state':0, 'action': 'PRINT', 'args':[show_interface]})
 
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
@@ -137,10 +137,10 @@ def test_enable(dut, log_level):
                 'hardware' : 'Ethernet',
               } 
         show_interface += show_interface_template.render(env).encode('ascii','ignore')
-    dut.add_cmd({'cmd': 'show interface',       'state':0, 'action':'PRINT','args':[show_interface]})
-    dut.add_cmd({'cmd': 'interface port1.0.10', 'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': 'interface port1.0.10', 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'shutdown',             'state':1, 'action':'SET_STATE','args':[2]})
+    dut.add_cmd({'cmd': 'show interface',       'state':0, 'action': 'PRINT', 'args':[show_interface]})
+    dut.add_cmd({'cmd': 'interface port1.0.10', 'state':0, 'action': 'SET_PROMPT', 'args':['(config-if)#']})
+    dut.add_cmd({'cmd': 'interface port1.0.10', 'state':0, 'action': 'SET_STATE', 'args':[1]})
+    dut.add_cmd({'cmd': 'shutdown',             'state':1, 'action': 'SET_STATE', 'args':[2]})
     show_interface = ''
     for interface in range(1,51):
         env = {
@@ -150,10 +150,10 @@ def test_enable(dut, log_level):
                 'hardware' : 'Ethernet',
               } 
         show_interface += show_interface_template.render(env).encode('ascii','ignore')
-    dut.add_cmd({'cmd': 'show interface',       'state':2, 'action':'PRINT','args':[show_interface]})
-    dut.add_cmd({'cmd': 'interface port1.0.10', 'state':2, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': 'interface port1.0.10', 'state':2, 'action':'SET_STATE','args':[3]})
-    dut.add_cmd({'cmd': 'no shutdown',          'state':3, 'action':'SET_STATE','args':[4]})
+    dut.add_cmd({'cmd': 'show interface',       'state':2, 'action': 'PRINT', 'args':[show_interface]})
+    dut.add_cmd({'cmd': 'interface port1.0.10', 'state':2, 'action': 'SET_PROMPT', 'args':['(config-if)#']})
+    dut.add_cmd({'cmd': 'interface port1.0.10', 'state':2, 'action': 'SET_STATE', 'args':[3]})
+    dut.add_cmd({'cmd': 'no shutdown',          'state':3, 'action': 'SET_STATE', 'args':[4]})
     show_interface = ''
     for interface in range(1,51):
         env = { 
@@ -163,7 +163,7 @@ def test_enable(dut, log_level):
                 'hardware' : 'Ethernet',
               } 
         show_interface += show_interface_template.render(env).encode('ascii','ignore')
-    dut.add_cmd({'cmd': 'show interface',       'state':4, 'action':'PRINT','args':[show_interface]})
+    dut.add_cmd({'cmd': 'show interface',       'state':4, 'action': 'PRINT', 'args':[show_interface]})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert d.interface['1.0.10']['enable'] == True
@@ -186,18 +186,18 @@ def test_description(dut, log_level):
                 'hardware' : 'Ethernet',
               }
         show_interface += show_interface_template.render(env).encode('ascii','ignore')
-    dut.add_cmd({'cmd':'show running-config', 'state':0, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd':'show running-config', 'state':0, 'action': 'PRINT', 'args':["""
 !
 interface port1.0.1-1.0.10
  description test1
 !
 end
     """]})
-    dut.add_cmd({'cmd': 'show interface'      , 'state':0, 'action':'PRINT','args':[show_interface]})
-    dut.add_cmd({'cmd': 'interface port1.0.10', 'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': 'interface port1.0.10', 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'description camera_1', 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'show running-config' , 'state':2, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd': 'show interface', 'state':0, 'action': 'PRINT', 'args':[show_interface]})
+    dut.add_cmd({'cmd': 'interface port1.0.10', 'state':0, 'action': 'SET_PROMPT', 'args':['(config-if)#']})
+    dut.add_cmd({'cmd': 'interface port1.0.10', 'state':0, 'action': 'SET_STATE', 'args':[1]})
+    dut.add_cmd({'cmd': 'description camera_1', 'state':1, 'action': 'SET_STATE', 'args':[2]})
+    dut.add_cmd({'cmd': 'show running-config', 'state':2, 'action': 'PRINT', 'args':["""
 !
 interface port1.0.1-1.0.9
  description test1
@@ -207,11 +207,11 @@ interface port1.0.10
 !
 end
     """]})
-    dut.add_cmd({'cmd': 'show interface'      , 'state':2, 'action':'PRINT','args':[show_interface]})
-    dut.add_cmd({'cmd': 'interface port1.0.10', 'state':2, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': 'interface port1.0.10', 'state':2, 'action':'SET_STATE','args':[3]})
-    dut.add_cmd({'cmd': 'description camera_1', 'state':3, 'action':'SET_STATE','args':[4]})
-    dut.add_cmd({'cmd': 'show running-config' , 'state':4, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd': 'show interface', 'state':2, 'action': 'PRINT', 'args':[show_interface]})
+    dut.add_cmd({'cmd': 'interface port1.0.10', 'state':2, 'action': 'SET_PROMPT', 'args':['(config-if)#']})
+    dut.add_cmd({'cmd': 'interface port1.0.10', 'state':2, 'action': 'SET_STATE', 'args':[3]})
+    dut.add_cmd({'cmd': 'description camera_1', 'state':3, 'action': 'SET_STATE', 'args':[4]})
+    dut.add_cmd({'cmd': 'show running-config', 'state':4, 'action': 'PRINT', 'args':["""
 !
 interface port1.0.1-1.0.9
  description test1
@@ -221,11 +221,11 @@ interface port1.0.10
 !
 end
     """]})
-    dut.add_cmd({'cmd': 'show interface'       , 'state':4, 'action':'PRINT','args':[show_interface]})
-    dut.add_cmd({'cmd': 'interface port1.0.10' , 'state':4, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': 'interface port1.0.10' , 'state':4, 'action':'SET_STATE','args':[5]})
-    dut.add_cmd({'cmd': 'description "cam one"', 'state':5, 'action':'SET_STATE','args':[6]})
-    dut.add_cmd({'cmd': 'show running-config'  , 'state':6, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd': 'show interface', 'state':4, 'action': 'PRINT', 'args':[show_interface]})
+    dut.add_cmd({'cmd': 'interface port1.0.10', 'state':4, 'action': 'SET_PROMPT', 'args':['(config-if)#']})
+    dut.add_cmd({'cmd': 'interface port1.0.10', 'state':4, 'action': 'SET_STATE', 'args':[5]})
+    dut.add_cmd({'cmd': 'description "cam one"', 'state':5, 'action': 'SET_STATE', 'args':[6]})
+    dut.add_cmd({'cmd': 'show running-config', 'state':6, 'action': 'PRINT', 'args':["""
 !
 interface port1.0.1-1.0.9
  description test1
@@ -235,7 +235,7 @@ interface port1.0.10
 !
 end
     """]})
-    dut.add_cmd({'cmd': 'show interface'       , 'state':6, 'action':'PRINT','args':[show_interface]})
+    dut.add_cmd({'cmd': 'show interface', 'state':6, 'action': 'PRINT', 'args':[show_interface]})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     assert d.interface['1.0.10']['description'] == 'test1'
@@ -261,10 +261,10 @@ def test_unexisting_interface(dut, log_level):
                 'hardware' : 'Ethernet',
               }
         show_interface += show_interface_template.render(env).encode('ascii','ignore')
-    dut.add_cmd({'cmd': 'show interface', 'state':0, 'action':'PRINT','args':[show_interface]})
-    dut.add_cmd({'cmd': max_if_cmd      , 'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': max_if_cmd      , 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'show interface', 'state':1, 'action':'PRINT','args':[show_interface]})
+    dut.add_cmd({'cmd': 'show interface', 'state':0, 'action': 'PRINT', 'args':[show_interface]})
+    dut.add_cmd({'cmd': max_if_cmd, 'state':0, 'action': 'SET_PROMPT', 'args':['(config-if)#']})
+    dut.add_cmd({'cmd': max_if_cmd, 'state':0, 'action': 'SET_STATE', 'args':[1]})
+    dut.add_cmd({'cmd': 'show interface', 'state':1, 'action': 'PRINT', 'args':[show_interface]})
     d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
     d.open()
     with pytest.raises(ValueError) as excinfo:

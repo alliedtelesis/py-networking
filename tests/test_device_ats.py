@@ -116,7 +116,7 @@ Serial Number:   1122334231
     """
 
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'show system' , 'state': 0, 'action': 'PRINT', 'args': [out_sys]})
+    dut.add_cmd({'cmd': 'show system', 'state': 0, 'action': 'PRINT', 'args': [out_sys]})
     dut.add_cmd({'cmd': 'show version', 'state': 0, 'action': 'PRINT', 'args': [out_ver]})
     d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, unit_test=False)
     d.open()
@@ -153,7 +153,7 @@ serial nr:   1122334455
     """
 
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'show system' , 'state': 0, 'action': 'PRINT', 'args': [out_sys]})
+    dut.add_cmd({'cmd': 'show system', 'state': 0, 'action': 'PRINT', 'args': [out_sys]})
     dut.add_cmd({'cmd': 'show version', 'state': 0, 'action': 'PRINT', 'args': [out_ver]})
     d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, unit_test=False)
     with pytest.raises(DeviceException) as excinfo:
@@ -199,22 +199,22 @@ ip ssh server
 """
     dut.add_cmd({'cmd': 'show running-config', 'state': 0, 'action': 'PRINT', 'args': [config_no_vlan]})
     dut.add_cmd({'cmd': 'show startup-config', 'state': 0, 'action': 'PRINT', 'args': [config_no_vlan]})
-    dut.add_cmd({'cmd': 'vlan database'      , 'state': 0, 'action': 'SET_PROMPT', 'args': ['(config-vlan)#']})
-    dut.add_cmd({'cmd': 'vlan database'      , 'state': 0, 'action': 'SET_STATE', 'args': [1]})
-    dut.add_cmd({'cmd': 'vlan 3999'          , 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd': 'vlan database', 'state': 0, 'action': 'SET_PROMPT', 'args': ['(config-vlan)#']})
+    dut.add_cmd({'cmd': 'vlan database', 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'vlan 3999', 'state': 1, 'action': 'SET_STATE', 'args': [2]})
     dut.add_cmd({'cmd': 'show running-config', 'state': 2, 'action': 'PRINT', 'args': [config_with_vlan]})
     dut.add_cmd({'cmd': 'show startup-config', 'state': 2, 'action': 'PRINT', 'args': [config_no_vlan]})
-    dut.add_cmd({'cmd': 'copy r s'           , 'state': 2, 'action': 'SET_STATE', 'args': [3]})
-    dut.add_cmd({'cmd': 'y'                  , 'state': 3, 'action': 'SET_STATE', 'args': [4]})
+    dut.add_cmd({'cmd': 'copy r s', 'state': 2, 'action': 'SET_STATE', 'args': [3]})
+    dut.add_cmd({'cmd': 'y', 'state': 3, 'action': 'SET_STATE', 'args': [4]})
     dut.add_cmd({'cmd': 'show running-config', 'state': 4, 'action': 'PRINT', 'args': [config_with_vlan]})
     dut.add_cmd({'cmd': 'show startup-config', 'state': 4, 'action': 'PRINT', 'args': [config_with_vlan]})
-    dut.add_cmd({'cmd': 'vlan database'      , 'state': 4, 'action': 'SET_PROMPT', 'args': ['(config-vlan)#']})
-    dut.add_cmd({'cmd': 'vlan database'      , 'state': 4, 'action': 'SET_STATE', 'args': [5]})
-    dut.add_cmd({'cmd': 'no vlan 3999'       , 'state': 5, 'action': 'SET_STATE', 'args': [6]})
+    dut.add_cmd({'cmd': 'vlan database', 'state': 4, 'action': 'SET_PROMPT', 'args': ['(config-vlan)#']})
+    dut.add_cmd({'cmd': 'vlan database', 'state': 4, 'action': 'SET_STATE', 'args': [5]})
+    dut.add_cmd({'cmd': 'no vlan 3999', 'state': 5, 'action': 'SET_STATE', 'args': [6]})
     dut.add_cmd({'cmd': 'show running-config', 'state': 6, 'action': 'PRINT', 'args': [config_no_vlan]})
     dut.add_cmd({'cmd': 'show startup-config', 'state': 6, 'action': 'PRINT', 'args': [config_with_vlan]})
-    dut.add_cmd({'cmd': 'copy r s'           , 'state': 6, 'action': 'SET_STATE', 'args': [7]})
-    dut.add_cmd({'cmd': 'y'                  , 'state': 7, 'action': 'SET_STATE', 'args': [8]})
+    dut.add_cmd({'cmd': 'copy r s', 'state': 6, 'action': 'SET_STATE', 'args': [7]})
+    dut.add_cmd({'cmd': 'y', 'state': 7, 'action': 'SET_STATE', 'args': [8]})
     dut.add_cmd({'cmd': 'show running-config', 'state': 8, 'action': 'PRINT', 'args': [config_no_vlan]})
     dut.add_cmd({'cmd': 'show startup-config', 'state': 8, 'action': 'PRINT', 'args': [config_no_vlan]})
 
@@ -269,7 +269,7 @@ Unit  Image  Filename   Version    Date                    Status
 
     update_cmd = 'copy\s+tftp://{0}/{1}\s+image'.format(socket.gethostbyname(socket.getfqdn()), image_name)
     dut.add_cmd({'cmd': 'show bootvar', 'state': 0, 'action': 'PRINT', 'args': output_0})
-    dut.add_cmd({'cmd': update_cmd    , 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': update_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
     dut.add_cmd({'cmd': 'show bootvar', 'state': 1, 'action': 'PRINT', 'args': output_1})
     d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, connection_timeout=300)
     d.open()
@@ -315,7 +315,7 @@ Unit  Image  Filename   Version    Date                    Status
 
     update_cmd = 'copy\s+tftp://{0}/{1}\s+image'.format(socket.gethostbyname(socket.getfqdn()), image_file)
     dut.add_cmd({'cmd': 'show bootvar', 'state': 0, 'action': 'PRINT', 'args': output_0})
-    dut.add_cmd({'cmd': update_cmd    , 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': update_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
     dut.add_cmd({'cmd': 'show bootvar', 'state': 1, 'action': 'PRINT', 'args': output_1})
     d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, connection_timeout=300)
     d.open()

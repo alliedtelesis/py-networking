@@ -4,7 +4,7 @@ from pynetworking import Device
 
 def setup_dut(dut):
     dut.reset()
-    dut.add_cmd({'cmd':'show version',        'state':-1, 'action': 'PRINT', 'args': ["""
+    dut.add_cmd({'cmd':'show version',        'state': -1, 'action': 'PRINT', 'args': ["""
 AlliedWare Plus (TM) 5.4.2 09/25/13 12:57:26
 
 Build name : x600-5.4.2-3.14.rel
@@ -15,7 +15,7 @@ Build type : RELEASE
 
 def test_get_vlan(dut, log_level):
     setup_dut(dut)
-    dut.add_cmd({'cmd':'show running-config', 'state':0, 'action': 'PRINT', 'args': ["""
+    dut.add_cmd({'cmd':'show running-config', 'state': 0, 'action': 'PRINT', 'args': ["""
 !
 interface port1.0.1-1.0.50
 switchport
@@ -34,7 +34,7 @@ exit
 !
 end
     """]})
-    dut.add_cmd({'cmd': 'show vlan all', 'state':0, 'action': 'PRINT', 'args': ["""
+    dut.add_cmd({'cmd': 'show vlan all', 'state': 0, 'action': 'PRINT', 'args': ["""
 VLAN ID  Name            Type    State   Member ports
                                          (u)-Untagged, (t)-Tagged
 ======= ================ ======= ======= ====================================
@@ -67,7 +67,7 @@ VLAN ID  Name            Type    State   Member ports
 10      VLAN0010         STATIC  ACTIVE  port1.0.28(t) port1.0.29(u)
                                          port1.0.19(t) port1.0.30(t)
     """]})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
     d.open()
     if dut.mode == 'emulated':
         assert d.vlan[1] == {"tagged": ("1.0.12", "1.0.20"),
@@ -163,9 +163,9 @@ VLAN ID  Name            Type    State   Member ports
     """]
 
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'show running-config', 'state':0, 'action': 'PRINT', 'args': output_show_rcfg})
-    dut.add_cmd({'cmd': 'show vlan all', 'state':0, 'action': 'PRINT', 'args': output_show_vlan})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    dut.add_cmd({'cmd': 'show running-config', 'state': 0, 'action': 'PRINT', 'args': output_show_rcfg})
+    dut.add_cmd({'cmd': 'show vlan all', 'state': 0, 'action': 'PRINT', 'args': output_show_vlan})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
     d.open()
     assert '21' in d.vlan
     assert d.vlan[21]['name'] == 'twentyone'
@@ -376,27 +376,27 @@ VLAN ID  Name            Type    State   Member ports
 
     setup_dut(dut)
 
-    dut.add_cmd({'cmd':'show running-config', 'state':0, 'action': 'PRINT', 'args': output_rc_0})
-    dut.add_cmd({'cmd':'show vlan all', 'state':0, 'action': 'PRINT', 'args': output_va_0})
-    dut.add_cmd({'cmd':'vlan database', 'state':0, 'action': 'SET_PROMPT', 'args': ['(config-vlan)#']})
-    dut.add_cmd({'cmd':'vlan database', 'state':0, 'action': 'SET_STATE', 'args': [1]})
-    dut.add_cmd({'cmd':'vlan 10 name "this is a long vlan name"', 'state':1, 'action': 'SET_STATE', 'args': [2]})
-    dut.add_cmd({'cmd':'vlan 10 mtu 1200', 'state':2, 'action': 'SET_STATE', 'args': [3]})
-    dut.add_cmd({'cmd':'show running-config', 'state':3, 'action': 'PRINT', 'args': output_rc_1})
-    dut.add_cmd({'cmd':'show vlan all', 'state':3, 'action': 'PRINT', 'args': output_va_1})
-    dut.add_cmd({'cmd':'vlan database', 'state':3, 'action': 'SET_PROMPT', 'args': ['(config-vlan)#']})
-    dut.add_cmd({'cmd':'vlan database', 'state':3, 'action': 'SET_STATE', 'args': [4]})
-    dut.add_cmd({'cmd':'vlan 20 name admin', 'state':4, 'action': 'SET_STATE', 'args': [5]})
-    dut.add_cmd({'cmd':'vlan 20 mtu 1300', 'state':5, 'action': 'SET_STATE', 'args': [6]})
-    dut.add_cmd({'cmd':'show running-config', 'state':6, 'action': 'PRINT', 'args': output_rc_2})
-    dut.add_cmd({'cmd':'show vlan all', 'state':6, 'action': 'PRINT', 'args': output_va_2})
-    dut.add_cmd({'cmd':'vlan database', 'state':6, 'action': 'SET_PROMPT', 'args': ['(config-vlan)#']})
-    dut.add_cmd({'cmd':'vlan database', 'state':6, 'action': 'SET_STATE', 'args': [7]})
-    dut.add_cmd({'cmd':'vlan 99 state disable', 'state':7, 'action': 'SET_STATE', 'args': [8]})
-    dut.add_cmd({'cmd':'show running-config', 'state':8, 'action': 'PRINT', 'args': output_rc_3})
-    dut.add_cmd({'cmd':'show vlan all', 'state':8, 'action': 'PRINT', 'args': output_va_3})
+    dut.add_cmd({'cmd':'show running-config', 'state': 0, 'action': 'PRINT', 'args': output_rc_0})
+    dut.add_cmd({'cmd':'show vlan all', 'state': 0, 'action': 'PRINT', 'args': output_va_0})
+    dut.add_cmd({'cmd':'vlan database', 'state': 0, 'action': 'SET_PROMPT', 'args': ['(config-vlan)#']})
+    dut.add_cmd({'cmd':'vlan database', 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd':'vlan 10 name "this is a long vlan name"', 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd':'vlan 10 mtu 1200', 'state': 2, 'action': 'SET_STATE', 'args': [3]})
+    dut.add_cmd({'cmd':'show running-config', 'state': 3, 'action': 'PRINT', 'args': output_rc_1})
+    dut.add_cmd({'cmd':'show vlan all', 'state': 3, 'action': 'PRINT', 'args': output_va_1})
+    dut.add_cmd({'cmd':'vlan database', 'state': 3, 'action': 'SET_PROMPT', 'args': ['(config-vlan)#']})
+    dut.add_cmd({'cmd':'vlan database', 'state': 3, 'action': 'SET_STATE', 'args': [4]})
+    dut.add_cmd({'cmd':'vlan 20 name admin', 'state': 4, 'action': 'SET_STATE', 'args': [5]})
+    dut.add_cmd({'cmd':'vlan 20 mtu 1300', 'state': 5, 'action': 'SET_STATE', 'args': [6]})
+    dut.add_cmd({'cmd':'show running-config', 'state': 6, 'action': 'PRINT', 'args': output_rc_2})
+    dut.add_cmd({'cmd':'show vlan all', 'state': 6, 'action': 'PRINT', 'args': output_va_2})
+    dut.add_cmd({'cmd':'vlan database', 'state': 6, 'action': 'SET_PROMPT', 'args': ['(config-vlan)#']})
+    dut.add_cmd({'cmd':'vlan database', 'state': 6, 'action': 'SET_STATE', 'args': [7]})
+    dut.add_cmd({'cmd':'vlan 99 state disable', 'state': 7, 'action': 'SET_STATE', 'args': [8]})
+    dut.add_cmd({'cmd':'show running-config', 'state': 8, 'action': 'PRINT', 'args': output_rc_3})
+    dut.add_cmd({'cmd':'show vlan all', 'state': 8, 'action': 'PRINT', 'args': output_va_3})
 
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
     d.open()
     d.vlan.create(10, name='this is a long vlan name', mtu=1200)
     assert d.vlan[10] == {'current state':'ACTIVE', 'tagged':(), 'type': 'STATIC', 'untagged':(), 'state':'enable', 'name':'this is a long vlan name', 'mtu':1200}
@@ -550,27 +550,27 @@ VLAN ID  Name            Type    State   Member ports
 
     setup_dut(dut)
 
-    dut.add_cmd({'cmd':'show running-config', 'state':0, 'action': 'PRINT', 'args': output_rc_0})
-    dut.add_cmd({'cmd':'show vlan all', 'state':0, 'action': 'PRINT', 'args': output_va_0})
-    dut.add_cmd({'cmd':'vlan database', 'state':0, 'action': 'SET_PROMPT', 'args': ['(config-vlan)#']})
-    dut.add_cmd({'cmd':'vlan database', 'state':0, 'action': 'SET_STATE', 'args': [1]})
-    dut.add_cmd({'cmd':'vlan 30 name vlan_name', 'state':1, 'action': 'SET_STATE', 'args': [2]})
-    dut.add_cmd({'cmd':'vlan 30 mtu 1300', 'state':2, 'action': 'SET_STATE', 'args': [3]})
-    dut.add_cmd({'cmd':'show running-config', 'state':3, 'action': 'PRINT', 'args': output_rc_1})
-    dut.add_cmd({'cmd':'show vlan all', 'state':3, 'action': 'PRINT', 'args': output_va_1})
-    dut.add_cmd({'cmd':'vlan database', 'state':3, 'action': 'SET_PROMPT', 'args': ['(config-vlan)#']})
-    dut.add_cmd({'cmd':'vlan database', 'state':3, 'action': 'SET_STATE', 'args': [4]})
-    dut.add_cmd({'cmd':'vlan 30 name "vlan name"', 'state':4, 'action': 'SET_STATE', 'args': [5]})
-    dut.add_cmd({'cmd':'vlan 30 mtu 1400', 'state':5, 'action': 'SET_STATE', 'args': [6]})
-    dut.add_cmd({'cmd':'show running-config', 'state':6, 'action': 'PRINT', 'args': output_rc_2})
-    dut.add_cmd({'cmd':'show vlan all', 'state':6, 'action': 'PRINT', 'args': output_va_2})
-    dut.add_cmd({'cmd':'vlan database', 'state':6, 'action': 'SET_PROMPT', 'args': ['(config-vlan)#']})
-    dut.add_cmd({'cmd':'vlan database', 'state':6, 'action': 'SET_STATE', 'args': [7]})
-    dut.add_cmd({'cmd':'no vlan 30', 'state':7, 'action': 'SET_STATE', 'args': [8]})
-    dut.add_cmd({'cmd':'show running-config', 'state':8, 'action': 'PRINT', 'args': output_rc_0})
-    dut.add_cmd({'cmd':'show vlan all', 'state':8, 'action': 'PRINT', 'args': output_va_0})
+    dut.add_cmd({'cmd':'show running-config', 'state': 0, 'action': 'PRINT', 'args': output_rc_0})
+    dut.add_cmd({'cmd':'show vlan all', 'state': 0, 'action': 'PRINT', 'args': output_va_0})
+    dut.add_cmd({'cmd':'vlan database', 'state': 0, 'action': 'SET_PROMPT', 'args': ['(config-vlan)#']})
+    dut.add_cmd({'cmd':'vlan database', 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd':'vlan 30 name vlan_name', 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd':'vlan 30 mtu 1300', 'state': 2, 'action': 'SET_STATE', 'args': [3]})
+    dut.add_cmd({'cmd':'show running-config', 'state': 3, 'action': 'PRINT', 'args': output_rc_1})
+    dut.add_cmd({'cmd':'show vlan all', 'state': 3, 'action': 'PRINT', 'args': output_va_1})
+    dut.add_cmd({'cmd':'vlan database', 'state': 3, 'action': 'SET_PROMPT', 'args': ['(config-vlan)#']})
+    dut.add_cmd({'cmd':'vlan database', 'state': 3, 'action': 'SET_STATE', 'args': [4]})
+    dut.add_cmd({'cmd':'vlan 30 name "vlan name"', 'state': 4, 'action': 'SET_STATE', 'args': [5]})
+    dut.add_cmd({'cmd':'vlan 30 mtu 1400', 'state': 5, 'action': 'SET_STATE', 'args': [6]})
+    dut.add_cmd({'cmd':'show running-config', 'state': 6, 'action': 'PRINT', 'args': output_rc_2})
+    dut.add_cmd({'cmd':'show vlan all', 'state': 6, 'action': 'PRINT', 'args': output_va_2})
+    dut.add_cmd({'cmd':'vlan database', 'state': 6, 'action': 'SET_PROMPT', 'args': ['(config-vlan)#']})
+    dut.add_cmd({'cmd':'vlan database', 'state': 6, 'action': 'SET_STATE', 'args': [7]})
+    dut.add_cmd({'cmd':'no vlan 30', 'state': 7, 'action': 'SET_STATE', 'args': [8]})
+    dut.add_cmd({'cmd':'show running-config', 'state': 8, 'action': 'PRINT', 'args': output_rc_0})
+    dut.add_cmd({'cmd':'show vlan all', 'state': 8, 'action': 'PRINT', 'args': output_va_0})
 
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
     d.open()
     assert '30' not in d.vlan
     d.vlan.create(30, mtu=1300, name='vlan_name')
@@ -685,20 +685,20 @@ VLAN ID  Name            Type    State   Member ports
 
     setup_dut(dut)
 
-    dut.add_cmd({'cmd':'show running-config', 'state':0, 'action': 'PRINT', 'args': output_rc_0})
-    dut.add_cmd({'cmd':'show vlan all', 'state':0, 'action': 'PRINT', 'args': output_va_0})
-    dut.add_cmd({'cmd':'interface port1.0.14', 'state':0, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
-    dut.add_cmd({'cmd':'interface port1.0.14', 'state':0, 'action': 'SET_STATE', 'args': [1]})
-    dut.add_cmd({'cmd':'switchport access vlan 10', 'state':1, 'action': 'SET_STATE', 'args': [2]})
-    dut.add_cmd({'cmd':'show running-config', 'state':2, 'action': 'PRINT', 'args': output_rc_1})
-    dut.add_cmd({'cmd':'show vlan all', 'state':2, 'action': 'PRINT', 'args': output_va_1})
-    dut.add_cmd({'cmd':'interface port1.0.14', 'state':2, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
-    dut.add_cmd({'cmd':'interface port1.0.14', 'state':2, 'action': 'SET_STATE', 'args': [3]})
-    dut.add_cmd({'cmd':'no switchport access vlan', 'state':3, 'action': 'SET_STATE', 'args': [4]})
-    dut.add_cmd({'cmd':'show running-config', 'state':4, 'action': 'PRINT', 'args': output_rc_0})
-    dut.add_cmd({'cmd':'show vlan all', 'state':4, 'action': 'PRINT', 'args': output_va_0})
+    dut.add_cmd({'cmd':'show running-config', 'state': 0, 'action': 'PRINT', 'args': output_rc_0})
+    dut.add_cmd({'cmd':'show vlan all', 'state': 0, 'action': 'PRINT', 'args': output_va_0})
+    dut.add_cmd({'cmd':'interface port1.0.14', 'state': 0, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
+    dut.add_cmd({'cmd':'interface port1.0.14', 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd':'switchport access vlan 10', 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd':'show running-config', 'state': 2, 'action': 'PRINT', 'args': output_rc_1})
+    dut.add_cmd({'cmd':'show vlan all', 'state': 2, 'action': 'PRINT', 'args': output_va_1})
+    dut.add_cmd({'cmd':'interface port1.0.14', 'state': 2, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
+    dut.add_cmd({'cmd':'interface port1.0.14', 'state': 2, 'action': 'SET_STATE', 'args': [3]})
+    dut.add_cmd({'cmd':'no switchport access vlan', 'state': 3, 'action': 'SET_STATE', 'args': [4]})
+    dut.add_cmd({'cmd':'show running-config', 'state': 4, 'action': 'PRINT', 'args': output_rc_0})
+    dut.add_cmd({'cmd':'show vlan all', 'state': 4, 'action': 'PRINT', 'args': output_va_0})
 
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
     d.open()
     d.vlan.add_interface(10,'1.0.14')
     assert '1.0.14' in d.vlan[10]['untagged']
@@ -832,21 +832,21 @@ VLAN ID  Name            Type    State   Member ports
 
     setup_dut(dut)
 
-    dut.add_cmd({'cmd':'show running-config', 'state':0, 'action': 'PRINT', 'args': output_rc_0})
-    dut.add_cmd({'cmd':'show vlan all', 'state':0, 'action': 'PRINT', 'args': output_va_0})
-    dut.add_cmd({'cmd':'interface port1.0.15', 'state':0, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
-    dut.add_cmd({'cmd':'interface port1.0.15', 'state':0, 'action': 'SET_STATE', 'args': [1]})
-    dut.add_cmd({'cmd':'switchport mode trunk', 'state':1, 'action': 'SET_STATE', 'args': [2]})
-    dut.add_cmd({'cmd':'switchport trunk allowed vlan add 10', 'state':2, 'action': 'SET_STATE', 'args': [3]})
-    dut.add_cmd({'cmd':'show running-config', 'state':3, 'action': 'PRINT', 'args': output_rc_1})
-    dut.add_cmd({'cmd':'show vlan all', 'state':3, 'action': 'PRINT', 'args': output_va_1})
-    dut.add_cmd({'cmd':'interface port1.0.15', 'state':3, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
-    dut.add_cmd({'cmd':'interface port1.0.15', 'state':3, 'action': 'SET_STATE', 'args': [4]})
-    dut.add_cmd({'cmd':'switchport trunk allowed vlan remove 10', 'state':4, 'action': 'SET_STATE', 'args': [5]})
-    dut.add_cmd({'cmd':'show running-config', 'state':5, 'action': 'PRINT', 'args': output_rc_0})
-    dut.add_cmd({'cmd':'show vlan all', 'state':5, 'action': 'PRINT', 'args': output_va_0})
+    dut.add_cmd({'cmd':'show running-config', 'state': 0, 'action': 'PRINT', 'args': output_rc_0})
+    dut.add_cmd({'cmd':'show vlan all', 'state': 0, 'action': 'PRINT', 'args': output_va_0})
+    dut.add_cmd({'cmd':'interface port1.0.15', 'state': 0, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
+    dut.add_cmd({'cmd':'interface port1.0.15', 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd':'switchport mode trunk', 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd':'switchport trunk allowed vlan add 10', 'state': 2, 'action': 'SET_STATE', 'args': [3]})
+    dut.add_cmd({'cmd':'show running-config', 'state': 3, 'action': 'PRINT', 'args': output_rc_1})
+    dut.add_cmd({'cmd':'show vlan all', 'state': 3, 'action': 'PRINT', 'args': output_va_1})
+    dut.add_cmd({'cmd':'interface port1.0.15', 'state': 3, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
+    dut.add_cmd({'cmd':'interface port1.0.15', 'state': 3, 'action': 'SET_STATE', 'args': [4]})
+    dut.add_cmd({'cmd':'switchport trunk allowed vlan remove 10', 'state': 4, 'action': 'SET_STATE', 'args': [5]})
+    dut.add_cmd({'cmd':'show running-config', 'state': 5, 'action': 'PRINT', 'args': output_rc_0})
+    dut.add_cmd({'cmd':'show vlan all', 'state': 5, 'action': 'PRINT', 'args': output_va_0})
 
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
     d.open()
     assert '1.0.15' in d.vlan[1]['untagged']
     assert '1.0.15' not in d.vlan[10]['tagged']
@@ -979,20 +979,20 @@ VLAN ID  Name            Type    State   Member ports
 
     setup_dut(dut)
 
-    dut.add_cmd({'cmd':'show running-config', 'state':0, 'action': 'PRINT', 'args': output_rc_0})
-    dut.add_cmd({'cmd':'show vlan all', 'state':0, 'action': 'PRINT', 'args': output_va_0})
-    dut.add_cmd({'cmd':'interface port1.0.16', 'state':0, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
-    dut.add_cmd({'cmd':'interface port1.0.16', 'state':0, 'action': 'SET_STATE', 'args': [1]})
-    dut.add_cmd({'cmd':'switchport trunk native vlan 10', 'state':1, 'action': 'SET_STATE', 'args': [2]})
-    dut.add_cmd({'cmd':'show running-config', 'state':2, 'action': 'PRINT', 'args': output_rc_1})
-    dut.add_cmd({'cmd':'show vlan all', 'state':2, 'action': 'PRINT', 'args': output_va_1})
-    dut.add_cmd({'cmd':'interface port1.0.16', 'state':2, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
-    dut.add_cmd({'cmd':'interface port1.0.16', 'state':2, 'action': 'SET_STATE', 'args': [3]})
-    dut.add_cmd({'cmd':'switchport trunk native vlan none', 'state':3, 'action': 'SET_STATE', 'args': [4]})
-    dut.add_cmd({'cmd':'show running-config', 'state':4, 'action': 'PRINT', 'args': output_rc_0})
-    dut.add_cmd({'cmd':'show vlan all', 'state':4, 'action': 'PRINT', 'args': output_va_0})
+    dut.add_cmd({'cmd':'show running-config', 'state': 0, 'action': 'PRINT', 'args': output_rc_0})
+    dut.add_cmd({'cmd':'show vlan all', 'state': 0, 'action': 'PRINT', 'args': output_va_0})
+    dut.add_cmd({'cmd':'interface port1.0.16', 'state': 0, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
+    dut.add_cmd({'cmd':'interface port1.0.16', 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd':'switchport trunk native vlan 10', 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd':'show running-config', 'state': 2, 'action': 'PRINT', 'args': output_rc_1})
+    dut.add_cmd({'cmd':'show vlan all', 'state': 2, 'action': 'PRINT', 'args': output_va_1})
+    dut.add_cmd({'cmd':'interface port1.0.16', 'state': 2, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
+    dut.add_cmd({'cmd':'interface port1.0.16', 'state': 2, 'action': 'SET_STATE', 'args': [3]})
+    dut.add_cmd({'cmd':'switchport trunk native vlan none', 'state': 3, 'action': 'SET_STATE', 'args': [4]})
+    dut.add_cmd({'cmd':'show running-config', 'state': 4, 'action': 'PRINT', 'args': output_rc_0})
+    dut.add_cmd({'cmd':'show vlan all', 'state': 4, 'action': 'PRINT', 'args': output_va_0})
 
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
     d.open()
     assert '1.0.16' in d.vlan[1]['untagged']
     assert '1.0.16' not in d.vlan[10]['untagged']
@@ -1117,20 +1117,20 @@ VLAN ID  Name            Type    State   Member ports
 
     setup_dut(dut)
 
-    dut.add_cmd({'cmd':'show running-config', 'state':0, 'action': 'PRINT', 'args': output_rc_0})
-    dut.add_cmd({'cmd':'show vlan all', 'state':0, 'action': 'PRINT', 'args': output_va_0})
-    dut.add_cmd({'cmd':'interface port1.0.17', 'state':0, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
-    dut.add_cmd({'cmd':'interface port1.0.17', 'state':0, 'action': 'SET_STATE', 'args': [1]})
-    dut.add_cmd({'cmd':'switchport trunk allowed vlan add 10', 'state':1, 'action': 'SET_STATE', 'args': [2]})
-    dut.add_cmd({'cmd':'show running-config', 'state':2, 'action': 'PRINT', 'args': output_rc_1})
-    dut.add_cmd({'cmd':'show vlan all', 'state':2, 'action': 'PRINT', 'args': output_va_1})
-    dut.add_cmd({'cmd':'interface port1.0.17', 'state':2, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
-    dut.add_cmd({'cmd':'interface port1.0.17', 'state':2, 'action': 'SET_STATE', 'args': [3]})
-    dut.add_cmd({'cmd':'switchport trunk allowed vlan remove 10', 'state':3, 'action': 'SET_STATE', 'args': [4]})
-    dut.add_cmd({'cmd':'show running-config', 'state':4, 'action': 'PRINT', 'args': output_rc_0})
-    dut.add_cmd({'cmd':'show vlan all', 'state':4, 'action': 'PRINT', 'args': output_va_0})
+    dut.add_cmd({'cmd':'show running-config', 'state': 0, 'action': 'PRINT', 'args': output_rc_0})
+    dut.add_cmd({'cmd':'show vlan all', 'state': 0, 'action': 'PRINT', 'args': output_va_0})
+    dut.add_cmd({'cmd':'interface port1.0.17', 'state': 0, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
+    dut.add_cmd({'cmd':'interface port1.0.17', 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd':'switchport trunk allowed vlan add 10', 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd':'show running-config', 'state': 2, 'action': 'PRINT', 'args': output_rc_1})
+    dut.add_cmd({'cmd':'show vlan all', 'state': 2, 'action': 'PRINT', 'args': output_va_1})
+    dut.add_cmd({'cmd':'interface port1.0.17', 'state': 2, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
+    dut.add_cmd({'cmd':'interface port1.0.17', 'state': 2, 'action': 'SET_STATE', 'args': [3]})
+    dut.add_cmd({'cmd':'switchport trunk allowed vlan remove 10', 'state': 3, 'action': 'SET_STATE', 'args': [4]})
+    dut.add_cmd({'cmd':'show running-config', 'state': 4, 'action': 'PRINT', 'args': output_rc_0})
+    dut.add_cmd({'cmd':'show vlan all', 'state': 4, 'action': 'PRINT', 'args': output_va_0})
 
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
     d.open()
     assert '1.0.17' in d.vlan[1]['untagged']
     assert '1.0.17' not in d.vlan[10]['tagged']
@@ -1247,20 +1247,20 @@ VLAN ID  Name            Type    State   Member ports
 
     setup_dut(dut)
 
-    dut.add_cmd({'cmd':'show running-config', 'state':0, 'action': 'PRINT', 'args': output_rc_0})
-    dut.add_cmd({'cmd':'show vlan all', 'state':0, 'action': 'PRINT', 'args': output_va_0})
-    dut.add_cmd({'cmd':'interface port1.0.18', 'state':0, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
-    dut.add_cmd({'cmd':'interface port1.0.18', 'state':0, 'action': 'SET_STATE', 'args': [1]})
-    dut.add_cmd({'cmd':'switchport trunk allowed vlan add 10', 'state':1, 'action': 'SET_STATE', 'args': [2]})
-    dut.add_cmd({'cmd':'show running-config', 'state':2, 'action': 'PRINT', 'args': output_rc_1})
-    dut.add_cmd({'cmd':'show vlan all', 'state':2, 'action': 'PRINT', 'args': output_va_1})
-    dut.add_cmd({'cmd':'interface port1.0.18', 'state':2, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
-    dut.add_cmd({'cmd':'interface port1.0.18', 'state':2, 'action': 'SET_STATE', 'args': [3]})
-    dut.add_cmd({'cmd':'switchport trunk allowed vlan remove 10', 'state':3, 'action': 'SET_STATE', 'args': [4]})
-    dut.add_cmd({'cmd':'show running-config', 'state':4, 'action': 'PRINT', 'args': output_rc_0})
-    dut.add_cmd({'cmd':'show vlan all', 'state':4, 'action': 'PRINT', 'args': output_va_0})
+    dut.add_cmd({'cmd':'show running-config', 'state': 0, 'action': 'PRINT', 'args': output_rc_0})
+    dut.add_cmd({'cmd':'show vlan all', 'state': 0, 'action': 'PRINT', 'args': output_va_0})
+    dut.add_cmd({'cmd':'interface port1.0.18', 'state': 0, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
+    dut.add_cmd({'cmd':'interface port1.0.18', 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd':'switchport trunk allowed vlan add 10', 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd':'show running-config', 'state': 2, 'action': 'PRINT', 'args': output_rc_1})
+    dut.add_cmd({'cmd':'show vlan all', 'state': 2, 'action': 'PRINT', 'args': output_va_1})
+    dut.add_cmd({'cmd':'interface port1.0.18', 'state': 2, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
+    dut.add_cmd({'cmd':'interface port1.0.18', 'state': 2, 'action': 'SET_STATE', 'args': [3]})
+    dut.add_cmd({'cmd':'switchport trunk allowed vlan remove 10', 'state': 3, 'action': 'SET_STATE', 'args': [4]})
+    dut.add_cmd({'cmd':'show running-config', 'state': 4, 'action': 'PRINT', 'args': output_rc_0})
+    dut.add_cmd({'cmd':'show vlan all', 'state': 4, 'action': 'PRINT', 'args': output_va_0})
 
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
     d.open()
     assert '1.0.18' in d.vlan[1]['untagged']
     assert '1.0.18' not in d.vlan[10]['tagged']

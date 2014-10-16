@@ -5,14 +5,14 @@ from pynetworking import Device
 def setup_dut(dut):
     dut.reset()
     dut.prompt = '#'
-    dut.add_cmd({'cmd':'show version', 'state': -1, 'action': 'PRINT', 'args': ["""
+    dut.add_cmd({'cmd': 'show version', 'state': -1, 'action': 'PRINT', 'args': ["""
 
         Unit             SW version         Boot version         HW version
 ------------------- ------------------- ------------------- -------------------
          1               3.0.0.44            1.0.1.07            00.01.00
 
     """]})
-    dut.add_cmd({'cmd':'show system', 'state': -1, 'action': 'PRINT', 'args': ["""
+    dut.add_cmd({'cmd': 'show system', 'state': -1, 'action': 'PRINT', 'args': ["""
 
 Unit        Type
 ---- -------------------
@@ -213,7 +213,7 @@ Unicast servers:
     assert ntp_address_2 in d.ntp.keys()
     assert d.ntp[ntp_address_1]['polltime'] == polltime_1
     assert d.ntp[ntp_address_2]['polltime'] == polltime_1
-    assert (ntp_address_1, {'polltime' : polltime_1, 'status' : 'up'}) in d.ntp.items()
+    assert (ntp_address_1, {'polltime': polltime_1, 'status': 'up'}) in d.ntp.items()
 
     with pytest.raises(KeyError) as excinfo:
         d.ntp.update(bad_ntp_address)

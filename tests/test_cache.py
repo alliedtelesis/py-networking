@@ -2,6 +2,7 @@ from pynetworking.utils import Cache, CacheMissException
 from time import sleep
 import pytest
 
+
 def test_cache1():
     c = Cache(default_timeout=2)
     cmds = {'cmds': [{'cmd': 'show vlan', 'prompt': '\#'},

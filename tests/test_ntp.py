@@ -4,7 +4,7 @@ from pynetworking import Device
 
 def setup_dut(dut):
     dut.reset()
-    dut.add_cmd({'cmd':'show version',        'state': -1, 'action': 'PRINT', 'args': ["""
+    dut.add_cmd({'cmd': 'show version', 'state': -1, 'action': 'PRINT', 'args': ["""
 AlliedWare Plus (TM) 5.4.2 09/25/13 12:57:26
 
 Build name : x600-5.4.2-3.14.rel
@@ -17,9 +17,9 @@ def test_ntp_crud(dut, log_level):
     # Add the routes manually to have the NTP servers reachable.
     # Add a DNS server to solve host names.
     #
-    #ip name-server 10.17.39.11
-    #ip route 193.204.114.233/32 10.17.39.1
-    #ip route 193.204.114.105/32 10.17.39.1
+    # ip name-server 10.17.39.11
+    # ip route 193.204.114.233/32 10.17.39.1
+    # ip route 193.204.114.105/32 10.17.39.1
     #
     # Note that NTP server addresses are shown in the numeric form, even if they have been set in the literal one.
 
@@ -73,11 +73,11 @@ end
     dut.add_cmd({'cmd': 'show ntp associations', 'state': 0, 'action': 'PRINT', 'args': output_0})
     dut.add_cmd({'cmd': create_cmd_1, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
     dut.add_cmd({'cmd': 'show ntp associations', 'state': 1, 'action': 'PRINT', 'args': output_1})
-    dut.add_cmd({'cmd': create_cmd_2, 'state':1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd': create_cmd_2, 'state': 1, 'action': 'SET_STATE', 'args': [2]})
     dut.add_cmd({'cmd': 'show ntp associations', 'state': 2, 'action': 'PRINT', 'args': output_2})
-    dut.add_cmd({'cmd': delete_cmd_1, 'state':2, 'action': 'SET_STATE', 'args': [3]})
+    dut.add_cmd({'cmd': delete_cmd_1, 'state': 2, 'action': 'SET_STATE', 'args': [3]})
     dut.add_cmd({'cmd': 'show ntp associations', 'state': 3, 'action': 'PRINT', 'args': output_1})
-    dut.add_cmd({'cmd': delete_cmd_2, 'state':3, 'action': 'SET_STATE', 'args': [4]})
+    dut.add_cmd({'cmd': delete_cmd_2, 'state': 3, 'action': 'SET_STATE', 'args': [4]})
     dut.add_cmd({'cmd': 'show ntp associations', 'state': 4, 'action': 'PRINT', 'args': output_0})
 
     d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)

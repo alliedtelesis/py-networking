@@ -77,7 +77,7 @@ Summer time zone: None
     setup_dut(dut)
 
     # tests use a fixed date, otherwise they can fail depending on the current date
-    dt = datetime(2014,9,20)     # dt = datetime.now()
+    dt = datetime(2014, 9, 20)     # dt = datetime.now()
 
     tz1 = timezone('Europe/Rome')
     tz2 = timezone('America/Montevideo')
@@ -100,7 +100,7 @@ Summer time zone: None
     dut.add_cmd({'cmd': 'show clock', 'state': 8, 'action': 'PRINT', 'args': clock_output_4})
     dut.add_cmd({'cmd': 'clock timezone CST plus 8', 'state': 8, 'action': 'SET_STATE', 'args': [9]})
     dut.add_cmd({'cmd': 'no clock summer-time', 'state': 9, 'action': 'SET_STATE', 'args': [10]})
-    dut.add_cmd({'cmd': 'show clock', 'state': 10,'action': 'PRINT', 'args': clock_output_5})
+    dut.add_cmd({'cmd': 'show clock', 'state': 10, 'action': 'PRINT', 'args': clock_output_5})
     d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
     d.open()
 

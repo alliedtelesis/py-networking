@@ -36,13 +36,13 @@ class Emulator(recvline.HistoricRecvLine):
         self.showPrompt()
 
     def showPrompt(self):
-        self.terminal.write(self._hostname+self._prompt)
+        self.terminal.write(self._hostname + self._prompt)
 
     def getCommandFunc(self, cmd):
         return getattr(self, 'do_' + cmd, None)
 
     def lineReceived(self, line):
-        log.msg("new line "+line)
+        log.msg("new line " + line)
         if line == '' or re.match('\s+', line):
             self.showPrompt()
         line = line.strip()
@@ -60,7 +60,7 @@ class Emulator(recvline.HistoricRecvLine):
                     self.terminal.nextLine()
             else:
                 ret = None
-                for action in sorted(self.parent.cmds.values(), key=lambda k: (k['seq'],k['state'])):
+                for action in sorted(self.parent.cmds.values(), key=lambda k: (k['seq'], k['state'])):
                     if re.match(action['cmd'], line) and (action['state'] == -1 or action['state'] == self.parent.state):
                         if action['action'] == 'PRINT':
                             ret = action['args'][0]
@@ -82,8 +82,8 @@ class Emulator(recvline.HistoricRecvLine):
                 self.showPrompt()
 
     def do_help(self):
-        for cmd in sorted(self.parent.cmds.values(), key=lambda k:(k['seq'],k['state'])):
-            self.terminal.write("{0} {2} {3} {1}".format(cmd['seq'], cmd['cmd'],cmd['state'],cmd['action']))
+        for cmd in sorted(self.parent.cmds.values(), key=lambda k: (k['seq'], k['state'])):
+            self.terminal.write("{0} {2} {3} {1}".format(cmd['seq'], cmd['cmd'], cmd['state'], cmd['action']))
             self.terminal.nextLine()
         self.showPrompt()
 
@@ -99,7 +99,7 @@ class Emulator(recvline.HistoricRecvLine):
         self.terminal.nextLine()
         self.showPrompt()
 
-    def do_conf(self,t='t'):
+    def do_conf(self, t='t'):
         if t != 't':
             return
         self._prompt = "(config)#"
@@ -124,7 +124,7 @@ class Emulator(recvline.HistoricRecvLine):
             else:
                 src_path = tftp_client_dir + '/' + src
                 dst_path = tftp_server_dir + '/' + dst.split('/')[-1]
-            shutil.copy2(src_path,dst_path)
+            shutil.copy2(src_path, dst_path)
 
         if (src.find('http://') == 0):
             aResp = urllib2.urlopen(src)
@@ -156,6 +156,7 @@ class Forwarder(recvline.HistoricRecvLine):
 
 class SSHAvatar(avatar.ConchUser):
     implements(ISession)
+
     def __init__(self, username, parent):
         avatar.ConchUser.__init__(self)
         self.username = username
@@ -175,23 +176,27 @@ class SSHAvatar(avatar.ConchUser):
 
     def closed(self):
         pass
-    
+
     def eofReceived(self):
         pass
 
+
 class SSHRealm(object):
     implements(portal.IRealm)
+
     def __init__(self, parent):
         self.parent = parent
+
     def requestAvatar(self, avatarId, mind, *interfaces):
         if IConchUser in interfaces:
-            return interfaces[0], SSHAvatar(avatarId,self.parent), lambda: None
+            return interfaces[0], SSHAvatar(avatarId, self.parent), lambda: None
         else:
             raise NotImplementedError("No supported interfaces found.")
 
+
 class DUTd(Process):
-    def __init__(self,port=0, host='127.0.0.1'):
-        Process.__init__(self, target = self._run)
+    def __init__(self, port=0, host='127.0.0.1'):
+        Process.__init__(self, target=self._run)
         self._port = port
         self._sshFactory = factory.SSHFactory()
         self._sshFactory.portal = portal.Portal(SSHRealm(self))
@@ -208,17 +213,17 @@ class DUTd(Process):
             self.mode = 'emulated'
             self._sshFactory.portal.registerChecker(checkers.InMemoryUsernamePasswordDatabaseDontUse(**users))
 
-            with open(join(os.getcwd(),'tests/id_rsa')) as privateBlobFile:
+            with open(join(os.getcwd(), 'tests/id_rsa')) as privateBlobFile:
                 privateBlob = privateBlobFile.read()
                 self._sshFactory.privateKeys = {'ssh-rsa': keys.Key.fromString(data=privateBlob)}
-            with open(join(os.getcwd(),'tests/id_rsa.pub')) as publicBlobFile:
+            with open(join(os.getcwd(), 'tests/id_rsa.pub')) as publicBlobFile:
                 publicBlob = publicBlobFile.read()
                 self._sshFactory.publicKeys = {'ssh-rsa': keys.Key.fromString(data=publicBlob)}
 
-            self._listeningport = reactor.listenTCP(self._port, self._sshFactory,interface=self.host)
+            self._listeningport = reactor.listenTCP(self._port, self._sshFactory, interface=self.host)
         else:
             self.mode = 'passthrou'
-    
+
     @property
     def motd(self):
         return self._motd.value
@@ -248,17 +253,16 @@ class DUTd(Process):
         if self.host == '127.0.0.1' and self._listeningport:
             return self._listeningport.getHost().port
         return 22
-    
+
     def reset(self):
-        manager = Manager()
         self._motd.value = "AlliedWare Plus (TM) 5.4.2 09/25/13 12:57:26"
         self._state.value = 0
         for cmdid in self.cmds.keys():
             del self.cmds[cmdid]
-     
+
     def add_cmd(self, cmd):
         cmd['seq'] = len(self.cmds)
-        self.cmds[md5(str(cmd)).hexdigest()]=cmd
+        self.cmds[md5(str(cmd)).hexdigest()] = cmd
 
     def exit(self):
         if reactor.running:
@@ -266,7 +270,7 @@ class DUTd(Process):
 
     def _run(self):
         if self.host == '127.0.0.1':
-            f = logfile.LogFile("dut.log", "/tmp", rotateLength=100000,maxRotatedFiles=10)
+            f = logfile.LogFile("dut.log", "/tmp", rotateLength=100000, maxRotatedFiles=10)
             log.startLogging(f)
             log.msg("Listening on port {0}".format(self.port))
             reactor.run()

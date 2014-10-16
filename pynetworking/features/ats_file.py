@@ -12,7 +12,7 @@ from tempfile import mkstemp
 
 try:
     from collections import OrderedDict
-except ImportError: #pragma: no cover
+except ImportError:  # pragma: no cover
     from ordereddict import OrderedDict
 
 
@@ -22,15 +22,13 @@ class ats_file(Feature):
     """
     def __init__(self, device, **kvargs):
         Feature.__init__(self, device, **kvargs)
-        self._file={}
-        self._tftp_port=69
+        self._file = {}
+        self._tftp_port = 69
         self._d = device
         self._d.log_debug("loading feature")
 
-
     def load_config(self, config):
         self._d.log_info("loading config")
-
 
     def create(self, name, protocol='http', text='', filename='', server='', port=69):
         self._d.log_debug("User: {0}".format(getpass.getuser()))
@@ -67,12 +65,11 @@ class ats_file(Feature):
         self._tftp_port = port
 
         # device commands (timeout of 60 seconds for each MB)
-        timeout = (os.path.getsize(filename)/1048576 + 1)*60000
+        timeout = (os.path.getsize(filename) / 1048576 + 1) * 60000
         create_cmd = 'copy {0}://{1}/{2} {3}'.format(protocol, server, filename.split('/')[-1], name)
-        cmds = {'cmds':[{'cmd': create_cmd, 'prompt': '\#', 'timeout': timeout}]}
+        cmds = {'cmds': [{'cmd': create_cmd, 'prompt': '\#', 'timeout': timeout}]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._update_file()
-
 
     def update(self, name, protocol='http', filename='', text='', new_name='', server='', port=69):
         self._d.log_info("copying {0} from host to device".format(name))
@@ -109,25 +106,24 @@ class ats_file(Feature):
         self._tftp_port = port
 
         # device commands (timeout of 30 seconds for each MB)
-        timeout = (os.path.getsize(file_2_copy_from)/1048576 + 1)*30000
+        timeout = (os.path.getsize(file_2_copy_from) / 1048576 + 1) * 30000
         if (new_name == ''):
             update_cmd = 'copy {0}://{1}/{2} {3}'.format(protocol, server, file_2_copy_from, name)
-            cmds = {'cmds': [{'cmd': update_cmd, 'prompt': ''  },
-                             {'cmd': 'y'       , 'prompt': '\#', 'timeout' : timeout}
-                            ]}
+            cmds = {'cmds': [{'cmd': update_cmd, 'prompt': ''},
+                             {'cmd': 'y', 'prompt': '\#', 'timeout': timeout}
+                             ]}
         else:
             update_cmd = 'copy tftp://{0}/{1} {2}'.format(server, file_2_copy_from, new_name)
             delete_cmd = 'delete {0}'.format(name)
             cmds = {'cmds': [{'cmd': update_cmd, 'prompt': '\#', 'timeout': timeout},
-                             {'cmd': delete_cmd, 'prompt': ''  },
-                             {'cmd': 'y'       , 'prompt': '\#', 'timeout': timeout}
+                             {'cmd': delete_cmd, 'prompt': ''},
+                             {'cmd': 'y', 'prompt': '\#', 'timeout': timeout}
                              ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._update_file()
 
         if (text != ''):
             os.remove(file_2_copy_from)
-
 
     def delete(self, file_name):
         self._d.log_info("remove {0}".format(file_name))
@@ -137,23 +133,20 @@ class ats_file(Feature):
             raise KeyError('file {0} is not existing'.format(file_name))
 
         delete_cmd = 'delete {0}'.format(file_name)
-        cmds = {'cmds':[{'cmd': delete_cmd, 'prompt':''  },
-                        {'cmd': 'y'       , 'prompt':'\#', 'timeout': 10000}
-                       ]}
+        cmds = {'cmds': [{'cmd': delete_cmd, 'prompt': ''},
+                         {'cmd': 'y', 'prompt': '\#', 'timeout': 10000}
+                         ]}
 
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._update_file()
-
 
     def items(self):
         self._update_file()
         return self._file.items()
 
-
     def keys(self):
         self._update_file()
         return self._file.keys()
-
 
     def __getitem__(self, filename):
         self._update_file()
@@ -162,11 +155,10 @@ class ats_file(Feature):
             return self._file[filename]
         raise KeyError('file {0} does not exist'.format(filename))
 
-
     def _update_file_content(self, filename):
         self._d.log_info("Read file {0} content".format(filename))
         read_cmd = 'copy {0} tftp://{1}/{0}'.format(filename, socket.gethostbyname(socket.getfqdn()))
-        cmds = {'cmds':[{'cmd': read_cmd, 'prompt':'\#'}]}
+        cmds = {'cmds': [{'cmd': read_cmd, 'prompt': '\#'}]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
 
         temp, temp_file_name = mkstemp()
@@ -179,7 +171,6 @@ class ats_file(Feature):
         myfile.close()
         os.remove(temp_file_name)
         return read_output
-
 
     def _update_file(self):
         self._d.log_info("_update_file")
@@ -201,5 +192,5 @@ class ats_file(Feature):
                                    'permission': m.group('permission'),
                                    'mdate': m.group('date'),
                                    'mtime': m.group('time')
-                                  }
+                                   }
         self._d.log_debug("File {0}".format(pformat(json.dumps(self._file))))

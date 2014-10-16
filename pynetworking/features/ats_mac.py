@@ -5,7 +5,7 @@ import re
 import json
 try:
     from collections import OrderedDict
-except ImportError: #pragma: no cover
+except ImportError:  # pragma: no cover
     from ordereddict import OrderedDict
 
 
@@ -15,17 +15,16 @@ class ats_mac(Feature):
     """
     def __init__(self, device, **kvargs):
         Feature.__init__(self, device, **kvargs)
-        self._mac={}
+        self._mac = {}
         self._d = device
         self._d.log_debug("loading feature")
-
 
     def load_config(self, config):
         self._d.log_info("loading config")
         self._mac = OrderedDict()
 
-        #interface vlan 1
-        #bridge address aa:bb:99:99:99:99 ethernet 1/e16
+        # interface vlan 1
+        # bridge address aa:bb:99:99:99:99 ethernet 1/e16
         vlan = 0
         ifre1 = re.compile('interface\s+vlan\s+(?P<vlan>\d+)')
         ifre2 = re.compile('bridge\s+address\s+(?P<mac>[^\s]+)\s+'
@@ -43,9 +42,8 @@ class ats_mac(Feature):
                                   'interface': m.group('interface'),
                                   'action': 'forward',
                                   'type': 'static'
-                                 }
+                                  }
         self._d.log_info(self._mac)
-
 
     def create(self, mac, interface, forward=True, vlan=1):
         self._d.log_info("create MAC address {0} entry".format(mac))
@@ -54,19 +52,18 @@ class ats_mac(Feature):
         mac = self._get_dotted_mac(mac)
         if mac in self._mac.keys():
             raise KeyError('MAC address {0} is already existing'.format(mac))
-        if forward == False:
+        if forward is False:
             raise KeyError('Discard option not supported')
 
         vlan_cmd = 'interface vlan {0}'.format(vlan)
         set_cmd = 'bridge address {0} ethernet {1} permanent'.format(mac, interface)
-        cmds = {'cmds':[{'cmd': 'conf'  , 'prompt':'\(config\)\#'},
-                        {'cmd': vlan_cmd, 'prompt':'\(config-if\)\#'},
-                        {'cmd': set_cmd , 'prompt':'\(config-if\)\#'},
-                        {'cmd': chr(26) , 'prompt':'\#'},
-                       ]}
+        cmds = {'cmds': [{'cmd': 'conf', 'prompt': '\(config\)\#'},
+                         {'cmd': vlan_cmd, 'prompt': '\(config-if\)\#'},
+                         {'cmd': set_cmd, 'prompt': '\(config-if\)\#'},
+                         {'cmd': chr(26), 'prompt': '\#'},
+                         ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._update_mac()
-
 
     def update(self, mac, interface, forward=True, vlan=1):
         self._d.log_info("update MAC address {0} entry".format(mac))
@@ -75,19 +72,18 @@ class ats_mac(Feature):
         mac = self._get_dotted_mac(mac)
         if mac not in self._mac.keys():
             raise KeyError('MAC address {0} is not existing'.format(mac))
-        if forward == False:
+        if forward is False:
             raise KeyError('Discard option not supported')
 
         vlan_cmd = 'interface vlan {0}'.format(vlan)
         set_cmd = 'bridge address {0} ethernet {1} permanent'.format(mac, interface)
-        cmds = {'cmds':[{'cmd': 'conf'  , 'prompt':'\(config\)\#'},
-                        {'cmd': vlan_cmd, 'prompt':'\(config-if\)\#'},
-                        {'cmd': set_cmd , 'prompt':'\(config-if\)\#'},
-                        {'cmd': chr(26) , 'prompt':'\#'},
-                       ]}
+        cmds = {'cmds': [{'cmd': 'conf', 'prompt': '\(config\)\#'},
+                         {'cmd': vlan_cmd, 'prompt': '\(config-if\)\#'},
+                         {'cmd': set_cmd, 'prompt': '\(config-if\)\#'},
+                         {'cmd': chr(26), 'prompt': '\#'},
+                         ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._update_mac()
-
 
     def delete(self, mac=''):
         self._update_mac()
@@ -97,21 +93,21 @@ class ats_mac(Feature):
             # Indeed the MAC address table is left empty for a very short time.
             self._d.log_info("remove all the dynamic entries")
             del_cmd = 'clear bridge'
-            cmds = {'cmds':[{'cmd': del_cmd , 'prompt':'\#'}]}
+            cmds = {'cmds': [{'cmd': del_cmd, 'prompt': '\#'}]}
             self._device.cmd(cmds, cache=False, flush_cache=True)
 
             # The static entries have to be removed one by one, given that there is no global command.
             self._d.log_info("remove all the static entries")
-            cmds = {'cmds':[{'cmd': 'conf'  , 'prompt':'\(config\)\#'}]}
+            cmds = {'cmds': [{'cmd': 'conf', 'prompt': '\(config\)\#'}]}
             keys = self._mac.keys()
             for key in keys:
                 mac_item = self._mac[key]
                 if mac_item['type'] == 'static':
                     vlan_cmd = 'interface vlan {0}'.format(mac_item['vlan'])
                     del_cmd = 'no bridge address {0}'.format(key)
-                    cmds['cmds'].append({'cmd': vlan_cmd, 'prompt':'\(config-if\)\#'})
-                    cmds['cmds'].append({'cmd': del_cmd , 'prompt':'\(config-if\)\#'})
-            cmds['cmds'].append({'cmd': chr(26) , 'prompt':'\#'})
+                    cmds['cmds'].append({'cmd': vlan_cmd, 'prompt': '\(config-if\)\#'})
+                    cmds['cmds'].append({'cmd': del_cmd, 'prompt': '\(config-if\)\#'})
+            cmds['cmds'].append({'cmd': chr(26), 'prompt': '\#'})
             self._device.cmd(cmds, cache=False, flush_cache=True)
         else:
             self._d.log_info("remove {0}".format(mac))
@@ -123,25 +119,22 @@ class ats_mac(Feature):
             vlan = self._mac[mac]['vlan']
             vlan_cmd = 'interface vlan {0}'.format(vlan)
             del_cmd = 'no bridge address {0}'.format(mac)
-            cmds = {'cmds':[{'cmd': 'conf'  , 'prompt':'\(config\)\#'},
-                            {'cmd': vlan_cmd, 'prompt':'\(config-if\)\#'},
-                            {'cmd': del_cmd , 'prompt':'\(config-if\)\#'},
-                            {'cmd': chr(26) , 'prompt':'\#'},
-                           ]}
+            cmds = {'cmds': [{'cmd': 'conf', 'prompt': '\(config\)\#'},
+                             {'cmd': vlan_cmd, 'prompt': '\(config-if\)\#'},
+                             {'cmd': del_cmd, 'prompt': '\(config-if\)\#'},
+                             {'cmd': chr(26), 'prompt': '\#'},
+                             ]}
             self._device.cmd(cmds, cache=False, flush_cache=True)
 
         self._update_mac()
-
 
     def items(self):
         self._update_mac()
         return self._mac.items()
 
-
     def keys(self):
         self._update_mac()
         return self._mac.keys()
-
 
     def __getitem__(self, mac):
         self._update_mac()
@@ -150,10 +143,9 @@ class ats_mac(Feature):
             raise KeyError('MAC address {0} does not exist'.format(mac))
         return self._mac[dotted_mac]
 
-
     def _get_dotted_mac(self, mac):
         if (re.match("[0-9a-f]{2}([-:])[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$", mac.lower()) or
-            re.match("[0-9a-f]{4}([.])[0-9a-f]{4}([.])[0-9a-f]{4}", mac.lower())  or
+            re.match("[0-9a-f]{4}([.])[0-9a-f]{4}([.])[0-9a-f]{4}", mac.lower()) or
             re.match("[0-9a-f]{12}", mac.lower())):
             mac = mac.replace('-', '')
             mac = mac.replace(':', '')
@@ -162,7 +154,6 @@ class ats_mac(Feature):
         else:
             raise KeyError('MAC address {0} is not valid'.format(mac))
         return mac
-
 
     def _update_mac(self):
         self._d.log_info("_update_mac")
@@ -182,9 +173,8 @@ class ats_mac(Feature):
                                   'interface': m.group('interface'),
                                   'action': 'forward',
                                   'type': m.group('type')
-                                 }
+                                  }
         self._d.log_debug("mac {0}".format(pformat(json.dumps(self._mac))))
-
 
     def _check_static_entry_presence(self):
         self._d.log_info("_check_static_entry_presence")

@@ -24,14 +24,14 @@ def tftp_server_for_ever(port, tftp_server_dir):
 def setup_dut(dut):
     dut.reset()
     dut.prompt = '#'
-    dut.add_cmd({'cmd':'show version', 'state':-1, 'action': 'PRINT', 'args': ["""
+    dut.add_cmd({'cmd': 'show version', 'state': -1, 'action': 'PRINT', 'args': ["""
 
         Unit             SW version         Boot version         HW version
 ------------------- ------------------- ------------------- -------------------
          1               3.0.0.44            1.0.1.07            00.01.00
 
     """]})
-    dut.add_cmd({'cmd':'show system', 'state':-1, 'action': 'PRINT', 'args': ["""
+    dut.add_cmd({'cmd': 'show system', 'state': -1, 'action': 'PRINT', 'args': ["""
 
 Unit        Type
 ---- -------------------
@@ -328,10 +328,10 @@ ip ssh server
     d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'test_file_1.cfg' not in d.file.keys()
-    d.file.create(name='test_file_1.cfg', protocol='tftp', port=dut.tftp_port, filename='temp_1.cfg',server=local_tftp_server)
+    d.file.create(name='test_file_1.cfg', protocol='tftp', port=dut.tftp_port, filename='temp_1.cfg', server=local_tftp_server)
     assert 'test_file_1.cfg' in d.file.keys()
     assert d.file['test_file_1.cfg']['content'] == host_text_1
-    d.file.update(name='test_file_1.cfg', protocol='tftp', port=dut.tftp_port, filename='temp_2.cfg',server=local_tftp_server)
+    d.file.update(name='test_file_1.cfg', protocol='tftp', port=dut.tftp_port, filename='temp_2.cfg', server=local_tftp_server)
     assert 'test_file_1.cfg' in d.file.keys()
     assert d.file['test_file_1.cfg']['content'] == host_text_2
     d.file.delete('test_file_1.cfg')

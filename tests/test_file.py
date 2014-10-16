@@ -148,7 +148,6 @@ end
 """
     setup_dut(dut)
     host_file_name = 'local.cfg'
-    device_file_name = 'test_file_1.cfg'
     myfile = open(host_file_name, 'w')
     myfile.write(host_content)
     myfile.close()
@@ -213,7 +212,6 @@ interface vlan1
 end
 """
     setup_dut(dut)
-    host_file_name = 'test_file_2.cfg'
     create_cmd = 'copy\s+http://{0}:\d+/test_file_2.cfg\s+test_file_2.cfg'.format(socket.gethostbyname(socket.getfqdn()))
     dut.add_cmd({'cmd': 'dir', 'state': 0, 'action': 'PRINT', 'args': dir_0})
     dut.add_cmd({'cmd': create_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
@@ -392,7 +390,6 @@ vlan 777 name video-vlan state enable
 !
 end
 """
-    name = 'test_file_1.cfg'
     update_cmd = 'copy\s+http://{0}:\d+/test_file_1.cfg\s+test_file_1.cfg'.format(socket.gethostbyname(socket.getfqdn()))
     setup_dut(dut)
     dut.add_cmd({'cmd': 'dir', 'state': 0, 'action': 'PRINT', 'args': dir_0})

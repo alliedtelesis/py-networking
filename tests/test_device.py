@@ -431,7 +431,7 @@ Backup  boot config: flash:/backup.cfg (file not found)
 
     update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{1}'.format(socket.gethostbyname(socket.getfqdn()), image_file)
     dut.add_cmd({'cmd': 'show boot', 'state': 0, 'action': 'PRINT', 'args': output_0})
-    dut.add_cmd({'cmd': update_cmd , 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': update_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
     dut.add_cmd({'cmd': 'show boot', 'state': 1, 'action': 'PRINT', 'args': output_1})
     d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
     d.open()

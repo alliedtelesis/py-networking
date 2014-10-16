@@ -9,7 +9,7 @@ from pynetworking import Device
 
 def setup_dut(dut):
     dut.reset()
-    dut.add_cmd({'cmd':'show system', 'state': 0, 'action': 'PRINT', 'args': ["""
+    dut.add_cmd({'cmd': 'show system', 'state': 0, 'action': 'PRINT', 'args': ["""
 Switch System Status                                   Fri Mar 21 15:45:13 2014
 
 Board       ID  Bay   Board Name                         Rev   Serial number
@@ -39,7 +39,7 @@ System Contact
 System Location
 
     """]})
-    dut.add_cmd({'cmd':'show version', 'state': 0, 'action': 'PRINT', 'args': ["""
+    dut.add_cmd({'cmd': 'show version', 'state': 0, 'action': 'PRINT', 'args': ["""
 AlliedWare Plus (TM) 5.4.2 09/25/13 12:57:26
 
 Build name : x600-5.4.2-3.14.rel
@@ -164,7 +164,7 @@ Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
     dut.add_cmd({'cmd': 'show license', 'state': 1, 'action': 'PRINT', 'args': output_1})
     dut.add_cmd({'cmd': delete_cmd, 'state': 1, 'action': 'SET_STATE', 'args': [2]})
     dut.add_cmd({'cmd': 'show license', 'state': 2, 'action': 'PRINT', 'args': output_0})
-    d = Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
     d.open()
     with pytest.raises(KeyError) as excinfo:
         d.license.set_license(label='', key=key)
@@ -177,7 +177,7 @@ Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
     assert label in d.license.keys()
     assert d.license[label]['features'] == 'BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT, VRF-LITE, VRF-LITE-63'
     assert d.license[label]['releases'] == ''
-    assert (label, {'customer': d.license[label]['customer'], 'quantity': d.license[label]['quantity'], 'type': d.license[label]['type'], 'issue_date': d.license[label]['issue_date'], 'expire_date': d.license[label]['expire_date'], 'features' : d.license[label]['features'], 'releases' : ''}) in d.license.items()
+    assert (label, {'customer': d.license[label]['customer'], 'quantity': d.license[label]['quantity'], 'type': d.license[label]['type'], 'issue_date': d.license[label]['issue_date'], 'expire_date': d.license[label]['expire_date'], 'features': d.license[label]['features'], 'releases': ''}) in d.license.items()
     with pytest.raises(KeyError) as excinfo:
         d.license.delete(label='Bbase')
     d.license.delete(label=label)
@@ -245,7 +245,7 @@ Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
     dut.add_cmd({'cmd': 'show license', 'state': 1, 'action': 'PRINT', 'args': output_1})
     dut.add_cmd({'cmd': delete_cmd, 'state': 1, 'action': 'SET_STATE', 'args': [2]})
     dut.add_cmd({'cmd': 'show license', 'state': 2, 'action': 'PRINT', 'args': output_0})
-    d = Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
     d.open()
     with pytest.raises(KeyError) as excinfo:
         d.license.set_license(certificate=false_cert_file)
@@ -322,7 +322,7 @@ Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
     dut.add_cmd({'cmd': 'show license', 'state': 1, 'action': 'PRINT', 'args': output_1})
     dut.add_cmd({'cmd': delete_cmd, 'state': 1, 'action': 'SET_STATE', 'args': [2]})
     dut.add_cmd({'cmd': 'show license', 'state': 2, 'action': 'PRINT', 'args': output_0})
-    d = Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
     d.open()
     with pytest.raises(KeyError) as excinfo:
         d.license.set_license(certificate=false_cert_url)
@@ -399,7 +399,7 @@ Release                       : 5.4.4
     dut.add_cmd({'cmd': 'show license', 'state': 1, 'action': 'PRINT', 'args': output_1})
     dut.add_cmd({'cmd': delete_cmd, 'state': 1, 'action': 'SET_STATE', 'args': [2]})
     dut.add_cmd({'cmd': 'show license', 'state': 2, 'action': 'PRINT', 'args': output_0})
-    d = Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
     d.open()
     assert label not in d.license.keys()
     assert cert_file not in d.file.keys()

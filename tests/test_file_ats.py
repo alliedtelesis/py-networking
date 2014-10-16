@@ -9,9 +9,9 @@ from pynetworking import Device
 
 
 def tftp_make_dir(tftp_client_dir, tftp_server_dir):
-    if (os.path.exists(tftp_client_dir) == False):
+    if (os.path.exists(tftp_client_dir) is False):
         os.mkdir(tftp_client_dir)
-    if (os.path.exists(tftp_server_dir) == False):
+    if (os.path.exists(tftp_server_dir) is False):
         os.mkdir(tftp_server_dir)
 
 
@@ -24,14 +24,14 @@ def tftp_server_for_ever(port, tftp_server_dir):
 def setup_dut(dut):
     dut.reset()
     dut.prompt = '#'
-    dut.add_cmd({'cmd':'show version', 'state':-1, 'action': 'PRINT', 'args':["""
+    dut.add_cmd({'cmd':'show version', 'state':-1, 'action': 'PRINT', 'args': ["""
 
         Unit             SW version         Boot version         HW version
 ------------------- ------------------- ------------------- -------------------
          1               3.0.0.44            1.0.1.07            00.01.00
 
     """]})
-    dut.add_cmd({'cmd':'show system', 'state':-1, 'action': 'PRINT', 'args':["""
+    dut.add_cmd({'cmd':'show system', 'state':-1, 'action': 'PRINT', 'args': ["""
 
 Unit        Type
 ---- -------------------
@@ -99,8 +99,8 @@ hostname nac_dev
 ip ssh server
 """
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'dir', 'state':0, 'action': 'PRINT', 'args': dir_0})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    dut.add_cmd({'cmd': 'dir', 'state': 0, 'action': 'PRINT', 'args': dir_0})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'startup-config' in d.file.keys()
     with pytest.raises(KeyError) as excinfo:
@@ -155,8 +155,8 @@ hostname nac_dev
 ip ssh server
 """
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'dir', 'state':0, 'action': 'PRINT', 'args': dir_0})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    dut.add_cmd({'cmd': 'dir', 'state': 0, 'action': 'PRINT', 'args': dir_0})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'startup-config' in d.file.keys()
     with pytest.raises(KeyError) as excinfo:
@@ -199,8 +199,8 @@ Free size of flash: 3276800 bytes
 
 """]
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'dir', 'state':0, 'action': 'PRINT', 'args': dir_0})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    dut.add_cmd({'cmd': 'dir', 'state': 0, 'action': 'PRINT', 'args': dir_0})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'test_file_x.cfg' not in d.file.keys()
     with pytest.raises(KeyError) as excinfo:
@@ -318,14 +318,14 @@ ip ssh server
     create_cmd = 'copy tftp://{0}/temp_1.cfg test_file_1.cfg'.format(local_tftp_server)
     update_cmd = 'copy tftp://{0}/temp_2.cfg test_file_1.cfg'.format(local_tftp_server)
     delete_cmd = 'delete test_file_1.cfg'
-    dut.add_cmd({'cmd': 'dir', 'state':0, 'action': 'PRINT', 'args': dir_0})
-    dut.add_cmd({'cmd': create_cmd, 'state':0, 'action': 'SET_STATE', 'args':[1]})
-    dut.add_cmd({'cmd': 'dir', 'state':1, 'action': 'PRINT', 'args': dir_1})
-    dut.add_cmd({'cmd': update_cmd, 'state':1, 'action': 'SET_STATE', 'args':[2]})
-    dut.add_cmd({'cmd': 'dir', 'state':2, 'action': 'PRINT', 'args': dir_2})
-    dut.add_cmd({'cmd': delete_cmd, 'state':2, 'action': 'SET_STATE', 'args':[3]})
-    dut.add_cmd({'cmd': 'dir', 'state':3, 'action': 'PRINT', 'args': dir_0})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    dut.add_cmd({'cmd': 'dir', 'state': 0, 'action': 'PRINT', 'args': dir_0})
+    dut.add_cmd({'cmd': create_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'dir', 'state': 1, 'action': 'PRINT', 'args': dir_1})
+    dut.add_cmd({'cmd': update_cmd, 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd': 'dir', 'state': 2, 'action': 'PRINT', 'args': dir_2})
+    dut.add_cmd({'cmd': delete_cmd, 'state': 2, 'action': 'SET_STATE', 'args': [3]})
+    dut.add_cmd({'cmd': 'dir', 'state': 3, 'action': 'PRINT', 'args': dir_0})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'test_file_1.cfg' not in d.file.keys()
     d.file.create(name='test_file_1.cfg', protocol='tftp', port=dut.tftp_port, filename='temp_1.cfg',server=local_tftp_server)
@@ -447,14 +447,14 @@ ip ssh server
     create_cmd = 'copy tftp://{0}/test_file_2.cfg test_file_2.cfg'.format(local_tftp_server)
     update_cmd = 'copy tftp://{0}/test_file_2.cfg test_file_2.cfg'.format(local_tftp_server)
     delete_cmd = 'delete test_file_2.cfg'
-    dut.add_cmd({'cmd': 'dir', 'state':0, 'action': 'PRINT', 'args': dir_0})
-    dut.add_cmd({'cmd': create_cmd, 'state':0, 'action': 'SET_STATE', 'args':[1]})
-    dut.add_cmd({'cmd': 'dir', 'state':1, 'action': 'PRINT', 'args': dir_1})
-    dut.add_cmd({'cmd': update_cmd, 'state':1, 'action': 'SET_STATE', 'args':[2]})
-    dut.add_cmd({'cmd': 'dir', 'state':2, 'action': 'PRINT', 'args': dir_2})
-    dut.add_cmd({'cmd': delete_cmd, 'state':2, 'action': 'SET_STATE', 'args':[3]})
-    dut.add_cmd({'cmd': 'dir', 'state':3, 'action': 'PRINT', 'args': dir_0})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    dut.add_cmd({'cmd': 'dir', 'state': 0, 'action': 'PRINT', 'args': dir_0})
+    dut.add_cmd({'cmd': create_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'dir', 'state': 1, 'action': 'PRINT', 'args': dir_1})
+    dut.add_cmd({'cmd': update_cmd, 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd': 'dir', 'state': 2, 'action': 'PRINT', 'args': dir_2})
+    dut.add_cmd({'cmd': delete_cmd, 'state': 2, 'action': 'SET_STATE', 'args': [3]})
+    dut.add_cmd({'cmd': 'dir', 'state': 3, 'action': 'PRINT', 'args': dir_0})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'test_file_2.cfg' not in d.file.keys()
     d.file.create(name='test_file_2.cfg', protocol='tftp', port=dut.tftp_port, text=host_text_1)
@@ -556,14 +556,14 @@ ip ssh server
     create_cmd = 'copy tftp://{0}/test_file_3.cfg test_file_3.cfg'.format(local_tftp_server)
     update_cmd = 'copy tftp://{0}/test_file_4.cfg test_file_4.cfg'.format(local_tftp_server)
     delete_cmd = 'delete test_file_4.cfg'
-    dut.add_cmd({'cmd': 'dir', 'state':0, 'action': 'PRINT', 'args': dir_0})
-    dut.add_cmd({'cmd': create_cmd, 'state':0, 'action': 'SET_STATE', 'args':[1]})
-    dut.add_cmd({'cmd': 'dir', 'state':1, 'action': 'PRINT', 'args': dir_1})
-    dut.add_cmd({'cmd': update_cmd, 'state':1, 'action': 'SET_STATE', 'args':[2]})
-    dut.add_cmd({'cmd': 'dir', 'state':2, 'action': 'PRINT', 'args': dir_2})
-    dut.add_cmd({'cmd': delete_cmd, 'state':2, 'action': 'SET_STATE', 'args':[3]})
-    dut.add_cmd({'cmd': 'dir', 'state':3, 'action': 'PRINT', 'args': dir_0})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    dut.add_cmd({'cmd': 'dir', 'state': 0, 'action': 'PRINT', 'args': dir_0})
+    dut.add_cmd({'cmd': create_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'dir', 'state': 1, 'action': 'PRINT', 'args': dir_1})
+    dut.add_cmd({'cmd': update_cmd, 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd': 'dir', 'state': 2, 'action': 'PRINT', 'args': dir_2})
+    dut.add_cmd({'cmd': delete_cmd, 'state': 2, 'action': 'SET_STATE', 'args': [3]})
+    dut.add_cmd({'cmd': 'dir', 'state': 3, 'action': 'PRINT', 'args': dir_0})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
     d.open()
     assert 'test_file_3.cfg' not in d.file.keys()
     d.file.create(name='test_file_3.cfg', protocol='tftp', port=dut.tftp_port)

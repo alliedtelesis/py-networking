@@ -110,7 +110,7 @@ def test_open_close3(dut, log_level):
 
 def test_open_close4(dut, log_level):
     dut.reset()
-    # d=Device(host='www.google.com',port=80,protocol=dut.protocol,log_level=log_level)
+    # d = Device(host='www.google.com',port=80,protocol=dut.protocol,log_level=log_level)
     # with pytest.raises(DeviceException) as excinfo:
     #     d.open()
     # assert str(excinfo.value).startswith("cannot open a ssh transport to") is True
@@ -318,7 +318,7 @@ end
     dut.add_cmd({'cmd': 'show startup-config', 'state': 0, 'action': 'PRINT', 'args': [config_no_vlan]})
     dut.add_cmd({'cmd': 'vlan database', 'state': 0, 'action': 'SET_PROMPT', 'args': ['(config-vlan)#']})
     dut.add_cmd({'cmd': 'vlan database', 'state': 0, 'action': 'SET_STATE', 'args': [1]})
-    dut.add_cmd({'cmd': 'vlan 3999' , 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd': 'vlan 3999', 'state': 1, 'action': 'SET_STATE', 'args': [2]})
     dut.add_cmd({'cmd': 'show running-config', 'state': 2, 'action': 'PRINT', 'args': [config_with_vlan]})
     dut.add_cmd({'cmd': 'show startup-config', 'state': 2, 'action': 'PRINT', 'args': [config_no_vlan]})
     dut.add_cmd({'cmd': 'write', 'state': 2, 'action': 'SET_STATE', 'args': [3]})
@@ -326,7 +326,7 @@ end
     dut.add_cmd({'cmd': 'show startup-config', 'state': 3, 'action': 'PRINT', 'args': [config_with_vlan]})
     dut.add_cmd({'cmd': 'vlan database', 'state': 3, 'action': 'SET_PROMPT', 'args': ['(config-vlan)#']})
     dut.add_cmd({'cmd': 'vlan database', 'state': 3, 'action': 'SET_STATE', 'args': [4]})
-    dut.add_cmd({'cmd': 'no vlan 3999' , 'state': 4, 'action': 'SET_STATE', 'args': [5]})
+    dut.add_cmd({'cmd': 'no vlan 3999', 'state': 4, 'action': 'SET_STATE', 'args': [5]})
     dut.add_cmd({'cmd': 'show running-config', 'state': 5, 'action': 'PRINT', 'args': [config_no_vlan]})
     dut.add_cmd({'cmd': 'show startup-config', 'state': 5, 'action': 'PRINT', 'args': [config_with_vlan]})
     dut.add_cmd({'cmd': 'write', 'state': 5, 'action': 'SET_STATE', 'args': [6]})
@@ -379,7 +379,7 @@ Backup  boot config: flash:/backup.cfg (file not found)
 
     update_cmd = 'copy\s+http://{0}:\d+/{1}\s+{1}'.format(socket.gethostbyname(socket.getfqdn()), release_file)
     dut.add_cmd({'cmd': 'show boot', 'state': 0, 'action': 'PRINT', 'args': output_0})
-    dut.add_cmd({'cmd': update_cmd , 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': update_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
     dut.add_cmd({'cmd': 'show boot', 'state': 1, 'action': 'PRINT', 'args': output_1})
     d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
     d.open()

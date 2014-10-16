@@ -59,7 +59,7 @@ class awp_system(object):
 
         if (protocol != 'http'):
             raise KeyError('protocol {0} not supported'.format(protocol))
-        if (self._check_running_software(devfilename) == True):
+        if (self._check_running_software(devfilename) is True):
             raise KeyError('cannot overwrite running firmware ({0})'.format(devfilename))
         if (os.path.exists(filename) == False):
             raise KeyError('firmware {0} not available'.format(filename))

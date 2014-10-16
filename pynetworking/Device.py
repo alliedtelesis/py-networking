@@ -27,7 +27,7 @@ class Device(object):
     """ test doc
     """
     def __init__(self, host, username='manager', password='friend', protocol='ssh', port='auto', os='auto',
-                 log_level='NOTSET', log_output='console:', connection_timeout=20, unit_test=True):
+                 log_level='NOTSET', log_output='console:', connection_timeout=20, unit_test=False):
         if protocol not in ('telnet', 'ssh', 'serial'):
             raise ValueError("Unsupported protocol " + protocol)
         self._proxy = None

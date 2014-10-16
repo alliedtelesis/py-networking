@@ -8,7 +8,7 @@ import os
 
 try:
     from collections import OrderedDict
-except ImportError: #pragma: no cover
+except ImportError:  # pragma: no cover
     from ordereddict import OrderedDict
 
 
@@ -21,7 +21,6 @@ class awp_license(Feature):
         self._d = device
         self._license = {}
 
-
     def set_license(self, label='', key='', certificate=''):
         self._d.log_info("set license")
         self._update_license()
@@ -33,10 +32,10 @@ class awp_license(Feature):
         if (certificate == ''):
             set_cmd = 'license {0} {1}'.format(label, key)
 
-            cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
-                            {'cmd': set_cmd , 'prompt':''  },
-                            {'cmd': 'y'     , 'prompt':'\#'}
-                           ]}
+            cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
+                             {'cmd': set_cmd, 'prompt': ''},
+                             {'cmd': 'y', 'prompt': '\#'}
+                             ]}
         else:
             protocol = certificate.split('://')[0]
             if (protocol != certificate):
@@ -47,25 +46,24 @@ class awp_license(Feature):
                     self._d.log_debug("Certificate file url given")
                     set_cmd = 'license certificate {0}'.format(certificate)
 
-                    cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
-                                    {'cmd': set_cmd , 'prompt':''  },
-                                    {'cmd': 'y'     , 'prompt':'\#'}
-                                   ]}
+                    cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
+                                     {'cmd': set_cmd, 'prompt': ''},
+                                     {'cmd': 'y', 'prompt': '\#'}
+                                     ]}
             else:
                 # Certificate file on board
-                if (os.path.exists(certificate) == False):
+                if (os.path.exists(certificate) is False):
                     raise KeyError('Certificate file {0} is unexisting', certificate)
                 filename = certificate.split('/')[-1]
                 self._d.file.create(name=filename, filename=certificate)
                 set_cmd = 'license certificate {0}'.format(filename)
-                cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
-                                {'cmd': set_cmd , 'prompt':''  },
-                                {'cmd': 'y'     , 'prompt':'\#'}
-                               ]}
+                cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
+                                 {'cmd': set_cmd, 'prompt': ''},
+                                 {'cmd': 'y', 'prompt': '\#'}
+                                 ]}
 
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._update_license()
-
 
     def delete(self, label):
         self._d.log_info("remove license {0}".format(label))
@@ -75,31 +73,27 @@ class awp_license(Feature):
             raise KeyError('label {0} is not existing'.format(label))
 
         delete_cmd = 'no license {0}'.format(label)
-        cmds = {'cmds':[{'cmd': 'enable'  , 'prompt':'\#'},
-                        {'cmd': delete_cmd, 'prompt':''  },
-                        {'cmd': 'y'       , 'prompt':'\#'}
-                       ]}
+        cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
+                         {'cmd': delete_cmd, 'prompt': ''},
+                         {'cmd': 'y', 'prompt': '\#'}
+                         ]}
 
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._update_license()
-
 
     def items(self):
         self._update_license()
         return self._license.items()
 
-
     def keys(self):
         self._update_license()
         return self._license.keys()
-
 
     def __getitem__(self, label):
         self._update_license()
         if label in self._license.keys():
             return self._license[label]
         raise KeyError('license {0} does not exist'.format(label))
-
 
     def _update_license(self):
         self._d.log_info("_update_license")
@@ -135,7 +129,7 @@ class awp_license(Feature):
                            '\s+License\s+issue\s+date\s+:\s+(?P<issue>[^\s]+)\s+'
                            '\s+License\s+expiry\s+date\s+:\s+(?P<expire>[^\s]+)\s+'
                            '\s+Features\s+included\s+:\s+(?P<list>[^\n\r]+)\s+'
-                          )
+                           )
         ifre2 = re.compile('\s+(?P<index>\d+)\s+'
                            '\s+License\s+name\s+:\s+(?P<name>[^\n]+)\s+'
                            '\s+Customer\s+name\s+:\s+(?P<customer>[^\n]+)\s+'
@@ -144,7 +138,7 @@ class awp_license(Feature):
                            '\s+License\s+issue\s+date\s+:\s+(?P<issue>[^\s]+)\s+'
                            '\s+License\s+expiry\s+date\s+:\s+(?P<expire>[^\s]+)\s+'
                            '\s+Release\s+:\s+(?P<version>[^\n\r]+)\s+'
-                          )
+                           )
         for line in self._device.cmd("show license").split('Index                         :'):
             self._d.log_debug("\nLine {0}".format(line))
             m = ifre1.match(line)
@@ -163,7 +157,7 @@ class awp_license(Feature):
                                       'expire_date': m.group('expire'),
                                       'features': fflist,
                                       'releases': ''
-                                     }
+                                      }
             m = ifre2.match(line)
             if m:
                 key = m.group('name')
@@ -174,5 +168,5 @@ class awp_license(Feature):
                                       'expire_date': m.group('expire'),
                                       'features': '',
                                       'releases': m.group('version')
-                                     }
+                                      }
         self._d.log_debug("License {0}".format(pformat(json.dumps(self._license))))

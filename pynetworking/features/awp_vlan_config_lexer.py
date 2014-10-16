@@ -2,11 +2,12 @@
 import re
 import ply.lex as lex
 
+
 class VlanConfigLexer(object):
     states = (
-        ('vlandb','exclusive'),
-        ('vlanid','exclusive'),
-        ('vlanrange','exclusive'),
+        ('vlandb', 'exclusive'),
+        ('vlanid', 'exclusive'),
+        ('vlanrange', 'exclusive'),
     )
 
     tokens = (
@@ -30,25 +31,25 @@ class VlanConfigLexer(object):
 
     def t_vlandb_VLAN_RANGE(self, t):
         r'vlan\s+\d+\-\d+'
-        t.value = re.split('\s+',t.value)[1]
+        t.value = re.split('\s+', t.value)[1]
         t.lexer.push_state('vlanrange')
         t.lexer.id = t.value
 
     def t_vlandb_VLAN_LIST(self, t):
         r'vlan\s+\d+(\,\d+)+'
-        t.value = re.split('\s+',t.value)[1]
+        t.value = re.split('\s+', t.value)[1]
         t.lexer.push_state('vlanrange')
         t.lexer.id = t.value
 
     def t_vlandb_VLAN_ID(self, t):
         r'vlan\s+\d+'
-        t.value = re.split('\s+',t.value)[1]
+        t.value = re.split('\s+', t.value)[1]
         t.lexer.push_state('vlanid')
         t.lexer.id = t.value
 
     def t_vlanid_name(self, t):
         r'name\s+(\"[^\"]*\"|\w+)'
-        v = re.split('\s+',t.value,maxsplit=1)
+        v = re.split('\s+', t.value, maxsplit=1)
         if v[1].startswith('"') and v[1].endswith('"'):
             t.value = (t.lexer.id, v[1][1:-1])
         else:
@@ -57,12 +58,12 @@ class VlanConfigLexer(object):
 
     def t_vlanid_vlanrange_mtu(self, t):
         r'mtu\s+[0-9]+'
-        t.value = (t.lexer.id, int(re.split('\s+',t.value)[1]))
+        t.value = (t.lexer.id, int(re.split('\s+', t.value)[1]))
         return t
 
     def t_vlanid_vlanrange_state(self, t):
         r'state\s+(enable|disable)'
-        t.value = (t.lexer.id, re.split('\s+',t.value)[1])
+        t.value = (t.lexer.id, re.split('\s+', t.value)[1])
         return t
 
     def t_vlanid_vlanrange_newline(self, t):
@@ -74,9 +75,9 @@ class VlanConfigLexer(object):
         r'\n+'
         t.lexer.lineno += len(t.value)
 
-    t_ANY_ignore  = ' \t'
+    t_ANY_ignore = ' \t'
 
-    def   t_INITIAL_SKIP(self,t):
+    def t_INITIAL_SKIP(self, t):
         r'[a-z].*'
         pass
 
@@ -84,7 +85,7 @@ class VlanConfigLexer(object):
         r'!.*'
         pass
 
-    def t_ANY_error(self, t): #pragma: no cover
+    def t_ANY_error(self, t):  # pragma: no cover
         t.lexer.skip(1)
 
     def __init__(self):
@@ -95,8 +96,8 @@ class VlanConfigLexer(object):
         result = {}
         for tok in self.lexer:
             if tok.value[0] in result.keys():
-                result[tok.value[0]][tok.type]=tok.value[1]
+                result[tok.value[0]][tok.type] = tok.value[1]
             else:
-                result[tok.value[0]] = {tok.type:tok.value[1]}
+                result[tok.value[0]] = {tok.type: tok.value[1]}
 
         return result

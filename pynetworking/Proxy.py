@@ -11,7 +11,7 @@ from pynetworking.utils import Cache, CacheMissException
 
 # suppress logging from paramiko module
 import logging
-log=logging.getLogger('paramiko').setLevel(logging.CRITICAL)
+log = logging.getLogger('paramiko').setLevel(logging.CRITICAL)
 
 
 class ProxyException(Exception):
@@ -19,20 +19,20 @@ class ProxyException(Exception):
 
 
 def SSHProxy(device):
-    device.log_info("starting SSHProxy on {0} for device {1}:{2}".format(device._proxy_url, device._host,device._port))
+    device.log_info("starting SSHProxy on {0} for device {1}:{2}".format(device._proxy_url, device._host, device._port))
     context = zmq.Context()
     zmq_s = context.socket(zmq.REP)
     zmq_s.bind(device._proxy_url)
     zmq_p = zmq.Poller()
     zmq_p.register(zmq_s, zmq.POLLIN)
     cache = Cache()
-    if device._port=='auto':
+    if device._port == 'auto':
         port = 22
     else:
         port = device._port
 
     # connect to host
-    ret = {'status':'Success','output':""}
+    ret = {'status': 'Success', 'output': ""}
     try:
         device.log_info("connecting to {0}:{1}".format(device.host, port))
         device_s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -40,7 +40,7 @@ def SSHProxy(device):
         device_s.connect((device.host, port))
     except:
         device.log_warn("cannot connect to {0}:{1} ({2})".format(device.host, port, sys.exc_info()[0]))
-        ret = {'status':'Error','output':"cannot connect to {0}:{1} ({2})".format(device.host, port, sys.exc_info()[0])}
+        ret = {'status': 'Error', 'output': "cannot connect to {0}:{1} ({2})".format(device.host, port, sys.exc_info()[0])}
 
     # open a transport
     if ret['status'] == 'Success':
@@ -50,7 +50,7 @@ def SSHProxy(device):
             t.start_client()
         except SSHException:
             device.log_warn("cannot open a ssh transport to {0}:{1}".format(device.host, port))
-            ret = {'status':'Error','output':"cannot open a ssh transport to {0}:{1}".format(device.host, port)}
+            ret = {'status': 'Error', 'output': "cannot open a ssh transport to {0}:{1}".format(device.host, port)}
 
     # try to authenticate with username and password
     if ret['status'] == 'Success':
@@ -66,7 +66,7 @@ def SSHProxy(device):
                 device.log_debug("none authentication succeed")
             except:
                 device.log_warn("authentication failed")
-                ret = {'status':'Error','output':"authentication failed"}
+                ret = {'status': 'Error', 'output': "authentication failed"}
 
     # getting shell to device
     if ret['status'] == 'Success':
@@ -82,28 +82,28 @@ def SSHProxy(device):
                 sleep(1)
                 if 'Password:' in chan.recv(999):
                     chan.send(device.password + '\n')
-                _get_reply(device, chan,r'\n[\w\_]+\#')
+                _get_reply(device, chan, r'\n[\w\_]+\#')
         except SSHException:
             device.log_warn("SSHException {0}", sys.exc_info()[0])
-            ret = {'status':'Error','output':"SSHException {0}".format(sys.exc_info()[0])}
+            ret = {'status': 'Error', 'output': "SSHException {0}".format(sys.exc_info()[0])}
         except ProxyException:
             device.log_warn("ProxyException ({0})", sys.exc_info()[0])
-            ret = {'status':'Error','output':"ProxyException ({0})".format(sys.exc_info()[0])}
+            ret = {'status': 'Error', 'output': "ProxyException ({0})".format(sys.exc_info()[0])}
 
     device.log_info("ready to accept commands")
     while True:
         # getting command to execute
         if len(zmq_p.poll(device._proxy_connection_timeout)) == 0:
-             device.log_info("shutting down proxy")
-             chan.close()
-             sys.exit(0)
+            device.log_info("shutting down proxy")
+            chan.close()
+            sys.exit(0)
 
         cmd = json.loads(zmq_s.recv(zmq.NOBLOCK))
         device.log_debug("execute commands {0}".format(cmd))
 
         if 'cmds' not in cmd and 'cmd' not in cmd['cmds'][0]:
             device.log_warn("commands missing in zmq message")
-            ret = {'status':'Error','output':'missing cmd'}
+            ret = {'status': 'Error', 'output': 'missing cmd'}
             zmq_s.send_string(json.dumps(ret))
             continue
 
@@ -113,30 +113,30 @@ def SSHProxy(device):
             if pcmd == '_exit':
                 device.log_info("shutting down proxy")
                 chan.close()
-                ret = {'status':'Success','output':'shutting down proxy'}
+                ret = {'status': 'Success', 'output': 'shutting down proxy'}
                 zmq_s.send_string(json.dumps(ret))
                 exit(0)
             elif pcmd == '_ping':
                 device.log_info("ping proxy")
-                ret = {'status':'Success','output':'pong'}
+                ret = {'status': 'Success', 'output': 'pong'}
             elif pcmd == '_status':
                 device.log_info("proxy status")
                 if ret['status'] == 'Error':
                     zmq_s.send_string(json.dumps(ret))
                     sleep(0.5)
                     exit(1)
-                ret = {'status':'Success','output':''}
+                ret = {'status': 'Success', 'output': ''}
             elif pcmd == '__flush_cache':
                 device.log_info("flush cache")
                 cache.flush()
-                ret = {'status':'Success','output':''}
+                ret = {'status': 'Success', 'output': ''}
             else:
                 device.log_warn("unknown internal command {0}".format(pcmd))
-                ret = {'status':'Error','output':'unknown command {0}'.format(pcmd)}
+                ret = {'status': 'Error', 'output': 'unknown command {0}'.format(pcmd)}
         else:
             try:
-                out=''
-                ret={'status':'Error','output':'Unknown Error'}
+                out = ''
+                ret = {'status': 'Error', 'output': 'Unknown Error'}
                 try:
                     if cmd['cache']:
                         out = cache.get(cmd['cmds'])
@@ -146,7 +146,7 @@ def SSHProxy(device):
                 except CacheMissException:
                     for c in cmd['cmds']:
                         if ('timeout' in c.keys()):
-                            ttimeout = c['timeout']/1000
+                            ttimeout = c['timeout'] / 1000
                             chan.settimeout(ttimeout)
                         else:
                             chan.settimeout(5)
@@ -154,20 +154,21 @@ def SSHProxy(device):
                         if c['cmd'] == chr(26):
                             chan.send(c['cmd'])
                         else:
-                            chan.send(c['cmd']+'\n')
-                        if (('dontwait' in c.keys()) and (c['dontwait'] == True)):
+                            chan.send(c['cmd'] + '\n')
+                        if (('dontwait' in c.keys()) and (c['dontwait'] is True)):
                             break
                         out += _get_reply(device, chan, c['prompt'])
                 if cmd['flush_cache']:
                     device.log_info("flush cache")
                     cache.flush()
                 if cmd['cache']:
-                    cache.set(cmd['cmds'],out)
-                ret = {'status':'Success','output':out}
+                    cache.set(cmd['cmds'], out)
+                ret = {'status': 'Success', 'output': out}
             except ProxyException:
                 device.log_warn("ProxyException")
-                ret = {'status':'Error','output':'ProxyException'}
+                ret = {'status': 'Error', 'output': 'ProxyException'}
         zmq_s.send_string(json.dumps(ret))
+
 
 def _get_reply(device, chan, prompt):
     prompt = '[\n\r]\w*' + prompt
@@ -182,7 +183,7 @@ def _get_reply(device, chan, prompt):
             elif ret != '':
                 buff += ret
                 deadline = time() + 5
-            if re.search(prompt,buff):
+            if re.search(prompt, buff):
                 device.log_debug("got prompt")
                 break
     except socket.timeout:
@@ -194,7 +195,7 @@ def _get_reply(device, chan, prompt):
         device.log_warn("exception waiting a reply or a prompt")
         raise ProxyException("")
 
-    if re.search(prompt,buff):
+    if re.search(prompt, buff):
         return '\n'.join(buff.split('\n')[1:-1])
     else:
         device.log_debug("received >{0}<".format(buff))

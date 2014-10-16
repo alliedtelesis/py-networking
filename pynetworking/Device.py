@@ -27,20 +27,20 @@ class Device(object):
     """ test doc
     """
     def __init__(self, host, username='manager', password='friend', protocol='ssh', port='auto', os='auto',
-                 log_level='NOTSET', log_output='console:', connection_timeout=20):
-        if protocol not in ('telnet','ssh','serial'):
-            raise ValueError("Unsupported protocol "+protocol)
+                 log_level='NOTSET', log_output='console:', connection_timeout=20, unit_test=False):
+        if protocol not in ('telnet', 'ssh', 'serial'):
+            raise ValueError("Unsupported protocol " + protocol)
         self._proxy = None
         self._proxy_ipc_file = NamedTemporaryFile().name
         self._proxy_url = "ipc://{0}".format(self._proxy_ipc_file)
-        self._proxy_connection_timeout=connection_timeout*1000
+        self._proxy_connection_timeout = connection_timeout * 1000
         self._host = host
         self._username = username
         self._password = password
         self._protocol = protocol
         self._port = port
 
-        self._unittest = False
+        self._unittest = unit_test
 
         self._log_level = getattr(logging, log_level.upper())
         hdl = logging.StreamHandler()
@@ -106,9 +106,8 @@ class Device(object):
             self.log_debug("ping down")
             return False
 
-
     def open(self):
-        if self._unittest == False:
+        if self._unittest is False:
             self._open()
         else:
             self.log_info("unittest open")
@@ -119,7 +118,7 @@ class Device(object):
             os = mod.__name__.split('_')[-1]
             if feat == os:
                 os = 'awp'
-            if feat == 'device' or os == 'coverage':
+            if os == 'coverage':  # extra tests to cover it all
                 self._open()
                 return
 
@@ -129,43 +128,39 @@ class Device(object):
                 with patch('yaml.load', yaml_load_mocked):
                     yaml_load_mocked.return_value = self._mock_load_features(os=os, feat=feat)
                     load_facts_mocked.side_effect = self._mock_load_facts(os)
-
                     self.cmd({'cmds': [{'cmd': '_status', 'prompt': ''}]})
                     self._load_core_facts()
                     self._load_features()
                     self.load_system()
 
-
     def _open(self):
         self.log_info("open")
-        self.cmd({'cmds':[{'cmd': '_status', 'prompt':''}]})
+        self.cmd({'cmds': [{'cmd': '_status', 'prompt': ''}]})
         self._load_core_facts()
         self._load_features()
         self.load_system()
 
-
     def close(self):
         self.log_info("close")
-        if isinstance(self._proxy,Process) and (isinstance(self._proxy,Process) and self._proxy.is_alive()):
-            self.cmd({'cmds':[{'cmd':'_exit', 'prompt': ''}]})
+        if isinstance(self._proxy, Process) and (isinstance(self._proxy, Process) and self._proxy.is_alive()):
+            self.cmd({'cmds': [{'cmd': '_exit', 'prompt': ''}]})
             self._proxy.join(10)
 
-
     def cmd(self, cmd, use_cache=True, cache=False, flush_cache=False):
-        timeout=12000
+        timeout = 12000
         if type(cmd) is str:
-             self.log_info("executing command '{0}'".format(cmd))
-             cmd = {'cmds':[{'cmd':cmd,'prompt': self.system.shell_prompt()}]}
+            self.log_info("executing command '{0}'".format(cmd))
+            cmd = {'cmds': [{'cmd': cmd, 'prompt': self.system.shell_prompt()}]}
         else:
-             for c in cmd['cmds']:
-                 self.log_info("executing command '{0}' and wait for {1}".format(c['cmd'],repr(c['prompt'])))
-                 if ('timeout' in c.keys()):
-                     timeout += c['timeout']
+            for c in cmd['cmds']:
+                self.log_info("executing command '{0}' and wait for {1}".format(c['cmd'], repr(c['prompt'])))
+                if ('timeout' in c.keys()):
+                    timeout += c['timeout']
 
         if not cmd['cmds'][0]['cmd'].startswith('_'):
             self.log_info("adding shell initialization commands")
             try:
-                cmd['cmds'] = self.system.shell_init()+cmd['cmds']
+                cmd['cmds'] = self.system.shell_init() + cmd['cmds']
             except:
                 self.log_info("no shell init {0}".format(sys.exc_info()[0]))
 
@@ -178,7 +173,7 @@ class Device(object):
             skt = context.socket(zmq.REQ)
             skt.setsockopt(zmq.LINGER, 1000)
             skt.connect(self._proxy_url)
-            skt.send_string(json.dumps(cmd),zmq.NOBLOCK)
+            skt.send_string(json.dumps(cmd), zmq.NOBLOCK)
 
             poller = zmq.Poller()
             poller.register(skt, zmq.POLLIN)
@@ -198,19 +193,18 @@ class Device(object):
             self.log_warn("ZMQError {0}".format(repr(e)))
             raise DeviceException("ZMQError {0}".format(repr(e)))
 
-
     def _load_core_facts(self):
         self.log_info("loading core facts")
         facts_dir = "{0}/facts/".format(dirname(__file__))
         cf_re = re.compile('^core_[^\.]+.py$')
-        cfs = [f.split(".")[0] for f in listdir(facts_dir) if isfile(join(facts_dir,f)) and cf_re.search(f)]
+        cfs = [f.split(".")[0] for f in listdir(facts_dir) if isfile(join(facts_dir, f)) and cf_re.search(f)]
         for cf in cfs:
             self.log_info("fact file {0}".format(cf))
             try:
                 f = __import__('pynetworking.facts.{0}'.format(cf))
-                for comp in ('facts',cf,cf):
+                for comp in ('facts', cf, cf):
                     f = getattr(f, comp)
-                self._facts =  dict(self._facts.items() + f(self).items())
+                self._facts = dict(self._facts.items() + f(self).items())
                 self.log_info("core facts loaded \n{0}".format(pformat(self._facts)))
                 if 'os' in self._facts:
                     break
@@ -223,30 +217,29 @@ class Device(object):
                 self.close()
                 raise DeviceException("device not supported")
 
-
     def _load_features(self):
         self.log_info("loading features")
         self._features = {}
         with open("{0}/Device.yaml".format(dirname(__file__)), 'r') as f:
             self._models = yaml.load(Template(f.read()).render(self._facts))
             self.log_debug("models {0}".format(self._models))
-        if self._models == None:
+        if self._models is None:
             self.log_warn("no features loaded")
-            self._models = {'features':{}}
-        elif self._models['features'] == None:
+            self._models = {'features': {}}
+        elif self._models['features'] is None:
             self.log_warn("no features loaded")
             self._models['features'] = {}
-        for fname,fclass in self._models['features'].items():
-            self.log_info("loading feature {0}/{1}".format(fname,fclass))
+        for fname, fclass in self._models['features'].items():
+            self.log_info("loading feature {0}/{1}".format(fname, fclass))
             try:
                 m = __import__('pynetworking.features.{0}'.format(fclass))
-                for comp in ('features',fclass,fclass):
+                for comp in ('features', fclass, fclass):
                     m = getattr(m, comp)
                 o = m(self)
                 setattr(self, fname, o)
                 self._features[fname] = o
             except:
-                self.log_critical("Error loading class {1} for feature {0}".format(fname,fclass))
+                self.log_critical("Error loading class {1} for feature {0}".format(fname, fclass))
                 raise
 
     def load_system(self):
@@ -256,7 +249,7 @@ class Device(object):
             try:
                 self.log_info("loading system module {0}".format(self._models['system']))
                 m = __import__('pynetworking.system.{0}'.format(self._models['system']))
-                for comp in ('system',self._models['system'],self._models['system']):
+                for comp in ('system', self._models['system'], self._models['system']):
                     m = getattr(m, comp)
                 o = m(self)
                 setattr(self, 'system', o)
@@ -268,25 +261,23 @@ class Device(object):
 
         cfg = self.system.get_config()
         self.log_debug("device configuration\n{0}".format(cfg))
-        for fname,fobj in self._features.items():
+        for fname, fobj in self._features.items():
             fobj.load_config(cfg)
 
-
     def log_debug(self, msg):
-        self._logger(msg,'debug')
+        self._logger(msg, 'debug')
 
     def log_info(self, msg):
-        self._logger(msg,'info')
+        self._logger(msg, 'info')
 
     def log_warn(self, msg):
-        self._logger(msg,'warn')
+        self._logger(msg, 'warn')
 
     def log_error(self, msg):
-        self._logger(msg,'error')
+        self._logger(msg, 'error')
 
     def log_critical(self, msg):
-        self._logger(msg,'critical')
-
+        self._logger(msg, 'critical')
 
     def _logger(self, msg, level):
         (frame, filename, lineno, function_name, lines, index) = inspect.getouterframes(inspect.currentframe())[2]
@@ -296,33 +287,23 @@ class Device(object):
         if self._log_level != 0:
             getattr(log, level)(msg)
 
-
     def _start_proxy(self):
         self.log_debug("_start_proxy")
-        if not isinstance(self._proxy,Process) or (isinstance(self._proxy,Process) and not self._proxy.is_alive()):
+        if not isinstance(self._proxy, Process) or (isinstance(self._proxy, Process) and not self._proxy.is_alive()):
             self.log_info("creating proxy process {0} with zmq url {1}".format('cq-{0}'.format(self._host), self._proxy_url))
-            self._proxy = Process(name='cq-{0}'.format(self._host),
-                              target=self._proxy_target,
-                              args=(self,)
-                            )
+            self._proxy = Process(name='cq-{0}'.format(self._host), target=self._proxy_target, args=(self,))
             self._proxy.start()
             sleep(1)
             self.log_debug("proxy process started")
 
-
     def _mock_load_features(self, os, feat):
-        # comment test_openclose3 and test_firmware_upgrade_544_unlicensed ---> 42 seconds vs 142
-        # if feat == 'device' and os == 'awp':
-        #     return {'system': os + '_system', 'features': {'file': os + '_file', 'vlan': os + '_vlan'}}
-        # comment test_facts_1 and test_facts_2 ---> 8 seconds vs 18
-        # if feat == 'device' and os == 'ats':
-        #     return {'system': os + '_system', 'features': {'file': os + '_file', 'vlan': os + '_vlan'}}
+        if feat == 'device':
+            return {'system': os + '_system', 'features': {'file': os + '_file', 'vlan': os + '_vlan'}}
         if feat == 'license':
             return {'system': os + '_system', 'features': {'license': os + '_license', 'file': os + '_file'}}
         if feat == 'vlan' and os == 'ats':
             return {'system': os + '_system', 'features': {'interface': os + '_interface', 'vlan': os + '_vlan'}}
         return {'system': os + '_system', 'features': {feat: os + '_' + feat}}
-
 
     def _mock_load_facts(self, os):
         if (os == 'ats'):

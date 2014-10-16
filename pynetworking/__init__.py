@@ -3,17 +3,17 @@ import warnings
 
 # All salt related deprecation warnings should be shown once each!
 warnings.filterwarnings(
-     'once', # Show once
-     '', # No deprecation message match
-      DeprecationWarning, # This filter is for DeprecationWarnings
-      r'^(pynetworking|pynetworking\.(.*))$' # Match module(s) 'pynetworking' and 'pynetworking.<whatever>'
+    'once',  # Show once
+    '',  # No deprecation message match
+    DeprecationWarning,  # This filter is for DeprecationWarnings
+    r'^(pynetworking|pynetworking\.(.*))$'  # Match module(s) 'pynetworking' and 'pynetworking.<whatever>'
 )
 
 # While we are supporting Python2.6, hide nested with-statements warnings
 warnings.filterwarnings(
-      'ignore',
-      'With-statements now directly support multiple context managers',
-      DeprecationWarning
+    'ignore',
+    'With-statements now directly support multiple context managers',
+    DeprecationWarning
 )
 
 from pynetworking.Proxy import SSHProxy

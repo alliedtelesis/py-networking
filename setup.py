@@ -134,8 +134,8 @@ setup(name             = 'py-networking',
                             'twisted',
                             'tox'
                          ],
-      url              = 'http://www.py-networking.com',
-      classifiers      = [
+      url = 'http://www.py-networking.com',
+      classifiers = [
          'Development Status :: 1 - Planning',
          'Intended Audience :: System Administrators',
          'Intended Audience :: Telecommunications Industry',
@@ -146,7 +146,3 @@ setup(name             = 'py-networking',
          'Topic :: System :: Networking'
        ]
       )
-
-
-
-

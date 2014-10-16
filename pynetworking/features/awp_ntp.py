@@ -6,7 +6,7 @@ import re
 import json
 try:
     from collections import OrderedDict
-except ImportError: #pragma: no cover
+except ImportError:  # pragma: no cover
     from ordereddict import OrderedDict
 
 
@@ -16,10 +16,9 @@ class awp_ntp(Feature):
     """
     def __init__(self, device, **kvargs):
         Feature.__init__(self, device, **kvargs)
-        self._ntp={}
+        self._ntp = {}
         self._d = device
         self._d.log_debug("loading feature")
-
 
     def load_config(self, config):
         self._d.log_info("loading config")
@@ -32,12 +31,11 @@ class awp_ntp(Feature):
             self._d.log_debug("line is {0}".format(line))
             m = ifre.match(line)
             if m:
-                 key = m.group('address')
-                 self._ntp[key] = {'polltime': 64,
-                                   'status': False
+                key = m.group('address')
+                self._ntp[key] = {'polltime': 64,
+                                  'status': False
                                   }
         self._d.log_info(self._ntp)
-
 
     def create(self, address):
         self._d.log_info("add NTP server {0}".format(address))
@@ -49,13 +47,12 @@ class awp_ntp(Feature):
         set_cmd = 'ntp peer {0}'.format(address)
         cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
                          {'cmd': 'conf t', 'prompt': '\(config\)\#'},
-                         {'cmd': set_cmd , 'prompt': '\(config\)\#'},
-                         {'cmd': chr(26) , 'prompt': '\#'}
-                        ]}
+                         {'cmd': set_cmd, 'prompt': '\(config\)\#'},
+                         {'cmd': chr(26), 'prompt': '\#'}
+                         ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
         sleep(1)
         self._update_ntp()
-
 
     def delete(self, address=''):
         self._d.log_info("remove NTP server {0}".format(address))
@@ -66,39 +63,35 @@ class awp_ntp(Feature):
 
         cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
                          {'cmd': 'conf t', 'prompt': '\(config\)\#'}
-                        ]}
+                         ]}
 
         if address == '':
             ntp_list = self._ntp.keys()
             for i in range(len(ntp_list)):
                 del_cmd = 'no ntp peer {0}'.format(ntp_list[i])
-                cmds['cmds'].append({'cmd': del_cmd ,'prompt':'\(config\)\#'})
+                cmds['cmds'].append({'cmd': del_cmd, 'prompt': '\(config\)\#'})
         else:
             del_cmd = 'no ntp peer {0}'.format(address)
-            cmds['cmds'].append({'cmd': del_cmd ,'prompt':'\(config\)\#'})
+            cmds['cmds'].append({'cmd': del_cmd, 'prompt': '\(config\)\#'})
 
-        cmds['cmds'].append({'cmd': chr(26) , 'prompt': '\#'})
+        cmds['cmds'].append({'cmd': chr(26), 'prompt': '\#'})
         self._device.cmd(cmds, cache=False, flush_cache=True)
         sleep(1)
         self._update_ntp()
-
 
     def items(self):
         self._update_ntp()
         return self._ntp.items()
 
-
     def keys(self):
         self._update_ntp()
         return self._ntp.keys()
-
 
     def __getitem__(self, address):
         self._update_ntp()
         if address not in self._ntp.keys():
             raise KeyError('NTP server {0} does not exist'.format(address))
         return self._ntp[address]
-
 
     def _update_ntp(self):
         self._d.log_info("_update_ntp")
@@ -132,5 +125,5 @@ class awp_ntp(Feature):
                 key = m.group('address')
                 self._ntp[key] = {'polltime': m.group('polltime'),
                                   'status': status
-                                 }
+                                  }
         self._d.log_debug("ntp {0}".format(pformat(json.dumps(self._ntp))))

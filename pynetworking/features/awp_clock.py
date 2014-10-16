@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 
 try:
     from collections import OrderedDict
-except ImportError: #pragma: no cover
+except ImportError:  # pragma: no cover
     from ordereddict import OrderedDict
 
 
@@ -29,10 +29,10 @@ class awp_clock(Feature):
     def update(self, datetime=None, timezone=None):
         self._d.log_info("update")
 
-        if (datetime == None and timezone == None):
+        if (datetime is None and timezone is None):
             raise KeyError('either datetime or timezone argument must be given')
 
-        if (datetime != None):
+        if (datetime is not None):
             # set date and time
             hh = datetime.strftime('%H')
             mm = datetime.strftime('%M')
@@ -43,18 +43,18 @@ class awp_clock(Feature):
 
             # clock set 14:00:00 25 Jan 2008
             set_cmd = "clock set {0}:{1}:{2} {3} {4} {5}".format(hh, mm, ss, day, month, year)
-            cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
-                            {'cmd': 'conf t', 'prompt':'\(config\)\#'},
-                            {'cmd': set_cmd , 'prompt':'\(config\)\#'},
-                            {'cmd': chr(26) , 'prompt':'\#'},
-                           ]}
+            cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
+                             {'cmd': 'conf t', 'prompt': '\(config\)\#'},
+                             {'cmd': set_cmd, 'prompt': '\(config\)\#'},
+                             {'cmd': chr(26), 'prompt': '\#'}
+                             ]}
 
             self._device.cmd(cmds, cache=False, flush_cache=True)
 
-        if (timezone != None):
+        if (timezone is not None):
             # set the timezone
             loc_now = self._now()
-            if datetime != None:
+            if datetime is not None:
                 loc_now = datetime
             loc_dt = timezone.localize(loc_now)
             tz_name = loc_dt.strftime('%Z')
@@ -65,7 +65,6 @@ class awp_clock(Feature):
                 off_h = offset[2:3]
             else:
                 off_h = offset[1:3]
-            off_m = offset[3:5]
 
             if sign == '-':
                 sign_key = 'minus'
@@ -78,19 +77,19 @@ class awp_clock(Feature):
             # set the DST rules
             begin_dst = self._get_begin_dst(timezone, loc_dt)
             end_dst = self._get_end_dst(timezone, loc_dt)
-            if (begin_dst != None and end_dst != None):
+            if (begin_dst is not None and end_dst is not None):
                 hh = int(begin_dst.strftime('%H')) - 1
                 mm = begin_dst.strftime('%M')
-                bt = "{0}:{1}".format(hh,mm)
+                bt = "{0}:{1}".format(hh, mm)
                 bd = begin_dst.strftime('%a')
-                bw = str((int(begin_dst.strftime('%d')) - 1)/7 + 1)
+                bw = str((int(begin_dst.strftime('%d')) - 1) / 7 + 1)
                 bm = begin_dst.strftime('%b')
 
                 hh = int(end_dst.strftime('%H'))
                 mm = end_dst.strftime('%M')
-                et = "{0}:{1}".format(hh,mm)
+                et = "{0}:{1}".format(hh, mm)
                 ed = end_dst.strftime('%a')
-                ew = str((int(end_dst.strftime('%d')) - 1)/7 + 1)
+                ew = str((int(end_dst.strftime('%d')) - 1) / 7 + 1)
                 em = end_dst.strftime('%b')
 
                 om = '60'
@@ -100,27 +99,24 @@ class awp_clock(Feature):
             else:
                 st_cmd = "no clock summer-time"
 
-            cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
-                            {'cmd': 'conf t', 'prompt':'\(config\)\#'},
-                            {'cmd': tz_cmd  , 'prompt':'\(config\)\#'},
-                            {'cmd': st_cmd  , 'prompt':'\(config\)\#'},
-                            {'cmd': chr(26) , 'prompt':'\#'},
-                           ]}
+            cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
+                             {'cmd': 'conf t', 'prompt': '\(config\)\#'},
+                             {'cmd': tz_cmd, 'prompt': '\(config\)\#'},
+                             {'cmd': st_cmd, 'prompt': '\(config\)\#'},
+                             {'cmd': chr(26), 'prompt': '\#'},
+                             ]}
 
             self._device.cmd(cmds, cache=False, flush_cache=True)
 
         self._update_clock()
 
-
     def items(self):
         self._update_clock()
         return self._clock.items()
 
-
     def keys(self):
         self._update_clock()
         return self._clock.keys()
-
 
     def __getitem__(self, id):
         self._update_clock()
@@ -128,10 +124,8 @@ class awp_clock(Feature):
             return self._clock[id]
         raise KeyError('data {0} does not exist'.format(id))
 
-
     def _now(self):
         return datetime.now()
-
 
     def _update_clock(self):
         self._d.log_info("_update_clock")
@@ -147,14 +141,14 @@ class awp_clock(Feature):
         # Summer time offset: 60 mins
         # Summer time recurring: Yes
         ifre1 = re.compile('(\s|'')+Local\s+Time:\s+(?P<local_time>[^\n]+)\s+'
-                          '\s+UTC\s+Time:\s+(?P<utc_time>[^\n]+)\s+'
-                          '\s+Timezone:\s+(?P<tz_name>[^\n]+)\s+'
-                          '\s+Timezone\s+Offset:\s+(?P<timezone_offset>[^\s]+)\s+'
-                          '\s+Summer\s+time\s+zone:\s+(?P<st_zone>[^\s]+)\s+'
-                          '\s+Summer\s+time\s+starts:\s+(?P<st_start>[^\n]+)\s+'
-                          '\s+Summer\s+time\s+ends:\s+(?P<st_stop>[^\n]+)\s+'
-                          '\s+Summer\s+time\s+offset:\s+(?P<st_offset>\d+)\s+mins\s+'
-                          '\s+Summer\s+time\s+recurring:\s+Yes')
+                           '\s+UTC\s+Time:\s+(?P<utc_time>[^\n]+)\s+'
+                           '\s+Timezone:\s+(?P<tz_name>[^\n]+)\s+'
+                           '\s+Timezone\s+Offset:\s+(?P<timezone_offset>[^\s]+)\s+'
+                           '\s+Summer\s+time\s+zone:\s+(?P<st_zone>[^\s]+)\s+'
+                           '\s+Summer\s+time\s+starts:\s+(?P<st_start>[^\n]+)\s+'
+                           '\s+Summer\s+time\s+ends:\s+(?P<st_stop>[^\n]+)\s+'
+                           '\s+Summer\s+time\s+offset:\s+(?P<st_offset>\d+)\s+mins\s+'
+                           '\s+Summer\s+time\s+recurring:\s+Yes')
 
         # Local Time: Fri, 19 Sep 2014 17:04:20 +0800
         # UTC Time:   Fri, 19 Sep 2014 09:04:20 +0000
@@ -162,10 +156,10 @@ class awp_clock(Feature):
         # Timezone Offset: +08:00
         # Summer time zone: None
         ifre2 = re.compile('(\s|'')+Local\s+Time:\s+(?P<local_time>[^\n]+)\s+'
-                          '\s+UTC\s+Time:\s+(?P<utc_time>[^\n]+)\s+'
-                          '\s+Timezone:\s+(?P<tz_name>[^\n]+)\s+'
-                          '\s+Timezone\s+Offset:\s+(?P<timezone_offset>[^\s]+)\s+'
-                          '\s+Summer\s+time\s+zone:\s+None\s+')
+                           '\s+UTC\s+Time:\s+(?P<utc_time>[^\n]+)\s+'
+                           '\s+Timezone:\s+(?P<tz_name>[^\n]+)\s+'
+                           '\s+Timezone\s+Offset:\s+(?P<timezone_offset>[^\s]+)\s+'
+                           '\s+Summer\s+time\s+zone:\s+None\s+')
 
         output = self._device.cmd("show clock")
         m = ifre1.match(output)
@@ -177,7 +171,7 @@ class awp_clock(Feature):
                            'summertime_start': m.group('st_start'),
                            'summertime_end': m.group('st_stop'),
                            'summertime_offset': m.group('st_offset')
-                          }
+                           }
         else:
             m = ifre2.match(output)
             if m:
@@ -188,13 +182,11 @@ class awp_clock(Feature):
                                'summertime_start': '',
                                'summertime_end': '',
                                'summertime_offset': ''
-                              }
+                               }
         self._d.log_debug("File {0}".format(pformat(json.dumps(self._clock))))
-
 
     def _get_begin_dst(self, tz, dt):
         tt = tz._utc_transition_times
-        offset = dt.hour
         year = dt.year
         ret = None
 
@@ -202,22 +194,20 @@ class awp_clock(Feature):
             if tt[index].year >= year:
                 # search the maximum day value so to detect whether or not the day is in week 5
                 utc = pytz.utc
-                utc_dt = datetime(tt[index].year, tt[index].month, tt[index].day, tt[index].hour + 1, tt[index].minute + 1, tzinfo = utc)
+                utc_dt = datetime(tt[index].year, tt[index].month, tt[index].day, tt[index].hour + 1, tt[index].minute + 1, tzinfo=utc)
                 temp_dt = utc_dt.astimezone(tz)
-                if temp_dt.dst() == timedelta(0) or tt[index+2].day > tt[index].day or tt[index-2].day > tt[index].day:
+                if temp_dt.dst() == timedelta(0) or tt[index + 2].day > tt[index].day or tt[index - 2].day > tt[index].day:
                     continue
                 self._d.log_debug("DST start is {0} (index {1})".format(tt[index], index))
-                a_tt = datetime(tt[index].year, tt[index].month, tt[index].day, tt[index].hour, tt[index].minute, tzinfo = utc)
+                a_tt = datetime(tt[index].year, tt[index].month, tt[index].day, tt[index].hour, tt[index].minute, tzinfo=utc)
                 ret_tt = a_tt.astimezone(tz)
                 ret = ret_tt
                 break
 
         return ret
 
-
     def _get_end_dst(self, tz, dt):
         tt = tz._utc_transition_times
-        offset = dt.hour
         year = dt.year
         ret = None
 
@@ -225,14 +215,14 @@ class awp_clock(Feature):
             if tt[index].year >= year:
                 # search the maximum day value so to detect whether or not the day is in week 5
                 utc = pytz.utc
-                utc_dt = datetime(tt[index].year, tt[index].month, tt[index].day, tt[index].hour + 1, tt[index].minute + 1, tzinfo = utc)
+                utc_dt = datetime(tt[index].year, tt[index].month, tt[index].day, tt[index].hour + 1, tt[index].minute + 1, tzinfo=utc)
                 temp_dt = utc_dt.astimezone(tz)
-                if temp_dt.dst() != timedelta(0) or tt[index+2].day > tt[index].day or tt[index-2].day > tt[index].day:
+                if temp_dt.dst() != timedelta(0) or tt[index + 2].day > tt[index].day or tt[index - 2].day > tt[index].day:
                     continue
                 self._d.log_debug("DST end is {0} (index {1})".format(tt[index], index))
 
                 # adjustment due to DST time
-                a_tt = datetime(tt[index].year, tt[index].month, tt[index].day, tt[index].hour + 1, tt[index].minute, tzinfo = utc)
+                a_tt = datetime(tt[index].year, tt[index].month, tt[index].day, tt[index].hour + 1, tt[index].minute, tzinfo=utc)
                 ret_tt = a_tt.astimezone(tz)
                 ret = ret_tt
                 break

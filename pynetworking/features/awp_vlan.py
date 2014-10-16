@@ -7,14 +7,15 @@ from pprint import pformat
 import re
 import json
 
+
 class awp_vlan(Feature):
     """
     Vlan feature implementation for AWP
     """
     def __init__(self, device, **kvargs):
         Feature.__init__(self, device, **kvargs)
-        self._vlan_config={}
-        self._vlan={}
+        self._vlan_config = {}
+        self._vlan = {}
         self._d = device
         self._d.log_debug("loading feature")
 
@@ -26,12 +27,12 @@ class awp_vlan(Feature):
         self._interface_config = l.run(config)
 
     def create(self, vlan_id, **kwargs):
-        self._d.log_info("create {0} {1}".format(vlan_id,pformat(kwargs)))
+        self._d.log_info("create {0} {1}".format(vlan_id, pformat(kwargs)))
         self._update_vlan()
-        cmds = {'cmds':[{'cmd': 'enable',               'prompt':'\#'},
-                        {'cmd': 'conf t',               'prompt':'\(config\)\#'},
-                        {'cmd': 'vlan database',        'prompt':'\(config-vlan\)\#'},
-                       ]}
+        cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
+                         {'cmd': 'conf t', 'prompt': '\(config\)\#'},
+                         {'cmd': 'vlan database', 'prompt': '\(config-vlan\)\#'},
+                         ]}
         vlan_cmd = 'vlan {0}'.format(vlan_id)
 
         if len(self._get_vlan_ids(vlan_id)) == 1:
@@ -44,12 +45,12 @@ class awp_vlan(Feature):
             if kwargs['state'] == 'enable' or kwargs['state'] == 'disable':
                 vlan_cmd += " state {0}".format(kwargs['state'])
             else:
-                raise ValueError("{0} is and invalid vlan state".format(kwargs['state'])) 
-        
-        cmds['cmds'].append({'cmd': vlan_cmd,             'prompt':'\(config-vlan\)\#'})
+                raise ValueError("{0} is and invalid vlan state".format(kwargs['state']))
+
+        cmds['cmds'].append({'cmd': vlan_cmd, 'prompt': '\(config-vlan\)\#'})
         if 'mtu' in kwargs:
-            cmds['cmds'].append({'cmd': "vlan {0} mtu {1}".format(vlan_id, int(kwargs['mtu'])), 'prompt':'\(config-vlan\)\#'})
-        cmds['cmds'].append({'cmd': chr(26),              'prompt':'\#'})
+            cmds['cmds'].append({'cmd': "vlan {0} mtu {1}".format(vlan_id, int(kwargs['mtu'])), 'prompt': '\(config-vlan\)\#'})
+        cmds['cmds'].append({'cmd': chr(26), 'prompt': '\#'})
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()
 
@@ -57,17 +58,17 @@ class awp_vlan(Feature):
         self._d.log_info("delete {0}".format(vlan_id))
         self._update_vlan()
         self._get_vlan_ids(vlan_id)
-        cmds = {'cmds':[{'cmd': 'enable',                     'prompt':'\#'},
-                        {'cmd': 'conf t',                     'prompt':'\(config\)\#'},
-                        {'cmd': 'vlan database',              'prompt':'\(config-vlan\)\#'},
-                        {'cmd': 'no vlan {0}'.format(vlan_id),'prompt':'\(config-vlan\)\#'},
-                        {'cmd': chr(26),                      'prompt':'\#'},
-                       ]}
+        cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
+                         {'cmd': 'conf t', 'prompt': '\(config\)\#'},
+                         {'cmd': 'vlan database', 'prompt': '\(config-vlan\)\#'},
+                         {'cmd': 'no vlan {0}'.format(vlan_id), 'prompt': '\(config-vlan\)\#'},
+                         {'cmd': chr(26), 'prompt': '\#'},
+                         ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()
 
     def update(self, vlan_id, **kwargs):
-        self._d.log_info("update {0} {1}".format(vlan_id,pformat(kwargs)))
+        self._d.log_info("update {0} {1}".format(vlan_id, pformat(kwargs)))
         self._update_vlan()
         vlan_ids = self._get_vlan_ids(vlan_id)
         existing_vlan_ids = []
@@ -89,31 +90,31 @@ class awp_vlan(Feature):
             raise ValueError('{0} is not a valid vlan id'.format(vid))
 
         ifi = self._get_interface_config(ifn)
-        if not ifi:    
+        if not ifi:
             raise ValueError('{0} is not a valid interface'.format(ifn))
-    
+
         if 'switchport mode' not in ifi:
             raise ValueError('{0} interface does not support vlan'.format(ifn))
 
-        cmds = {'cmds':[{'cmd': 'enable',                    'prompt':'\#'},
-                        {'cmd': 'conf t',                    'prompt':'\(config\)\#'},
-                        {'cmd': 'interface port{0}'.format(ifn), 'prompt':'\(config-if\)\#'},
-                       ]}
+        cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
+                         {'cmd': 'conf t', 'prompt': '\(config\)\#'},
+                         {'cmd': 'interface port{0}'.format(ifn), 'prompt': '\(config-if\)\#'},
+                         ]}
 
-        if ifi['switchport mode'] == 'access' and tagged == False:
-            cmds['cmds'].append({'cmd': 'switchport access vlan {0}'.format(vid) ,'prompt':'\(config-if\)\#'})
-        elif ifi['switchport mode'] == 'access' and tagged == True:
-            ## should copy access vlan to native
-            cmds['cmds'].append({'cmd': 'switchport mode trunk'                             ,'prompt':'\(config-if\)\#'})
-            cmds['cmds'].append({'cmd': 'switchport trunk allowed vlan add {0}'.format(vid) ,'prompt':'\(config-if\)\#'})
-        elif ifi['switchport mode'] == 'trunk' and tagged == False:
-            cmds['cmds'].append({'cmd': 'switchport trunk native vlan {0}'.format(vid) ,'prompt':'\(config-if\)\#'})
-        elif ifi['switchport mode'] == 'trunk' and tagged == True:
-            cmds['cmds'].append({'cmd': 'switchport trunk allowed vlan add {0}'.format(vid) ,'prompt':'\(config-if\)\#'})
+        if ifi['switchport mode'] == 'access' and tagged is False:
+            cmds['cmds'].append({'cmd': 'switchport access vlan {0}'.format(vid), 'prompt': '\(config-if\)\#'})
+        elif ifi['switchport mode'] == 'access' and tagged is True:
+            # should copy access vlan to native
+            cmds['cmds'].append({'cmd': 'switchport mode trunk', 'prompt': '\(config-if\)\#'})
+            cmds['cmds'].append({'cmd': 'switchport trunk allowed vlan add {0}'.format(vid), 'prompt': '\(config-if\)\#'})
+        elif ifi['switchport mode'] == 'trunk' and tagged is False:
+            cmds['cmds'].append({'cmd': 'switchport trunk native vlan {0}'.format(vid), 'prompt': '\(config-if\)\#'})
+        elif ifi['switchport mode'] == 'trunk' and tagged is True:
+            cmds['cmds'].append({'cmd': 'switchport trunk allowed vlan add {0}'.format(vid), 'prompt': '\(config-if\)\#'})
         else:
-            raise ValueError('interface {0} cannot be added to vlan {1}'.format(ifn,vid))
+            raise ValueError('interface {0} cannot be added to vlan {1}'.format(ifn, vid))
 
-        cmds['cmds'].append({'cmd': chr(26),                               'prompt':'\#'})
+        cmds['cmds'].append({'cmd': chr(26), 'prompt': '\#'})
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()
 
@@ -134,25 +135,25 @@ class awp_vlan(Feature):
             if 'untagged' in self._vlan[vid] and ifn in self._vlan[vid]['untagged']:
                 tagged = False
             else:
-                raise ValueError('interface {0} does not belong to vlan {1}'.format(ifn,vid))
+                raise ValueError('interface {0} does not belong to vlan {1}'.format(ifn, vid))
 
-        cmds = {'cmds':[{'cmd': 'enable',                    'prompt':'\#'},
-                        {'cmd': 'conf t',                    'prompt':'\(config\)\#'},
-                        {'cmd': 'interface port{0}'.format(ifn), 'prompt':'\(config-if\)\#'},
-                       ]}
+        cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
+                         {'cmd': 'conf t', 'prompt': '\(config\)\#'},
+                         {'cmd': 'interface port{0}'.format(ifn), 'prompt': '\(config-if\)\#'},
+                         ]}
 
         if ifi['switchport mode'] == 'access':
             # this actually move port back to vlan 1
             # VLAN id is implicit, being untagged
-            cmds['cmds'].append({'cmd': 'no switchport access vlan' ,'prompt':'\(config-if\)\#'})
-        elif ifi['switchport mode'] == 'trunk' and tagged == False:
-            cmds['cmds'].append({'cmd': 'switchport trunk native vlan none' ,'prompt':'\(config-if\)\#'})
-        elif ifi['switchport mode'] == 'trunk' and tagged == True:
-            cmds['cmds'].append({'cmd': 'switchport trunk allowed vlan remove {0}'.format(vid) ,'prompt':'\(config-if\)\#'})
+            cmds['cmds'].append({'cmd': 'no switchport access vlan', 'prompt': '\(config-if\)\#'})
+        elif ifi['switchport mode'] == 'trunk' and tagged is False:
+            cmds['cmds'].append({'cmd': 'switchport trunk native vlan none', 'prompt': '\(config-if\)\#'})
+        elif ifi['switchport mode'] == 'trunk' and tagged is True:
+            cmds['cmds'].append({'cmd': 'switchport trunk allowed vlan remove {0}'.format(vid), 'prompt': '\(config-if\)\#'})
         else:
-            raise ValueError('interface {0} cannot be deleted from vlan {1}'.format(ifn,vid))
+            raise ValueError('interface {0} cannot be deleted from vlan {1}'.format(ifn, vid))
 
-        cmds['cmds'].append({'cmd': chr(26),                               'prompt':'\#'})
+        cmds['cmds'].append({'cmd': chr(26), 'prompt': '\#'})
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()
 
@@ -164,7 +165,7 @@ class awp_vlan(Feature):
         self._update_vlan()
         return json.dumps(self._vlan)
 
-    __repr__ = __str__ #pragma: no cover
+    __repr__ = __str__  # pragma: no cover
 
     def __getitem__(self, vid):
         if isinstance(vid, str) or isinstance(vid, int) or isinstance(vid, unicode):
@@ -174,7 +175,7 @@ class awp_vlan(Feature):
                 return self._vlan[vid]
             raise KeyError('vlan id {0} does not exist'.format(vid))
         else:
-            raise TypeError, "Invalid argument type."
+            raise TypeError("Invalid argument type.")
 
     def __iter__(self):
         self._update_vlan()
@@ -183,12 +184,12 @@ class awp_vlan(Feature):
 
     def _get_vlan_ids(self, vlan_id):
         vlan_id = str(vlan_id)
-        m  = re.match('^\d+(,\d+)*$', vlan_id)
+        m = re.match('^\d+(,\d+)*$', vlan_id)
         if m:
-            return map(int,vlan_id.split(','))
-        m = re.search('^(?P<start>\d+)\-(?P<end>\d+)$',vlan_id)
+            return map(int, vlan_id.split(','))
+        m = re.search('^(?P<start>\d+)\-(?P<end>\d+)$', vlan_id)
         if m:
-            return range(int(m.group('start')),int(m.group('end'))+1)
+            return range(int(m.group('start')), int(m.group('end')) + 1)
         raise ValueError('{0} is not a valid vlan id, range or list'.format(vlan_id))
 
     def _update_vlan(self):
@@ -196,8 +197,8 @@ class awp_vlan(Feature):
         l = VlanStatusLexer()
         vlan_cfg = self._device.cmd("show vlan all")
         vlan = l.run(vlan_cfg)
-        for vln,vli in vlan.items():
-            for vlr,vlc in self._vlan_config.items():
+        for vln, vli in vlan.items():
+            for vlr, vlc in self._vlan_config.items():
                 if int(vln) in self._get_vlan_ids(vlr):
                     vlan[vln] = dict(vlan[vln].items() + vlc.items())
         self._vlan = vlan
@@ -205,13 +206,13 @@ class awp_vlan(Feature):
 
     def _get_interface_config(self, ifn):
         ret = {}
-        for ifr,ifi in self._interface_config.items():
-            m  = re.match('^(?P<prefix>\d+\.\d+\.)(?P<start_no>\d+)\-\d+\.\d+\.(?P<end_no>\d+)$', ifr)
+        for ifr, ifi in self._interface_config.items():
+            m = re.match('^(?P<prefix>\d+\.\d+\.)(?P<start_no>\d+)\-\d+\.\d+\.(?P<end_no>\d+)$', ifr)
             if m:
-                ifr = ['{0}{1}'.format(m.group('prefix'),n) for n in range(int(m.group('start_no')),1+int(m.group('end_no')))]
+                ifr = ['{0}{1}'.format(m.group('prefix'), n) for n in range(int(m.group('start_no')), 1 + int(m.group('end_no')))]
             else:
                 ifr = [ifr]
 
             if ifn in ifr:
-               ret = dict(ret.items() + ifi.items())
-        return ret 
+                ret = dict(ret.items() + ifi.items())
+        return ret

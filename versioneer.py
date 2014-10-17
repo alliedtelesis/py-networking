@@ -232,7 +232,7 @@ domain.
 
 """
 
-import os, sys, re
+import os
 from distutils.core import Command
 from distutils.command.sdist import sdist as _sdist
 from distutils.command.build import build as _build
@@ -437,7 +437,6 @@ def get_versions(default={"version": "unknown", "full": ""}, verbose=False):
 
 
 import subprocess
-import sys
 import errno
 
 
@@ -473,9 +472,9 @@ def run_command(commands, args, cwd=None, verbose=False, hide_stderr=False):
     return stdout
 
 
-import sys
 import re
 import os.path
+
 
 def get_expanded_variables(versionfile_abs):
     # the code embedded in _version.py can just fetch the value of these
@@ -484,7 +483,7 @@ def get_expanded_variables(versionfile_abs):
     # used from _version.py.
     variables = {}
     try:
-        f = open(versionfile_abs,"r")
+        f = open(versionfile_abs, "r")
         for line in f.readlines():
             if line.strip().startswith("git_refnames ="):
                 mo = re.search(r'=\s*"(.*)"', line)
@@ -499,12 +498,13 @@ def get_expanded_variables(versionfile_abs):
         pass
     return variables
 
+
 def versions_from_expanded_variables(variables, tag_prefix, verbose=False):
     refnames = variables["refnames"].strip()
     if refnames.startswith("$Format"):
         if verbose:
             print("variables are unexpanded, not using")
-        return {} # unexpanded, so not in an unpacked git-archive tarball
+        return {}  # unexpanded, so not in an unpacked git-archive tarball
     refs = set([r.strip() for r in refnames.strip("()").split(",")])
     # starting in git-1.8.3, tags are listed as "tag: foo-1.0" instead of
     # just "foo-1.0". If we see a "tag: " prefix, prefer those.
@@ -520,7 +520,7 @@ def versions_from_expanded_variables(variables, tag_prefix, verbose=False):
         # "stabilization", as well as "HEAD" and "master".
         tags = set([r for r in refs if re.search(r'\d', r)])
         if verbose:
-            print("discarding '%s', no digits" % ",".join(refs-tags))
+            print("discarding '%s', no digits" % ",".join(refs - tags))
     if verbose:
         print("likely tags: %s" % ",".join(sorted(tags)))
     for ref in sorted(tags):
@@ -529,13 +529,14 @@ def versions_from_expanded_variables(variables, tag_prefix, verbose=False):
             r = ref[len(tag_prefix):]
             if verbose:
                 print("picking %s" % r)
-            return { "version": r,
-                     "full": variables["full"].strip() }
+            return {"version": r,
+                    "full": variables["full"].strip()}
     # no suitable tags, so we use the full revision id
     if verbose:
         print("no suitable tags, using full revision id")
-    return { "version": variables["full"].strip(),
-             "full": variables["full"].strip() }
+    return {"version": variables["full"].strip(),
+            "full": variables["full"].strip()}
+
 
 def versions_from_vcs(tag_prefix, root, verbose=False):
     # this runs 'git' from the root of the source tree. This only gets called
@@ -579,8 +580,9 @@ def versions_from_parentdir(parentdir_prefix, root, verbose=False):
                   (root, dirname, parentdir_prefix))
         return None
     return {"version": dirname[len(parentdir_prefix):], "full": ""}
-import os.path
+
 import sys
+
 
 # os.path.relpath only appeared in Python-2.6 . Define it here for 2.5.
 def os_path_relpath(path, start=os.path.curdir):
@@ -595,10 +597,11 @@ def os_path_relpath(path, start=os.path.curdir):
     # Work out how much of the filepath is shared by start and path.
     i = len(os.path.commonprefix([start_list, path_list]))
 
-    rel_list = [os.path.pardir] * (len(start_list)-i) + path_list[i:]
+    rel_list = [os.path.pardir] * (len(start_list) - i) + path_list[i:]
     if not rel_list:
         return os.path.curdir
     return os.path.join(*rel_list)
+
 
 def do_vcs_install(versionfile_source, ipy):
     GITS = ["git"]
@@ -622,7 +625,7 @@ def do_vcs_install(versionfile_source, ipy):
                     present = True
         f.close()
     except EnvironmentError:
-        pass    
+        pass
     if not present:
         f = open(".gitattributes", "a+")
         f.write("%s export-subst\n" % versionfile_source)
@@ -645,6 +648,7 @@ def get_versions(default={}, verbose=False):
 
 DEFAULT = {"version": "unknown", "full": "unknown"}
 
+
 def versions_from_file(filename):
     versions = {}
     try:
@@ -660,6 +664,7 @@ def versions_from_file(filename):
             versions["full"] = mo.group(1)
     f.close()
     return versions
+
 
 def write_to_version_file(filename, versions):
     f = open(filename, "w")
@@ -694,38 +699,48 @@ def get_versions(default=DEFAULT, verbose=False):
     if variables:
         ver = versions_from_expanded_variables(variables, tag_prefix)
         if ver:
-            if verbose: print("got version from expanded variable %s" % ver)
+            if verbose:
+                print("got version from expanded variable %s" % ver)
             return ver
 
     ver = versions_from_file(versionfile_abs)
     if ver:
-        if verbose: print("got version from file %s %s" % (versionfile_abs,ver))
+        if verbose:
+            print("got version from file %s %s" % (versionfile_abs, ver))
         return ver
 
     ver = versions_from_vcs(tag_prefix, root, verbose)
     if ver:
-        if verbose: print("got version from git %s" % ver)
+        if verbose:
+            print("got version from git %s" % ver)
         return ver
 
     ver = versions_from_parentdir(parentdir_prefix, root, verbose)
     if ver:
-        if verbose: print("got version from parentdir %s" % ver)
+        if verbose:
+            print("got version from parentdir %s" % ver)
         return ver
 
-    if verbose: print("got version from default %s" % ver)
+    if verbose:
+        print("got version from default %s" % ver)
     return default
+
 
 def get_version(verbose=False):
     return get_versions(verbose=verbose)["version"]
+
 
 class cmd_version(Command):
     description = "report generated version string"
     user_options = []
     boolean_options = []
+
     def initialize_options(self):
         pass
+
     def finalize_options(self):
         pass
+
     def run(self):
         ver = get_version(verbose=True)
         print("Version is currently: %s" % ver)
@@ -743,6 +758,7 @@ class cmd_build(_build):
         f = open(target_versionfile, "w")
         f.write(SHORT_VERSION_PY % versions)
         f.close()
+
 
 class cmd_sdist(_sdist):
     def run(self):
@@ -769,14 +785,18 @@ __version__ = get_versions()['version']
 del get_versions
 """
 
+
 class cmd_update_files(Command):
     description = "modify __init__.py and create _version.py"
     user_options = []
     boolean_options = []
+
     def initialize_options(self):
         pass
+
     def finalize_options(self):
         pass
+
     def run(self):
         ipy = os.path.join(os.path.dirname(versionfile_source), "__init__.py")
         print(" creating %s" % versionfile_source)
@@ -799,6 +819,7 @@ class cmd_update_files(Command):
         else:
             print(" %s unmodified" % ipy)
         do_vcs_install(versionfile_source, ipy)
+
 
 def get_cmdclass():
     return {'version': cmd_version,

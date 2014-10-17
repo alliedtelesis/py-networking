@@ -129,6 +129,7 @@ class Emulator(recvline.HistoricRecvLine):
         if (src.find('http://') == 0):
             aResp = urllib2.urlopen(src)
             web_pg = aResp.read()
+            log.msg("Got data: {0} ...".format(web_pg[0:10]))
 
         if (src.find('http://') == 0) or (src.find('tftp://') == 0) or (src == 'r' and dst == 's'):
             for action in sorted(self.parent.cmds.values(), key=lambda k: (k['seq'], k['state'])):

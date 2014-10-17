@@ -102,57 +102,52 @@ if os.path.exists('README.rst'):
 else:
     long_description = 'Library for network programming and automation'
 
-setup(name             = 'py-networking',
-      version          = versioneer.get_version(),
-      cmdclass         = dict(versioneer.get_cmdclass().items() +
-                         {
-                            'test': ToxCommand,
-                            'clean': CleanCommand,
-                            'doc': DocCommand
-                          }.items()),
-      description      = 'Library for network programming and automation',
-      long_description = long_description,
-      author           = 'Allied Telesis',
-      author_email     = 'francesco_salamida@alliedtelesis.com',
-      license          = 'Apache License 2.0',
-      packages         = [
-                            'pynetworking',
-                            'pynetworking.features',
-                            'pynetworking.facts',
-                            'pynetworking.system',
-                            'pynetworking.utils',
-                         ],
-      package_data     = {
-                            'pynetworking': ['*.yaml']
-                         },
-      install_requires = [
-                            'paramiko',
-                            'PyYAML',
-                            'Jinja2',
-                            'ply',
-                            'pyasn1',
-                            'pyzmq>=14.0.0',
-                            'ordereddict',
-                            'TFTPy',
-                            'pytz',
-                            'mock'
-                         ],
-      setup_requires   = [  'sphinx',
-                            'sphinx_rtd_theme'
-                         ],
-      tests_require    = [
-                            'twisted',
-                            'tox'
-                         ],
-      url = 'http://www.py-networking.com',
-      classifiers = [
-         'Development Status :: 1 - Planning',
-         'Intended Audience :: System Administrators',
-         'Intended Audience :: Telecommunications Industry',
-         'License :: OSI Approved :: Apache Software License',
-         'Operating System :: POSIX :: Linux',
-         'Programming Language :: Python',
-         'Topic :: Software Development :: Libraries :: Python Modules',
-         'Topic :: System :: Networking'
-       ]
+setup(name='py-networking',
+      version=versioneer.get_version(),
+      cmdclass=dict(versioneer.get_cmdclass().items() +
+                    {'test': ToxCommand,
+                     'clean': CleanCommand,
+                     'doc': DocCommand
+                     }.items()
+                    ),
+      description='Library for network programming and automation',
+      long_description=long_description,
+      author='Allied Telesis',
+      author_email='francesco_salamida@alliedtelesis.com',
+      license='Apache License 2.0',
+      packages=['pynetworking',
+                'pynetworking.features',
+                'pynetworking.facts',
+                'pynetworking.system',
+                'pynetworking.utils',
+                ],
+      package_data={'pynetworking': ['*.yaml']
+                    },
+      install_requires=['paramiko',
+                        'PyYAML',
+                        'Jinja2',
+                        'ply',
+                        'pyasn1',
+                        'pyzmq>=14.0.0',
+                        'ordereddict',
+                        'TFTPy',
+                        'pytz',
+                        'mock'
+                        ],
+      setup_requires=['sphinx',
+                      'sphinx_rtd_theme'
+                      ],
+      tests_require=['twisted',
+                     'tox'
+                     ],
+      url='http://www.py-networking.com',
+      classifiers=['Development Status :: 1 - Planning',
+                   'Intended Audience :: System Administrators',
+                   'Intended Audience :: Telecommunications Industry',
+                   'License :: OSI Approved :: Apache Software License',
+                   'Operating System :: POSIX :: Linux',
+                   'Programming Language :: Python',
+                   'Topic :: Software Development :: Libraries :: Python Modules',
+                   'Topic :: System :: Networking'
+                   ]
       )

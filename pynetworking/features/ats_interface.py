@@ -2,7 +2,7 @@
 import re
 import json
 from pprint import pformat
-from pynetworking import Feature
+from pynetworking.Feature import Feature
 try:
     from collections import OrderedDict
 except ImportError:  # pragma: no cover

@@ -16,11 +16,6 @@ warnings.filterwarnings(
     DeprecationWarning
 )
 
-from pynetworking.Proxy import SSHProxy
-from pynetworking.Device import Device
-from pynetworking.Device import DeviceException
-from pynetworking.Feature import Feature
-
 import inspect
 __all__ = [name for name, obj in locals().items() if not (name.startswith('_') or inspect.ismodule(obj))]
 

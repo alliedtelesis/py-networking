@@ -1,7 +1,7 @@
 import pytest
 import os
 import socket
-from pynetworking import Device, DeviceException
+from pynetworking.Device import Device, DeviceException
 from time import sleep
 
 

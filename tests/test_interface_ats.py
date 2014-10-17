@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import pytest
-from pynetworking import Device
+from pynetworking.Device import Device
 
 
 ats_supported_sw_version = '3.0.0.44'

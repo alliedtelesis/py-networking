@@ -4,7 +4,7 @@ import socket
 import tftpy
 import threading
 import getpass
-from pynetworking import Device
+from pynetworking.Device import Device
 
 
 def setup_dut(dut):

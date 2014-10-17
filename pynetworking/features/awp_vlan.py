@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from pynetworking import Feature
+from pynetworking.Feature import Feature
 from pynetworking.features.awp_vlan_config_lexer import VlanConfigLexer
 from pynetworking.features.awp_vlan_status_lexer import VlanStatusLexer
 from pynetworking.features.awp_vlan_config_interface_lexer import VlanInterfaceConfigLexer

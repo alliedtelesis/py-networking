@@ -1,4 +1,4 @@
-from pynetworking import Device
+from pynetworking.Device import Device
 from pprint import pprint
 
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from pynetworking import Feature
+from pynetworking.Feature import Feature
 from pprint import pformat
 import re
 import json

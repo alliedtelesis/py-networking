@@ -6,7 +6,7 @@ import socket
 from time import sleep, time
 import zmq
 import json
-from pynetworking.utils import Cache, CacheMissException
+from pynetworking.utils.cache import Cache, CacheMissException
 
 
 # suppress logging from paramiko module

@@ -2,7 +2,7 @@
 import re
 import json
 from pprint import pformat
-from pynetworking import Feature
+from pynetworking.Feature import Feature
 from pynetworking.features.awp_interface_config_lexer import InterfaceConfigLexer
 from pynetworking.features.awp_interface_status_lexer import InterfaceStatusLexer
 

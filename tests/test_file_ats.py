@@ -5,7 +5,7 @@ import tftpy
 import threading
 import getpass
 
-from pynetworking import Device
+from pynetworking.Device import Device
 
 
 def tftp_make_dir(tftp_client_dir, tftp_server_dir):

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import pytest
-from pynetworking import Device
+from pynetworking.Device import Device
 from jinja2 import Template
 
 

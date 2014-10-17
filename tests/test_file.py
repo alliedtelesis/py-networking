@@ -1,7 +1,7 @@
 import pytest
 import os
 import socket
-from pynetworking import Device
+from pynetworking.Device import Device
 
 
 def setup_dut(dut):

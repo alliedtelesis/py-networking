@@ -6,7 +6,7 @@ import tftpy
 import threading
 import getpass
 
-from pynetworking import Device, DeviceException
+from pynetworking.Device import Device, DeviceException
 
 
 def setup_dut(dut):

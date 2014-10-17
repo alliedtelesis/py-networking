@@ -1,4 +1,4 @@
-from pynetworking.utils import Cache, CacheMissException
+from pynetworking.utils.cache import Cache, CacheMissException
 from time import sleep
 import pytest
 

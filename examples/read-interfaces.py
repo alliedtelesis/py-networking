@@ -1,4 +1,4 @@
-from pynetworking import Device
+from pynetworking.Device import Device
 
 dev = Device('10.17.39.253', username='manager', password='friend')
 dev.open()

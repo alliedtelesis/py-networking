@@ -1,5 +1,5 @@
 import pytest
-from pynetworking import Device
+from pynetworking.Device import Device
 from datetime import datetime
 from pytz import timezone
 

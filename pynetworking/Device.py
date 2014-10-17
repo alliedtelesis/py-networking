@@ -11,7 +11,7 @@ import traceback
 from os import listdir
 from os.path import dirname, isfile, join
 from jinja2 import Template
-from pynetworking import SSHProxy
+from pynetworking.Proxy import SSHProxy
 from multiprocessing import Process
 from time import sleep
 from tempfile import NamedTemporaryFile

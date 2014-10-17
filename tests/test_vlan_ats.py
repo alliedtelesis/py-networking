@@ -325,6 +325,7 @@ Vlan       Name                   Ports                Type     Authorization
     d.open()
     with pytest.raises(TypeError) as excinfo:
         d.vlan[d.vlan]
+    assert 'invalid argument type' in excinfo.value
     assert d.vlan[21]['name'] == 'twentyone'
     assert ('22', {'name': 'zweiundzwanzig', 'tagged': [], 'type': 'permanent', 'untagged': []}) in d.vlan.items()
     assert '23' in d.vlan

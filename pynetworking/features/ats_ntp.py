@@ -64,7 +64,7 @@ class ats_ntp(Feature):
         self._update_sntp()
 
         if address not in self._sntp.keys():
-            raise KeyError('SNTP server {0} not present'.format(address))
+            raise KeyError('SNTP server {0} is not present'.format(address))
 
         poll_cmd = 'sntp client poll timer {0}'.format(poll)
         cmds = {'cmds': [{'cmd': 'conf', 'prompt': '\(config\)\#'},
@@ -79,7 +79,7 @@ class ats_ntp(Feature):
         self._update_sntp()
 
         if address != '' and address not in self._sntp.keys():
-            raise KeyError('SNTP server {0} not present'.format(address))
+            raise KeyError('SNTP server {0} is not present'.format(address))
 
         cmds = {'cmds': [{'cmd': 'conf', 'prompt': '\(config\)\#'}]}
 
@@ -114,7 +114,7 @@ class ats_ntp(Feature):
     def __getitem__(self, address):
         self._update_sntp()
         if address not in self._sntp.keys():
-            raise KeyError('SNTP server {0} does not exist'.format(address))
+            raise KeyError('SNTP server {0} is not present'.format(address))
         return self._sntp[address]
 
     def _update_sntp(self):

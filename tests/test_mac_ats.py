@@ -73,6 +73,7 @@ Aging time is 300 sec
     new_mac_addr = '0a0b0c0deeff'
     dyn_mac_addr = '00:00:cd:24:04:8b'
     missing_mac_address = '111111111111'
+    dotted_missing_mac_address = '1111.1111.1111'
     wrong_mac_address = '1111;1111;1111'
     dotted_mac = '0a0b.0c0d.0e0f'
     ifc = '1/e6'
@@ -97,21 +98,27 @@ Aging time is 300 sec
     d.open()
     with pytest.raises(KeyError) as excinfo:
         d.mac[missing_mac_address]
+    assert 'MAC address {0} does not exist'.format(missing_mac_address) in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.mac.create(wrong_mac_address, ifc)
+    assert 'MAC address {0} is not valid'.format(wrong_mac_address) in excinfo.value
     assert dotted_mac not in d.mac.keys()
     d.mac.create(mac_address, ifc)
     assert dotted_mac in d.mac.keys()
     assert (dotted_mac, {'vlan': '1', 'interface': ifc, 'action': 'forward', 'type': 'static'}) in d.mac.items()
     with pytest.raises(KeyError) as excinfo:
         d.mac.create(mac_address, ifc)
+    assert 'MAC address {0} is already existing'.format(dotted_mac) in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.mac.create(new_mac_addr, ifu, forward=False)
+    assert 'Discard option not supported' in excinfo.value
 
     with pytest.raises(KeyError) as excinfo:
         d.mac.update(mac_address, ifu, forward=False)
+    assert 'Discard option not supported' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.mac.update(missing_mac_address, ifu)
+    assert 'MAC address {0} does not exist'.format(dotted_missing_mac_address) in excinfo.value
     d.mac.update(mac_address, ifu)
     assert dotted_mac in d.mac.keys()
     assert d.mac[mac_address]['interface'] == ifu
@@ -119,12 +126,16 @@ Aging time is 300 sec
 
     with pytest.raises(KeyError) as excinfo:
         d.mac.delete(missing_mac_address)
-    with pytest.raises(KeyError) as excinfo:
-        d.mac.delete(dyn_mac_addr)
+    assert 'MAC address {0} does not exist'.format(dotted_missing_mac_address) in excinfo.value
+    if dut.mode == 'emulated':
+        with pytest.raises(KeyError) as excinfo:
+            d.mac.delete(dyn_mac_addr)
+        assert 'cannot remove a dynamic entry' in excinfo.value
     d.mac.delete(mac_address)
     assert dotted_mac not in d.mac.keys()
     with pytest.raises(KeyError) as excinfo:
         d.mac.delete('0000.cd1d.7eb0')
+    assert 'MAC address 0000.cd1d.7eb0 does not exist' in excinfo.value
     d.close()
 
 

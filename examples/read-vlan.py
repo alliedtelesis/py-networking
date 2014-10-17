@@ -12,7 +12,6 @@ for vid, info in dev.vlan.items():
         info['name'],
         info['current state'],
         len(info['untagged']),
-        len(info['tagged'])
-        )
+        len(info['tagged']))
 
 dev.close()

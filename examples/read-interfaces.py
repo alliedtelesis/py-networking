@@ -10,7 +10,6 @@ for name, info in dev.interface.items():
         name,
         'up' if info['enable'] else 'down',
         'up' if info['link'] else 'down',
-        info['current speed'] if 'current speed' in info else ''
-        )
+        info['current speed'] if 'current speed' in info else '')
 
 dev.close()

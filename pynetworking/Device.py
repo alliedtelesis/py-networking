@@ -39,7 +39,6 @@ class Device(object):
         self._password = password
         self._protocol = protocol
         self._port = port
-
         self._unittest = unit_test
 
         self._log_level = getattr(logging, log_level.upper())

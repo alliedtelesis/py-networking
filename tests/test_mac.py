@@ -60,6 +60,7 @@ VLAN port             mac            fwd
 
     mac_address = '0a0b0c0d0e0f'
     missing_mac_address = '111111111111'
+    dotted_missing_mac_address = '1111.1111.1111'
     wrong_mac_address = '1111;1111;1111'
     dotted_mac = '0a0b.0c0d.0e0f'
     ifc = 'port1.0.4'
@@ -81,26 +82,33 @@ VLAN port             mac            fwd
     d.open()
     with pytest.raises(KeyError) as excinfo:
         d.mac[missing_mac_address]
+    assert 'MAC address {0} does not exist'.format(missing_mac_address) in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.mac.create(wrong_mac_address, ifc, sleep_time=dut.sleep_time)
+    assert 'MAC address {0} is not valid'.format(wrong_mac_address) in excinfo.value
     assert dotted_mac not in d.mac.keys()
     d.mac.create(mac_address, ifc, sleep_time=dut.sleep_time)
     assert dotted_mac in d.mac.keys()
     assert (dotted_mac, {'vlan': '1', 'interface': ifc, 'action': 'forward', 'type': 'static'}) in d.mac.items()
     with pytest.raises(KeyError) as excinfo:
         d.mac.create(mac_address, ifc, sleep_time=dut.sleep_time)
+    assert 'MAC address {0} is already existing'.format(dotted_mac) in excinfo.value
     d.mac.update(mac_address, ifu, forward=False, sleep_time=dut.sleep_time)
     assert dotted_mac in d.mac.keys()
     assert d.mac[dotted_mac]['interface'] == ifu
     assert (dotted_mac, {'vlan': '1', 'interface': ifu, 'action': 'discard', 'type': 'static'}) in d.mac.items()
     with pytest.raises(KeyError) as excinfo:
         d.mac.update(missing_mac_address, ifu, forward=False, sleep_time=dut.sleep_time)
+    assert 'MAC address {0} does not exist'.format(dotted_missing_mac_address) in excinfo.value
     d.mac.delete(mac_address, sleep_time=dut.sleep_time)
     assert dotted_mac not in d.mac.keys()
     with pytest.raises(KeyError) as excinfo:
         d.mac.delete(mac_address, sleep_time=dut.sleep_time)
-    with pytest.raises(KeyError) as excinfo:
-        d.mac.delete('0000.cd1d.7eb0', sleep_time=dut.sleep_time)
+    assert 'MAC address {0} does not exist'.format(dotted_mac) in excinfo.value
+    if dut.mode == 'emulated':
+        with pytest.raises(KeyError) as excinfo:
+            d.mac.delete('0000.cd1d.7eb0', sleep_time=dut.sleep_time)
+        assert 'cannot remove a dynamic entry' in excinfo.value
     d.close()
 
 

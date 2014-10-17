@@ -173,6 +173,7 @@ VLAN ID  Name            Type    State   Member ports
     assert ('22', {'current state': 'ACTIVE', 'name': 'zweiundzwanzig', 'untagged': (), 'tagged': ('1.0.42', '1.0.43'), 'type': 'STATIC'}) in d.vlan.items()
     with pytest.raises(TypeError) as excinfo:
         d.vlan[d.vlan]
+    assert 'invalid argument type' in excinfo.value
     str(d.vlan)
     assert '23' in d.vlan
     assert d.vlan[23]['name'] == 'vingttrois'

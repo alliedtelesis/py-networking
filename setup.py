@@ -8,36 +8,46 @@ import versioneer
 
 versioneer.versionfile_source = 'pynetworking/_version.py'
 versioneer.versionfile_build = 'pynetworking/_version.py'
-versioneer.tag_prefix = 'v' # tags are like v1.2.0
-versioneer.parentdir_prefix = 'py-networking-' 
+versioneer.tag_prefix = 'v'  # tags are like v1.2.0
+versioneer.parentdir_prefix = 'py-networking-'
+
 
 class ToxCommand(TestCommand):
     def finalize_options(self):
         TestCommand.finalize_options(self)
         self.test_args = []
         self.test_suite = True
+
     def run_tests(self):
-        #import here, cause outside the eggs aren't loaded
+        # import here, cause outside the eggs aren't loaded
         import tox
         errno = tox.cmdline(self.test_args)
         sys.exit(errno)
 
+
 class CleanCommand(Command):
     user_options = []
+
     def initialize_options(self):
         self.cwd = None
+
     def finalize_options(self):
         self.cwd = os.getcwd()
+
     def run(self):
         assert os.getcwd() == self.cwd, 'Must be in package root: %s' % self.cwd
-        os.system ('rm -rf ./.coverage ./coverage.* ./coverage-* ./MANIFEST ./.tox ./build ./dist ./*.pyc ./*.tgz ./*.egg ./*.egg-info ./py-networking-* ./doc')
+        os.system('rm -rf ./.coverage ./coverage.* ./coverage-* ./MANIFEST ./.tox ./build ./dist ./*.pyc ./*.tgz ./*.egg ./*.egg-info ./py-networking-* ./doc')
+
 
 class DocCommand(Command):
     user_options = []
+
     def initialize_options(self):
         pass
+
     def finalize_options(self):
         pass
+
     def run(self):
         from sphinx.application import Sphinx
         from sphinx.util.console import darkred
@@ -115,7 +125,7 @@ setup(name             = 'py-networking',
       package_data     = {
                             'pynetworking': ['*.yaml']
                          },
-      install_requires = [  
+      install_requires = [
                             'paramiko',
                             'PyYAML',
                             'Jinja2',
@@ -127,8 +137,8 @@ setup(name             = 'py-networking',
                             'pytz',
                             'mock'
                          ],
-      setup_requires   = [ 'sphinx',
-                           'sphinx_rtd_theme'
+      setup_requires   = [  'sphinx',
+                            'sphinx_rtd_theme'
                          ],
       tests_require    = [
                             'twisted',

@@ -54,12 +54,16 @@ end
     assert 'default.cfg' in d.file.keys()
     with pytest.raises(KeyError) as excinfo:
         d.file.create(name='default.cfg', text=host_content)
+    assert 'file default.cfg is already existing' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file.create(name='test_file.cfg', text=host_content, filename='default.cfg')
+    assert 'cannot have both source device file name and host string not empty' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file.create(name='test_file.cfg', protocol='tftp', text=host_content)
+    assert 'protocol tftp not supported' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file['video-3.cfg']
+    assert 'file video-3.cfg does not exist' in excinfo.value
     d.close()
 
 
@@ -331,14 +335,19 @@ end
     assert 'default.cfg' in d.file.keys()
     with pytest.raises(KeyError) as excinfo:
         d.file.update(name='test_file_3.cfg', text=host_text)
+    assert 'file test_file_3.cfg does not exist' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file.update(name='test_file_1.cfg', text=host_text, new_name='default.cfg')
+    assert 'file default.cfg cannot be overwritten' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file.update(name='test_file_1.cfg')
+    assert 'cannot have both host file name and host string empty' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file.update(name='test_file_1.cfg', protocol='tftp', filename='host_temp.cfg', text=host_text)
+    assert 'protocol tftp not supported' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file.update(name='test_file_1.cfg', filename='host_temp.cfg', text=host_text)
+    assert 'cannot have both host file name and host string not empty' in excinfo.value
     d.close()
 
 
@@ -619,6 +628,7 @@ def test_remove_files(dut, log_level):
     d.file.delete("test_file_3.cfg")
     with pytest.raises(KeyError) as excinfo:
         d.file.delete("test_file_x.cfg")
+    assert 'file test_file_x.cfg does not exist' in excinfo.value
     assert 'test_file_0.cfg' not in d.file.keys()
     assert 'test_file_2.cfg' not in d.file.keys()
     assert 'test_file_3.cfg' not in d.file.keys()

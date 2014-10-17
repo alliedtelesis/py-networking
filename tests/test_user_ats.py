@@ -64,6 +64,12 @@ username operator password cde2fde1fa1551a704d775ce2315915d  encrypted
     d.user.create("operator", password="enemy", privilege_level=1)
     assert 'operator' in d.user.keys()
     assert d.user['operator']['privilege_level'] == '1'
+    with pytest.raises(KeyError) as excinfo:
+        d.user.create("", password="enemy", privilege_level=1)
+    assert 'user name cannot be empty' in excinfo.value
+    with pytest.raises(KeyError) as excinfo:
+        d.user.create("operator", password="enemy", privilege_level=1)
+    assert 'user name {0} already exists'.format('operator') in excinfo.value
     d.close()
 
 
@@ -146,6 +152,12 @@ end
     d.user.update("operator", password="enemy")
     assert old_pwd != d.user['operator']['password']
     old_pwd = d.user['operator']['password']
+    with pytest.raises(KeyError) as excinfo:
+        d.user.update("")
+    assert 'user name cannot be empty' in excinfo.value
+    with pytest.raises(KeyError) as excinfo:
+        d.user.update("xxxxxxxxxxxxxxxx", password="newpwd")
+    assert 'user name xxxxxxxxxxxxxxxx does not exist' in excinfo.value
     d.close()
 
 
@@ -392,4 +404,10 @@ end
     d.user.delete(usr)
     with pytest.raises(KeyError):
         d.user[usr]
+    with pytest.raises(KeyError) as excinfo:
+        d.user.delete("")
+    assert 'user name cannot be empty' in excinfo.value
+    with pytest.raises(KeyError) as excinfo:
+        d.user.delete("xxxxxxxxxxxxxxxx")
+    assert 'user name xxxxxxxxxxxxxxxx does not exist' in excinfo.value
     d.close()

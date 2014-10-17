@@ -59,7 +59,7 @@ class awp_ntp(Feature):
         self._update_ntp()
 
         if address != '' and address not in self._ntp.keys():
-            raise KeyError('NTP server {0} not present'.format(address))
+            raise KeyError('NTP server {0} is not present'.format(address))
 
         cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
                          {'cmd': 'conf t', 'prompt': '\(config\)\#'}
@@ -90,7 +90,7 @@ class awp_ntp(Feature):
     def __getitem__(self, address):
         self._update_ntp()
         if address not in self._ntp.keys():
-            raise KeyError('NTP server {0} does not exist'.format(address))
+            raise KeyError('NTP server {0} is not present'.format(address))
         return self._ntp[address]
 
     def _update_ntp(self):

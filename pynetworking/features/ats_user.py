@@ -55,6 +55,11 @@ class ats_user(Feature):
         self._d.log_info("add {0} {1} {2}".format(user_name, password, privilege_level))
         self._update_user()
 
+        if user_name == '':
+            raise KeyError('user name cannot be empty')
+        if user_name != '' and user_name in self._user.keys():
+            raise KeyError('user name {0} already exists'.format(user_name))
+
         cmds = {'cmds': [{'cmd': 'conf', 'prompt': '\(config\)\#'}]}
 
         if encrypted is False:
@@ -76,6 +81,11 @@ class ats_user(Feature):
         self._d.log_info("remove {0}".format(user_name))
         self._update_user()
 
+        if user_name == '':
+            raise KeyError('user name cannot be empty')
+        if user_name != '' and user_name not in self._user.keys():
+            raise KeyError('user name {0} does not exist'.format(user_name))
+
         cmds = {'cmds': [{'cmd': 'conf', 'prompt': '\(config\)\#'}]}
 
         delete_cmd = 'no username {0}'.format(user_name)
@@ -88,6 +98,11 @@ class ats_user(Feature):
     def update(self, user_name, **kwargs):
         self._d.log_info("update {0} {1}".format(user_name, pformat(kwargs)))
         self._update_user()
+
+        if user_name == '':
+            raise KeyError('user name cannot be empty')
+        if user_name != '' and user_name not in self._user.keys():
+            raise KeyError('user name {0} does not exist'.format(user_name))
 
         enc_pwd = False
         run_cmd = False

@@ -168,10 +168,13 @@ Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
     d.open()
     with pytest.raises(KeyError) as excinfo:
         d.license.set_license(label='', key=key)
+    assert 'either label and key or certificate must be given' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.license.set_license(label=label, key='')
+    assert 'either label and key or certificate must be given' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.license['Bbase']
+    assert 'license Bbase does not exist' in excinfo.value
     assert label not in d.license.keys()
     d.license.set_license(label=label, key=key)
     assert label in d.license.keys()
@@ -180,6 +183,7 @@ Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
     assert (label, {'customer': d.license[label]['customer'], 'quantity': d.license[label]['quantity'], 'type': d.license[label]['type'], 'issue_date': d.license[label]['issue_date'], 'expire_date': d.license[label]['expire_date'], 'features': d.license[label]['features'], 'releases': ''}) in d.license.items()
     with pytest.raises(KeyError) as excinfo:
         d.license.delete(label='Bbase')
+    assert 'label Bbase does not exist' in excinfo.value
     d.license.delete(label=label)
     assert label not in d.license.keys()
     d.close()
@@ -249,6 +253,7 @@ Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
     d.open()
     with pytest.raises(KeyError) as excinfo:
         d.license.set_license(certificate=false_cert_file)
+    assert 'certificate file {0} does not exist'.format(false_cert_file) in excinfo.value
     assert label not in d.license.keys()
     d.license.set_license(certificate=cert_name)
     assert label in d.license.keys()
@@ -326,6 +331,7 @@ Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
     d.open()
     with pytest.raises(KeyError) as excinfo:
         d.license.set_license(certificate=false_cert_url)
+    assert 'protocol http not supported' in excinfo.value
     assert label not in d.license.keys()
     assert cert_file not in d.file.keys()
     d.license.set_license(certificate=cert_url)

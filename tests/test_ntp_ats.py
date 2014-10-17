@@ -202,11 +202,12 @@ Unicast servers:
     d.open()
     with pytest.raises(KeyError) as excinfo:
         d.ntp[bad_ntp_address]
-
+    assert 'SNTP server {0} is not present'.format(bad_ntp_address) in excinfo.value
     assert ntp_address_1 not in d.ntp.keys()
     d.ntp.create(ntp_address_1)
     with pytest.raises(KeyError) as excinfo:
         d.ntp.create(ntp_address_1)
+    assert 'SNTP server {0} already added'.format(ntp_address_1) in excinfo.value
     assert ntp_address_1 in d.ntp.keys()
     assert ntp_address_2 not in d.ntp.keys()
     d.ntp.create(ntp_address_2, polltime_1)
@@ -217,6 +218,7 @@ Unicast servers:
 
     with pytest.raises(KeyError) as excinfo:
         d.ntp.update(bad_ntp_address)
+    assert 'SNTP server {0} is not present'.format(bad_ntp_address) in excinfo.value
     d.ntp.update(ntp_address_1, polltime_2)
     assert d.ntp[ntp_address_1]['polltime'] == polltime_2
     assert d.ntp[ntp_address_2]['polltime'] == polltime_2
@@ -226,6 +228,7 @@ Unicast servers:
 
     with pytest.raises(KeyError) as excinfo:
         d.ntp.delete(bad_ntp_address)
+    assert 'SNTP server {0} is not present'.format(bad_ntp_address) in excinfo.value
     d.ntp.delete(ntp_address_2)
     assert ntp_address_2 not in d.ntp.keys()
     d.ntp.delete()

@@ -42,9 +42,9 @@ class ats_file(Feature):
         if (protocol != 'tftp'):
             raise KeyError('protocol {0} not supported'.format(protocol))
         if (filename != '' and text != ''):
-            raise KeyError('Cannot have both source device file name and host string not empty')
+            raise KeyError('cannot have both source device file name and host string not empty')
         if (filename == '' and server != ''):
-            raise KeyError('Remote file name missing')
+            raise KeyError('remote file name missing')
 
         if (filename == ''):
             filename = name
@@ -76,17 +76,17 @@ class ats_file(Feature):
         self._update_file()
 
         if name not in self._d.file.keys():
-            raise KeyError('file {0} is not existing'.format(name))
+            raise KeyError('file {0} does not exist'.format(name))
         if (protocol != 'tftp'):
             raise KeyError('protocol {0} not supported'.format(protocol))
         if new_name in self._d.file.keys():
             raise KeyError('file {0} cannot be overwritten'.format(new_name))
         if (filename != '' and text != ''):
-            raise KeyError('Cannot have both host file name and host string not empty')
+            raise KeyError('cannot have both host file name and host string not empty')
         if (filename == '' and text == ''):
-            raise KeyError('Cannot have both host file name and host string empty')
+            raise KeyError('cannot have both host file name and host string empty')
         if (filename == '' and server != ''):
-            raise KeyError('Remote file name missing')
+            raise KeyError('remote file name missing')
 
         # data to be copied will always come from a local file named 'file_2_copy_from'
         if (filename == ''):
@@ -130,7 +130,7 @@ class ats_file(Feature):
         self._update_file()
 
         if file_name not in self._d.file.keys():
-            raise KeyError('file {0} is not existing'.format(file_name))
+            raise KeyError('file {0} does not exist'.format(file_name))
 
         delete_cmd = 'delete {0}'.format(file_name)
         cmds = {'cmds': [{'cmd': delete_cmd, 'prompt': ''},

@@ -119,7 +119,7 @@ class ats_clock(Feature):
         self._update_clock()
         if id in self._clock.keys():
             return self._clock[id]
-        raise KeyError('data {0} does not exist'.format(id))
+        raise KeyError('parameter {0} does not exist'.format(id))
 
     def _now(self):
         return datetime.now()

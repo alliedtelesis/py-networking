@@ -158,6 +158,7 @@ serial nr:   1122334455
     d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, unit_test=False)
     with pytest.raises(DeviceException) as excinfo:
         d.open()
+    assert 'device not supported' in excinfo.value
     d.close()
 
 
@@ -275,8 +276,10 @@ Unit  Image  Filename   Version    Date                    Status
     d.open()
     with pytest.raises(KeyError) as excinfo:
         d.system.update_firmware(filename=false_image_name, protocol='tftp', port=dut.tftp_port)
+    assert 'firmware {0} not available'.format(false_image_name) in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.system.update_firmware(filename=image_name, port=dut.tftp_port)
+    assert 'protocol http not supported' in excinfo.value
     d.system.update_firmware(filename=image_name, protocol='tftp', port=dut.tftp_port, dontwait=dut.dontwait)
     if (dut.mode == 'emulated'):
         # Real devices will be rebooting here

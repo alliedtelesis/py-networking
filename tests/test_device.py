@@ -367,12 +367,16 @@ Backup  boot config: flash:/backup.cfg (file not found)
     d.open()
     with pytest.raises(KeyError) as excinfo:
         d.system.update_firmware(false_release_file)
+    assert 'firmware {0} not available'.format(false_release_file) in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.system.update_firmware(bad_name_release_file)
+    assert 'firmware {0} not available'.format(bad_name_release_file) in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.system.update_firmware('x210-5.4.3-2.6.rel')
+    assert 'cannot overwrite running firmware (x210-5.4.3-2.6.rel)' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.system.update_firmware('x210-5.4.3-2.7.rel', protocol='tftp')
+    assert 'protocol tftp not supported' in excinfo.value
     d.system.update_firmware(release_file, dontwait=dut.dontwait)
     if (dut.mode == 'emulated'):
         # real devices will be rebooting here
@@ -529,6 +533,7 @@ Build type : RELEASE
     d.open()
     with pytest.raises(KeyError) as excinfo:
         d.system.update_firmware(release_file)
+    assert 'unlicensed software running' in excinfo.value
     d.close()
 
     clean_test_firmware_upgrade(dut, release_file)

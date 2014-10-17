@@ -105,16 +105,19 @@ ip ssh server
     assert 'startup-config' in d.file.keys()
     with pytest.raises(KeyError) as excinfo:
         d.file.create(name='startup-config', protocol='tftp', text=host_text)
+    assert 'file startup-config is already existing' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file.create(name='test_file.cfg', protocol='tftp', text=host_text, filename='startup-config')
+    assert 'cannot have both source device file name and host string not empty' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file.create(name='test_file.cfg', protocol='tftp', server='10.17.90.1')
-    with pytest.raises(KeyError) as excinfo:
-        d.file.create(name='test_file.cfg', protocol='tftp', server='10.17.90.1')
+    assert 'remote file name missing' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file.create(name='test_file.cfg', protocol='http', text=host_text, server=socket.gethostbyname(socket.getfqdn()))
+    assert 'protocol http not supported' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file['video-3.cfg']
+    assert 'file video-3.cfg does not exist' in excinfo.value
     d.close()
 
 
@@ -161,18 +164,25 @@ ip ssh server
     assert 'startup-config' in d.file.keys()
     with pytest.raises(KeyError) as excinfo:
         d.file.update(name='test_file_3.cfg', protocol='tftp', text=host_text)
+    assert 'file test_file_3.cfg does not exist' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file.update(name='test_file_1.cfg', protocol='tftp', text=host_text, new_name='startup-config')
+    assert 'file startup-config cannot be overwritten' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file.update(name='test_file_1.cfg', protocol='tftp')
+    assert 'cannot have both host file name and host string empty' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file.update(name='test_file_1.cfg', protocol='tftp', filename='host_temp.cfg', text=host_text)
+    assert 'cannot have both host file name and host string not empty' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file.update(name='test_file_1.cfg', protocol='tftp', text=host_text, server='10.17.90.1')
+    assert 'remote file name missing' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file.update(name='test_file_1.cfg', protocol='tftp', server='10.17.90.1')
+    assert 'cannot have both host file name and host string empty' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file.update(name='test_file_1.cfg', protocol='http', server=socket.gethostbyname(socket.getfqdn()))
+    assert 'protocol http not supported' in excinfo.value
     d.close()
 
 
@@ -205,6 +215,7 @@ Free size of flash: 3276800 bytes
     assert 'test_file_x.cfg' not in d.file.keys()
     with pytest.raises(KeyError) as excinfo:
         d.file.delete("test_file_x.cfg")
+    assert 'file test_file_x.cfg does not exist' in excinfo.value
     d.close()
 
 

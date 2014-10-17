@@ -84,12 +84,13 @@ end
     d.open()
     with pytest.raises(KeyError) as excinfo:
         d.ntp[bad_ntp_address]
-
+    assert 'NTP server {0} is not present'.format(bad_ntp_address) in excinfo.value
     assert ntp1_address not in d.ntp.keys()
     d.ntp.create(ntp1_address)
     assert ntp1_address in d.ntp.keys()
     with pytest.raises(KeyError) as excinfo:
         d.ntp.create(ntp1_address)
+    assert 'NTP server {0} already added'.format(ntp1_address) in excinfo.value
     assert ntp2_address not in d.ntp.keys()
     d.ntp.create(ntp2_address)
     assert ntp2_address in d.ntp.keys()
@@ -100,6 +101,7 @@ end
 
     with pytest.raises(KeyError) as excinfo:
         d.ntp.delete(bad_ntp_address)
+    assert 'NTP server {0} is not present'.format(bad_ntp_address) in excinfo.value
     d.ntp.delete(ntp2_address)
     assert ntp2_address not in d.ntp.keys()
     d.ntp.delete()

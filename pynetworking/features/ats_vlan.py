@@ -175,7 +175,7 @@ class ats_vlan(Feature):
                 return self._vlan[vid]
             raise KeyError('vlan id {0} does not exist'.format(vid))
         else:
-            raise TypeError("Invalid argument type.")
+            raise TypeError('invalid argument type')
 
     def __iter__(self):
         self._update_vlan()

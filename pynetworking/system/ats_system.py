@@ -12,7 +12,7 @@ class ats_system(object):
     System for ATS
     """
     def __init__(self, device):
-        self._d =  device
+        self._d = device
         self._old_boot_bank = 0
         self._new_boot_bank = 0
         self._stand_by_bank = 0
@@ -20,29 +20,30 @@ class ats_system(object):
     def get_config(self):
         self._d.log_info('getting device configuration')
         config = ''
-        for line in self._d.cmd('show running-config').replace('\r','').split('\n'):
-            config += line+'\n'
+        for line in self._d.cmd('show running-config').replace('\r', '').split('\n'):
+            config += line + '\n'
         self._d.log_debug('got device configuration \n{0}'.format(config))
         return config
 
     def get_startup_config(self):
         self._d.log_info('getting device configuration')
         config = ''
-        for line in self._d.cmd('show startup-config').replace('\r','').split('\n'):
-            config += line+'\n'
+        for line in self._d.cmd('show startup-config').replace('\r', '').split('\n'):
+            config += line + '\n'
         self._d.log_debug('got device configuration \n{0}'.format(config))
         return config
 
     def save_config(self):
         self._d.log_info('save running configuration')
-        cmds = {'cmds':[{'cmd': 'copy r s', 'prompt':''},
-                        {'cmd': 'y'       , 'prompt':'\#'}]}
+        cmds = {'cmds': [{'cmd': 'copy r s', 'prompt': ''},
+                         {'cmd': 'y', 'prompt': '\#'}
+                         ]}
         self._d.cmd(cmds, cache=False, flush_cache=True)
         self._d.load_system()
 
     def shell_init(self):
         self._d.log_info('shell_init')
-        return [{'cmd': 'terminal datadump', 'prompt':'\#'},]
+        return [{'cmd': 'terminal datadump', 'prompt': '\#'}, ]
 
     def shell_prompt(self):
         self._d.log_info('shell_prompt')
@@ -57,7 +58,7 @@ class ats_system(object):
         # They are ignored by a normal PN user.
         self._d.log_info("firmware upgrade with {0}".format(filename))
 
-        if (os.path.exists(filename) == False):
+        if (os.path.exists(filename) is False):
             raise KeyError('firmware {0} not available'.format(filename))
         if (protocol != 'tftp'):
             raise KeyError('protocol {0} not supported'.format(protocol))
@@ -66,9 +67,9 @@ class ats_system(object):
         boot_cmd = 'boot system image-{0}'.format(self._get_stand_by_bank())
         self._d.file.create(name='image', protocol=protocol, filename=filename, server=server, port=port)
         cmds = {'cmds': [{'cmd': boot_cmd, 'prompt': '\#'},
-                         {'cmd': 'reload', 'prompt': ''  },
-                         {'cmd': 'y'     , 'prompt': ''   , 'dontwait': dontwait}
-                        ]}
+                         {'cmd': 'reload', 'prompt': ''},
+                         {'cmd': 'y', 'prompt': '', 'dontwait': dontwait}
+                         ]}
         self._d.cmd(cmds, cache=False, flush_cache=True)
 
     def _update_bank_data(self):

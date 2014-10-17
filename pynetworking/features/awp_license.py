@@ -27,7 +27,7 @@ class awp_license(Feature):
 
         if not ((label == '' and key == '' and certificate != '') or (label != '' and key != '' and certificate == '')):
             self._d.log_error("cannot set license")
-            raise KeyError('Either label and key or certificate must be given')
+            raise KeyError('either label and key or certificate must be given')
 
         if (certificate == ''):
             set_cmd = 'license {0} {1}'.format(label, key)
@@ -41,7 +41,7 @@ class awp_license(Feature):
             if (protocol != certificate):
                 # Certificate file is on a TFTP server
                 if (protocol != 'tftp'):
-                    raise KeyError('Protocol {0} not supported', protocol)
+                    raise KeyError('protocol {0} not supported'.format(protocol))
                 else:
                     self._d.log_debug("Certificate file url given")
                     set_cmd = 'license certificate {0}'.format(certificate)
@@ -53,7 +53,7 @@ class awp_license(Feature):
             else:
                 # Certificate file on board
                 if (os.path.exists(certificate) is False):
-                    raise KeyError('Certificate file {0} is unexisting', certificate)
+                    raise KeyError('certificate file {0} does not exist'.format(certificate))
                 filename = certificate.split('/')[-1]
                 self._d.file.create(name=filename, filename=certificate)
                 set_cmd = 'license certificate {0}'.format(filename)
@@ -70,7 +70,7 @@ class awp_license(Feature):
         self._update_license()
 
         if label not in self._d.license.keys():
-            raise KeyError('label {0} is not existing'.format(label))
+            raise KeyError('label {0} does not exist'.format(label))
 
         delete_cmd = 'no license {0}'.format(label)
         cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},

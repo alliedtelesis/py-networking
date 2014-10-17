@@ -106,8 +106,10 @@ Summer time zone: None
 
     with pytest.raises(KeyError) as excinfo:
         d.clock.update(datetime=None, timezone=None)
+    assert 'either datetime or timezone argument must be given' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         assert d.clock['calendar'] == ''
+    assert 'parameter calendar does not exist' in excinfo.value
 
     d.clock.update(datetime=dt, timezone=tz1)
     assert d.clock['timezone_name'] == 'CEST'

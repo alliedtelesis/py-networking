@@ -4,8 +4,8 @@ import re
 def core_awp(dev):
     ret = {}
     cmds = {'cmds': [{'cmd': 'terminal length 0', 'prompt': '\>'},
-                     {'cmd': 'show version',      'prompt': '\>'},
-                    ]}
+                     {'cmd': 'show version', 'prompt': '\>'},
+                     ]}
 
     out = dev.cmd(cmds)
 
@@ -34,8 +34,8 @@ def core_awp(dev):
         ret['build_type'] = m.group(1)
 
     cmds = {'cmds': [{'cmd': 'terminal length 0', 'prompt': '\>'},
-                     {'cmd': 'show system',       'prompt': '\>'},
-                    ]}
+                     {'cmd': 'show system', 'prompt': '\>'},
+                     ]}
     out = dev.cmd(cmds)
 
     m = re.search('\s+Board\s+ID\s+Bay[\w\s\-]+Base\s+\d+\s+([\w\-\/]+)\s+([\w\-\/]+)\s+([\w\-\/]+)\s+', out)
@@ -46,9 +46,9 @@ def core_awp(dev):
 
     # Release license
     if (ret['version'] >= '5.4.4'):
-        cmds = {'cmds': [{'cmd': 'terminal length 0'         , 'prompt': '\>'},
+        cmds = {'cmds': [{'cmd': 'terminal length 0', 'prompt': '\>'},
                          {'cmd': 'show license release brief', 'prompt': '\>'}
-                        ]}
+                         ]}
         out = dev.cmd(cmds)
 
         if (out.find('Software Release Licenses') > 0):

@@ -65,6 +65,12 @@ end
     d.user.create("testuser", password="enemy", privilege_level=5)
     assert 'testuser' in d.user.keys()
     assert d.user['testuser']['privilege_level'] == '5'
+    with pytest.raises(KeyError) as excinfo:
+        d.user.create("", password="enemy", privilege_level=5)
+    assert 'user name cannot be empty' in excinfo.value
+    with pytest.raises(KeyError) as excinfo:
+        d.user.create("testuser", password="enemy", privilege_level=5)
+    assert 'user name {0} already exists'.format('testuser') in excinfo.value
     d.close()
 
 
@@ -147,6 +153,13 @@ end
     d.user.update("testuser", password="enemy")
     assert old_pwd != d.user['testuser']['password']
     old_pwd = d.user['testuser']['password']
+    d.user.update("testuser", password="newpwd")
+    with pytest.raises(KeyError) as excinfo:
+        d.user.update("")
+    assert 'user name cannot be empty' in excinfo.value
+    with pytest.raises(KeyError) as excinfo:
+        d.user.update("xxxxxxxxxxxxxxxx", password="newpwd")
+    assert 'user name xxxxxxxxxxxxxxxx does not exist' in excinfo.value
     d.close()
 
 
@@ -393,4 +406,10 @@ end
     d.user.delete("encuser")
     with pytest.raises(KeyError):
         d.user['encuser']
+    with pytest.raises(KeyError) as excinfo:
+        d.user.delete("")
+    assert 'user name cannot be empty' in excinfo.value
+    with pytest.raises(KeyError) as excinfo:
+        d.user.delete("xxxxxxxxxxxxxxxx")
+    assert 'user name xxxxxxxxxxxxxxxx does not exist' in excinfo.value
     d.close()

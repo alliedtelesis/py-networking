@@ -71,7 +71,7 @@ class awp_mac(Feature):
 
         mac = self._get_dotted_mac(mac)
         if mac not in self._mac.keys():
-            raise KeyError('MAC address {0} is not existing'.format(mac))
+            raise KeyError('MAC address {0} does not exist'.format(mac))
 
         fwd = 'forward'
         if (forward is False):
@@ -103,7 +103,7 @@ class awp_mac(Feature):
             self._d.log_info("remove {0}".format(mac))
             mac = self._get_dotted_mac(mac)
             if mac not in self._mac.keys():
-                raise KeyError('mac {0} is not existing'.format(mac))
+                raise KeyError('MAC address {0} does not exist'.format(mac))
             entry = self._mac[mac]
             if entry['type'] == 'dynamic':
                 raise KeyError('cannot remove a dynamic entry')
@@ -139,8 +139,8 @@ class awp_mac(Feature):
 
     def _get_dotted_mac(self, mac):
         if (re.match("[0-9a-f]{2}([-:])[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$", mac.lower()) or
-            re.match("[0-9a-f]{4}([.])[0-9a-f]{4}([.])[0-9a-f]{4}", mac.lower()) or
-            re.match("[0-9a-f]{12}", mac.lower())):
+                re.match("[0-9a-f]{4}([.])[0-9a-f]{4}([.])[0-9a-f]{4}", mac.lower()) or
+                re.match("[0-9a-f]{12}", mac.lower())):
             mac = mac.replace('-', '')
             mac = mac.replace(':', '')
             mac = mac.replace('.', '')

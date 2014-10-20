@@ -27,7 +27,7 @@ class Device(object):
     """ test doc
     """
     def __init__(self, host, username='manager', password='friend', protocol='ssh', port='auto', os='auto',
-                 log_level='NOTSET', log_output='console:', connection_timeout=20, unit_test=False):
+                 log_level='NOTSET', log_output='console:', connection_timeout=20, unit_test=True):
         if protocol not in ('telnet', 'ssh', 'serial'):
             raise ValueError("Unsupported protocol " + protocol)
         self._proxy = None
@@ -109,35 +109,7 @@ class Device(object):
         if self._unittest is False:
             self._open()
         else:
-            self.log_info("unittest open")
-
-            frm = inspect.stack()[1]
-            mod = inspect.getmodule(frm[0])
-            feat = mod.__name__.split('_')[1]
-            os = mod.__name__.split('_')[-1]
-            if feat == os:
-                os = 'awp'
-            if os == 'coverage':  # extra tests to cover it all
-                self._open()
-                return
-
-            yaml_load_mocked = MagicMock()
-            load_facts_mocked = MagicMock()
-            with patch('pynetworking.Device._load_core_facts', load_facts_mocked):
-                with patch('yaml.load', yaml_load_mocked):
-                    yaml_load_mocked.return_value = self._mock_load_features(os=os, feat=feat)
-                    load_facts_mocked.side_effect = self._mock_load_facts(os)
-                    self.cmd({'cmds': [{'cmd': '_status', 'prompt': ''}]})
-                    self._load_core_facts()
-                    self._load_features()
-                    self.load_system()
-
-    def _open(self):
-        self.log_info("open")
-        self.cmd({'cmds': [{'cmd': '_status', 'prompt': ''}]})
-        self._load_core_facts()
-        self._load_features()
-        self.load_system()
+            self._mocked_open()
 
     def close(self):
         self.log_info("close")
@@ -295,6 +267,36 @@ class Device(object):
             sleep(1)
             self.log_debug("proxy process started")
 
+    def _open(self):
+        self.log_info("open")
+        self.cmd({'cmds': [{'cmd': '_status', 'prompt': ''}]})
+        self._load_core_facts()
+        self._load_features()
+        self.load_system()
+
+    def _mocked_open(self):
+        self.log_info("mocked open")
+        frm = inspect.stack()[2]  # 2 is because is a second level nesting (test_...(dut, log_level) - open() - _mocked_open())
+        mod = inspect.getmodule(frm[0])
+        feat = mod.__name__.split('_')[1]
+        os = mod.__name__.split('_')[-1]
+        if feat == os:
+            os = 'awp'
+        if os == 'coverage':  # extra tests to cover it all
+            self._open()
+            return
+
+        yaml_load_mocked = MagicMock()
+        load_facts_mocked = MagicMock()
+        with patch('pynetworking.Device._load_core_facts', load_facts_mocked):
+            with patch('yaml.load', yaml_load_mocked):
+                yaml_load_mocked.return_value = self._mock_load_features(os=os, feat=feat)
+                load_facts_mocked.side_effect = self._mock_load_facts(os)
+                self.cmd({'cmds': [{'cmd': '_status', 'prompt': ''}]})
+                self._load_core_facts()
+                self._load_features()
+                self.load_system()
+
     def _mock_load_features(self, os, feat):
         if feat == 'device':
             return {'system': os + '_system', 'features': {'file': os + '_file', 'vlan': os + '_vlan'}}
@@ -306,9 +308,11 @@ class Device(object):
 
     def _mock_load_facts(self, os):
         if (os == 'ats'):
-            self._facts = {'model': u'AT-8000S/24', 'version': u'3.0.0.44', 'unit_number': u'1', 'os': 'ats', 'serial_number': u'1122334455', 'boot version': u'1.0.1.07', 'hardware_rev': u'00.01.00'}
+            self._facts = {'model': u'AT-8000S/24', 'version': u'3.0.0.44', 'unit_number': u'1', 'os': 'ats',
+                           'serial_number': u'1122334455', 'boot version': u'1.0.1.07', 'hardware_rev': u'00.01.00'}
             return
         if (os == 'awp'):
-            self._facts = {'build_date': u'Wed Sep 25 12:57:26 NZST 2013', 'version': u'5.4.2', 'sw_release': u'5.4.2', 'build_name': u'x600-5.4.2-3.14.rel', 'os': 'awp', 'build_type': u'RELEASE'}
+            self._facts = {'build_date': u'Wed Sep 25 12:57:26 NZST 2013', 'version': u'5.4.2', 'sw_release': u'5.4.2',
+                           'build_name': u'x600-5.4.2-3.14.rel', 'os': 'awp', 'build_type': u'RELEASE'}
             return
         self._facts = {}

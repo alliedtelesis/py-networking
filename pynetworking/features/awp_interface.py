@@ -67,13 +67,13 @@ class awp_interface(Feature):
     __repr__ = __str__  # pragma: no cover
 
     def __getitem__(self, ifn):
-        if isinstance(ifn, str):  # or isinstance(vid, unicode):
+        if isinstance(ifn, str):
             self._update_interface()
             if ifn in self._interface:
                 return self._interface[ifn]
             raise KeyError('interface {0} does not exist'.format(ifn))
         else:
-            raise TypeError("Invalid argument type.")
+            raise TypeError("invalid argument type")
 
     def __iter__(self):
         self._update_interface()

@@ -278,27 +278,14 @@ Port      Description
         ref = '1.0.{0}'.format(index)
         assert d.interface[ref]['configured_speed'] == '1000'
 
-    print('There are {0} available ports'.format(ats_total_port_number))
-
-    d.close()
-
-
-def test_enable_interface(dut, log_level):
-    if dut.mode != 'emulated':
-        pytest.skip("only on emulated")
-    setup_dut(dut)
-    show_interface = show_interface_header
-# 1/e1     100M-Copper  Full    100    Enabled  Off      Up      Disabled Auto
-    for interface in range(1, int(ats_model_port_number) + 1):
-        entry = '1/e%-2d    100M-Copper  Full    100    Enabled  Off      Up      Disabled Auto\n' % (interface)
-        show_interface += entry
-
-    dut.add_cmd({'cmd': 'show interfaces configuration', 'state': 0, 'action': 'PRINT', 'args': [show_interface]})
-
-    print('\nAdd here code to test enabling and disabling of interfaces')
-
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
-    d.open()
+    assert ("1.0.1", {"configured_polarity": "auto", "enable": True, "configured_duplex": "full", "configured_speed": "100", "current_polarity": "mdix", "current_speed": "100", "current_duplex": "full", "link": False}) in d.interface.items()
+    with pytest.raises(KeyError) as excinfo:
+        d.interface['1.0.{0}'.format(10 * ats_total_port_number)]['link'] is False
+    assert 'interface 1.0.{0} does not exist'.format(10 * ats_total_port_number) in excinfo.value
+    with pytest.raises(TypeError) as excinfo:
+        d.interface[False]['link'] is False
+    assert 'invalid argument type' in excinfo.value
+    assert (d.interface.__str__() != '')
 
     d.close()
 

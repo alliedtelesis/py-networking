@@ -169,6 +169,7 @@ def test_enable(dut, log_level):
     d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
     d.open()
     assert d.interface['1.0.10']['enable'] is True
+    assert ("1.0.10", {"current polarity": "mdix", "description": "test1", "configured duplex": "auto", "current duplex": "full", "configured speed": "auto", "enable": True, "configured polarity": "auto", "current speed": "1000", "link": True}) in d.interface.items()
     d.interface.update('1.0.10', enable=False)
     assert d.interface['1.0.10']['enable'] is False
     d.interface.update('1.0.10', enable=True)
@@ -274,5 +275,11 @@ def test_unexisting_interface(dut, log_level):
     with pytest.raises(ValueError) as excinfo:
         d.interface.update(max_if_name, enable=False)
     assert max_if_str in excinfo.value
-    assert '1.0.10' in d.interface
+    with pytest.raises(KeyError) as excinfo:
+        d.interface['1.0.{0}'.format(max_if_id + 1)]['description'] == 'test1'
+    assert 'interface {0} does not exist'.format(max_if_name) in excinfo.value
+    with pytest.raises(TypeError) as excinfo:
+        d.interface[True]['description'] == 'test1'
+    assert 'invalid argument type' in excinfo.value
+    assert (d.interface.__str__() != '')
     d.close()

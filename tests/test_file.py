@@ -102,7 +102,9 @@ def test_create_empty_file(dut, log_level, use_mock):
     assert host_file_name not in d.file.keys()
     d.file.create(name=host_file_name)
     assert host_file_name in d.file.keys()
-    assert (host_file_name, {'size': '0', 'mdate': d.file[host_file_name]['mdate'], 'permission': '-rw-', 'mtime': d.file[host_file_name]['mtime']}) in d.file.items()
+    mm_date = d.file[host_file_name]['mdate']
+    mm_time = d.file[host_file_name]['mtime']
+    assert (host_file_name, {'size': '0', 'mdate': mm_date, 'permission': '-rw-', 'mtime': mm_time}) in d.file.items()
     d.close()
 
 

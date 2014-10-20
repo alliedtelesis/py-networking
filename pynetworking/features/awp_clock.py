@@ -94,7 +94,7 @@ class awp_clock(Feature):
 
                 om = '60'
 
-                # clock summer-time <zone-name> recurring <start-week> <start-day> <start-month> <start-time> <end-week> <end-day> <end-month> <end-time> <1-180>
+                # clock summer-time <zone-name> rec <start-week> <start-day> <start-month> <start-time> <end-week> <end-day> <end-month> <end-time> <1-180>
                 st_cmd = "clock summer-time {0} recurring {1} {2} {3} {4} {5} {6} {7} {8} {9}".format(tz_name, bw, bd, bm, bt, ew, ed, em, et, om)
             else:
                 st_cmd = "no clock summer-time"

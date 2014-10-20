@@ -278,7 +278,8 @@ Port      Description
         ref = '1.0.{0}'.format(index)
         assert d.interface[ref]['configured_speed'] == '1000'
 
-    assert ("1.0.1", {"configured_polarity": "auto", "enable": True, "configured_duplex": "full", "configured_speed": "100", "current_polarity": "mdix", "current_speed": "100", "current_duplex": "full", "link": False}) in d.interface.items()
+    assert ("1.0.1", {"configured_polarity": "auto", "enable": True, "configured_duplex": "full", "configured_speed": "100",
+                      "current_polarity": "mdix", "current_speed": "100", "current_duplex": "full", "link": False}) in d.interface.items()
     with pytest.raises(KeyError) as excinfo:
         d.interface['1.0.{0}'.format(10 * ats_total_port_number)]['link'] is False
     assert 'interface 1.0.{0} does not exist'.format(10 * ats_total_port_number) in excinfo.value

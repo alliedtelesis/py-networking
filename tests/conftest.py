@@ -133,7 +133,8 @@ class Emulator(recvline.HistoricRecvLine):
 
         if (src.find('http://') == 0) or (src.find('tftp://') == 0) or (src == 'r' and dst == 's'):
             for action in sorted(self.parent.cmds.values(), key=lambda k: (k['seq'], k['state'])):
-                if (action['cmd'].find('http://') > 0 or action['cmd'].find('tftp://') > 0 or action['cmd'] == 'copy r s') and (action['state'] == self.parent.state):
+                if (action['cmd'].find('http://') > 0 or action['cmd'].find('tftp://') > 0 or action['cmd'] == 'copy r s')\
+                        and (action['state'] == self.parent.state):
                     if action['action'] == 'SET_STATE':
                         self.parent.state = int(action['args'][0])
                     break
@@ -308,6 +309,7 @@ def pytest_addoption(parser):
 def log_level(request):
     log_level = request.config.getoption("--log")
     return log_level
+
 
 @pytest.fixture(scope="module")
 def use_mock(request):

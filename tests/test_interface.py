@@ -169,7 +169,8 @@ def test_enable(dut, log_level, use_mock):
     d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert d.interface['1.0.10']['enable'] is True
-    assert ("1.0.10", {"current polarity": "mdix", "description": "test1", "configured duplex": "auto", "current duplex": "full", "configured speed": "auto", "enable": True, "configured polarity": "auto", "current speed": "1000", "link": True}) in d.interface.items()
+    assert ("1.0.10", {"current polarity": "mdix", "description": "test1", "configured duplex": "auto", "current duplex": "full", "configured speed": "auto",
+                       "enable": True, "configured polarity": "auto", "current speed": "1000", "link": True}) in d.interface.items()
     d.interface.update('1.0.10', enable=False)
     assert d.interface['1.0.10']['enable'] is False
     d.interface.update('1.0.10', enable=True)

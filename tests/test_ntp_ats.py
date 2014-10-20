@@ -28,7 +28,7 @@ Serial number:   1122334455
     """]})
 
 
-def test_ntp_crud(dut, log_level):
+def test_ntp_crud(dut, log_level, use_mock):
     # Get the SNTP servers reachable:  ip default-gateway 10.17.39.1
     # Give a DNS service:              ip name-server 10.17.39.11
     #
@@ -198,7 +198,7 @@ Unicast servers:
     dut.add_cmd({'cmd': 'show sntp config', 'state': 6, 'action': 'PRINT', 'args': output_c_0})
     dut.add_cmd({'cmd': 'show sntp status', 'state': 6, 'action': 'PRINT', 'args': output_s_0})
 
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     with pytest.raises(KeyError) as excinfo:
         d.ntp[bad_ntp_address]

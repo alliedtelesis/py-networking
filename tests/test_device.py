@@ -67,14 +67,14 @@ def clean_test_firmware_upgrade(dut, release_file):
         os.remove(release_file)
 
 
-def test_open_close1(dut, log_level):
+def test_open_close1(dut, log_level, use_mock):
     setup_dut(dut)
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     d.close()
 
 
-def test_open_close2(dut, log_level):
+def test_open_close2(dut, log_level, use_mock):
     setup_dut(dut)
     d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, connection_timeout=3)
     d.open()
@@ -82,15 +82,15 @@ def test_open_close2(dut, log_level):
     d.close()
 
 
-def test_open_close3(dut, log_level):
+def test_open_close3(dut, log_level, use_mock):
     dut.reset()
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, unit_test=False)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock='n')
     with pytest.raises(DeviceException) as excinfo:
         d.open()
     assert str(excinfo.value).startswith("device not supported")
 
 
-def test_open_close4(dut, log_level):
+def test_open_close4(dut, log_level, use_mock):
     dut.reset()
     # d = Device(host='www.google.com',port=80,protocol=dut.protocol,log_level=log_level)
     # with pytest.raises(DeviceException) as excinfo:
@@ -108,19 +108,19 @@ def test_open_close4(dut, log_level):
     assert str(excinfo.value).startswith("authentication failed") is True
 
 
-def test_ping1(dut, log_level):
+def test_ping1(dut, log_level, use_mock):
     setup_dut(dut)
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert d.ping()
     d.close()
 
 
-def test_facts(dut, log_level):
+def test_facts(dut, log_level, use_mock):
     if dut.mode != 'emulated':
         pytest.skip("only on emulated")
     setup_dut(dut)
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert d.facts['build_date'] == 'Wed Sep 25 12:57:26 NZST 2013'
     assert d.facts['build_name'] == 'x600-5.4.2-3.14.rel'
@@ -129,7 +129,7 @@ def test_facts(dut, log_level):
     d.close()
 
 
-def test_config(dut, log_level):
+def test_config(dut, log_level, use_mock):
     if dut.mode != 'emulated':
         pytest.skip("only on emulated")
     setup_dut(dut)
@@ -182,24 +182,24 @@ line vty 0 4
 end
 """
     dut.add_cmd({'cmd': 'show running-config', 'state': 0, 'action': 'PRINT', 'args': [config]})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert d.config == config
     d.close()
 
 
-def test_system(dut, log_level):
+def test_system(dut, log_level, use_mock):
     if dut.mode != 'emulated':
         pytest.skip("only on emulated")
     setup_dut(dut)
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     cmds = d.system.shell_init()
     assert cmds[0]['cmd'] == 'terminal length 0'
     d.close()
 
 
-def test_save_config(dut, log_level):
+def test_save_config(dut, log_level, use_mock):
     setup_dut(dut)
     config_no_vlan = """
 !
@@ -315,7 +315,7 @@ end
     dut.add_cmd({'cmd': 'show running-config', 'state': 6, 'action': 'PRINT', 'args': [config_no_vlan]})
     dut.add_cmd({'cmd': 'show startup-config', 'state': 6, 'action': 'PRINT', 'args': [config_no_vlan]})
 
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert d.config == d.system.get_startup_config()
     d.vlan.create(3999)
@@ -329,7 +329,7 @@ end
     d.close()
 
 
-def test_firmware_upgrade_543(dut, log_level):
+def test_firmware_upgrade_543(dut, log_level, use_mock):
     output_0 = ["""
 Boot configuration
 ----------------------------------------------------------------
@@ -363,7 +363,7 @@ Backup  boot config: flash:/backup.cfg (file not found)
     dut.add_cmd({'cmd': 'show boot', 'state': 0, 'action': 'PRINT', 'args': output_0})
     dut.add_cmd({'cmd': update_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
     dut.add_cmd({'cmd': 'show boot', 'state': 1, 'action': 'PRINT', 'args': output_1})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     with pytest.raises(KeyError) as excinfo:
         d.system.update_firmware(false_release_file)
@@ -386,7 +386,7 @@ Backup  boot config: flash:/backup.cfg (file not found)
     clean_test_firmware_upgrade(dut, release_file)
 
 
-def test_full_path_firmware_upgrade(dut, log_level):
+def test_full_path_firmware_upgrade(dut, log_level, use_mock):
     output_0 = ["""
 Boot configuration
 ----------------------------------------------------------------
@@ -419,7 +419,7 @@ Backup  boot config: flash:/backup.cfg (file not found)
     dut.add_cmd({'cmd': 'show boot', 'state': 0, 'action': 'PRINT', 'args': output_0})
     dut.add_cmd({'cmd': update_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
     dut.add_cmd({'cmd': 'show boot', 'state': 1, 'action': 'PRINT', 'args': output_1})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     d.system.update_firmware(image_name, dontwait=dut.dontwait)
     if (dut.mode == 'emulated'):
@@ -430,7 +430,7 @@ Backup  boot config: flash:/backup.cfg (file not found)
     clean_test_firmware_upgrade(dut, image_name)
 
 
-def test_firmware_upgrade_544(dut, log_level):
+def test_firmware_upgrade_544(dut, log_level, use_mock):
     output_0 = ["""
 Boot configuration
 ----------------------------------------------------------------
@@ -475,7 +475,7 @@ Build type : RELEASE
     dut.add_cmd({'cmd': 'show version', 'state': 0, 'action': 'PRINT', 'args': output_show_version})
     dut.add_cmd({'cmd': update_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
     dut.add_cmd({'cmd': 'show boot', 'state': 1, 'action': 'PRINT', 'args': output_1})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     d.system.update_firmware(release_file, dontwait=dut.dontwait)
     if (dut.mode == 'emulated'):
@@ -486,7 +486,7 @@ Build type : RELEASE
     clean_test_firmware_upgrade(dut, release_file)
 
 
-def test_firmware_upgrade_544_unlicensed(dut, log_level):
+def test_firmware_upgrade_544_unlicensed(dut, log_level, use_mock):
     output_show_boot = ["""
 Boot configuration
 ----------------------------------------------------------------
@@ -529,7 +529,7 @@ Build type : RELEASE
     dut.add_cmd({'cmd': 'show license release brief', 'state': 0, 'action': 'PRINT', 'args': output_show_license})
     dut.add_cmd({'cmd': 'show version', 'state': 0, 'action': 'PRINT', 'args': output_show_version})
     dut.add_cmd({'cmd': update_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, unit_test=False)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock='n')
     d.open()
     with pytest.raises(KeyError) as excinfo:
         d.system.update_firmware(release_file)
@@ -539,7 +539,7 @@ Build type : RELEASE
     clean_test_firmware_upgrade(dut, release_file)
 
 
-def test_firmware_upgrade_544_licensed(dut, log_level):
+def test_firmware_upgrade_544_licensed(dut, log_level, use_mock):
     output_show_boot_0 = ["""
 Boot configuration
 ----------------------------------------------------------------
@@ -595,7 +595,7 @@ Build type : RELEASE
     dut.add_cmd({'cmd': 'show version', 'state': 0, 'action': 'PRINT', 'args': output_show_version})
     dut.add_cmd({'cmd': update_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
     dut.add_cmd({'cmd': 'show boot', 'state': 1, 'action': 'PRINT', 'args': output_show_boot_1})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     d.system.update_firmware(release_file, dontwait=dut.dontwait)
     if (dut.mode == 'emulated'):
@@ -606,9 +606,9 @@ Build type : RELEASE
     clean_test_firmware_upgrade(dut, release_file)
 
 
-def test_ping2(dut, log_level):
+def test_ping2(dut, log_level, use_mock):
     setup_dut(dut)
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     dut.stop()
     assert not d.ping()

@@ -30,7 +30,7 @@ Serial number:   1122334455
     """]})
 
 
-def test_update(dut, log_level):
+def test_update(dut, log_level, use_mock):
     clock_output_0 = ["""
 *01:13:50 (UTC+0)  Oct 1 2006
 No time source
@@ -136,7 +136,7 @@ Offset is UTC+8
     dut.add_cmd({'cmd': 'clock timezone 8 zone CST', 'state': 8, 'action': 'SET_STATE', 'args': [9]})
     dut.add_cmd({'cmd': 'no clock summer-time r', 'state': 9, 'action': 'SET_STATE', 'args': [10]})
     dut.add_cmd({'cmd': 'show clock detail', 'state': 10, 'action': 'PRINT', 'args': clock_output_5})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
 
     with pytest.raises(KeyError) as excinfo:

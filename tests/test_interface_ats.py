@@ -44,11 +44,11 @@ Serial number:
     """]})
 
 
-def test_show_system(dut, log_level):
+def test_show_system(dut, log_level, use_mock):
     if dut.mode != 'emulated':
         pytest.skip("only on emulated")
     setup_dut(dut)
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert (d.facts['model'] in ats_supported_model)
     global ats_model_port_number
@@ -56,25 +56,25 @@ def test_show_system(dut, log_level):
     d.close()
 
 
-def test_show_version(dut, log_level):
+def test_show_version(dut, log_level, use_mock):
     if dut.mode != 'emulated':
         pytest.skip("only on emulated")
     setup_dut(dut)
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert (d.facts['version'] == ats_supported_sw_version)
     d.close()
 
 
-def test_ping1(dut, log_level):
+def test_ping1(dut, log_level, use_mock):
     setup_dut(dut)
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert d.ping()
     d.close()
 
 
-def test_get_interface(dut, log_level):
+def test_get_interface(dut, log_level, use_mock):
     if dut.mode != 'emulated':
         pytest.skip("only on emulated")
     setup_dut(dut)
@@ -250,7 +250,7 @@ Port      Description
 2/e3
     """]})
 
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
 
     assert d.facts['os'] == 'ats'
@@ -290,7 +290,7 @@ Port      Description
     d.close()
 
 
-def test_update_description(dut, log_level):
+def test_update_description(dut, log_level, use_mock):
     setup_dut(dut)
     dut.add_cmd({'cmd': 'show interfaces status', 'state': -1, 'action': 'PRINT', 'args': ["""
 
@@ -587,7 +587,7 @@ Port      Description
 2/e2
 2/e3
     """]})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     d.interface.update('1.0.18', description='test description')
     assert d.interface['1.0.18']['description'] == 'test description'
@@ -596,7 +596,7 @@ Port      Description
     d.close()
 
 
-def test_update_interface_48(dut, log_level):
+def test_update_interface_48(dut, log_level, use_mock):
     if dut.mode != 'emulated':
         pytest.skip("only on emulated")
     setup_dut(dut)
@@ -909,7 +909,7 @@ Port      Description
 2/e2
 2/e3
     """]})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert '1.0.10' in d.interface
     assert d.interface['1.0.24']['enable'] is False

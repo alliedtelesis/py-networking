@@ -301,9 +301,15 @@ def dut(request):
 def pytest_addoption(parser):
     parser.addoption("--log", default='notset', action="store", help="show log messages")
     parser.addoption("--dut-host", default='127.0.0.1', action="store", help="dut hostname or address")
+    parser.addoption("--mock", default='notset', action="store", help="type y or yes to use mock")
 
 
 @pytest.fixture(scope="module")
 def log_level(request):
     log_level = request.config.getoption("--log")
     return log_level
+
+@pytest.fixture(scope="module")
+def use_mock(request):
+    use_mock = request.config.getoption("--mock")
+    return use_mock

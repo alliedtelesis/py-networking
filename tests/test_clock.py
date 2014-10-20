@@ -15,7 +15,7 @@ Build type : RELEASE
 """]})
 
 
-def test_update(dut, log_level):
+def test_update(dut, log_level, use_mock):
     clock_output_0 = ["""
 UTC Time:   Thu, 18 Sep 2014 14:19:21 +0000
 Timezone: UTC
@@ -101,7 +101,7 @@ Summer time zone: None
     dut.add_cmd({'cmd': 'clock timezone CST plus 8', 'state': 8, 'action': 'SET_STATE', 'args': [9]})
     dut.add_cmd({'cmd': 'no clock summer-time', 'state': 9, 'action': 'SET_STATE', 'args': [10]})
     dut.add_cmd({'cmd': 'show clock', 'state': 10, 'action': 'PRINT', 'args': clock_output_5})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
 
     with pytest.raises(KeyError) as excinfo:

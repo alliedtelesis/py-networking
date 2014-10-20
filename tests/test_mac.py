@@ -19,7 +19,7 @@ Build type : RELEASE
         dut.sleep_time = 0
 
 
-def test_nodots_mac_crud(dut, log_level):
+def test_nodots_mac_crud(dut, log_level, use_mock):
     output_a = ["""
 !
 interface port1.0.1-1.0.50
@@ -78,7 +78,7 @@ VLAN port             mac            fwd
     dut.add_cmd({'cmd': delete_cmd, 'state': 2, 'action': 'SET_STATE', 'args': [3]})
     dut.add_cmd({'cmd': 'show mac address-table', 'state': 3, 'action': 'PRINT', 'args': output_0})
 
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     with pytest.raises(KeyError) as excinfo:
         d.mac[missing_mac_address]
@@ -112,7 +112,7 @@ VLAN port             mac            fwd
     d.close()
 
 
-def test_colon_mac_crud(dut, log_level):
+def test_colon_mac_crud(dut, log_level, use_mock):
     output_0 = ["""
 VLAN port             mac            fwd
 1    port1.0.1    0000.cd1d.7eb0   forward   dynamic
@@ -151,7 +151,7 @@ VLAN port             mac            fwd
     dut.add_cmd({'cmd': delete_cmd, 'state': 2, 'action': 'SET_STATE', 'args': [3]})
     dut.add_cmd({'cmd': 'show mac address-table', 'state': 3, 'action': 'PRINT', 'args': output_0})
 
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert dotted_mac not in d.mac.keys()
     d.mac.create(mac_address, ifc, forward=False, sleep_time=dut.sleep_time)
@@ -163,7 +163,7 @@ VLAN port             mac            fwd
     d.close()
 
 
-def test_dashed_mac_crud(dut, log_level):
+def test_dashed_mac_crud(dut, log_level, use_mock):
     output_0 = ["""
 VLAN port             mac            fwd
 1    port1.0.1    0000.cd1d.7eb0   forward   dynamic
@@ -202,7 +202,7 @@ VLAN port             mac            fwd
     dut.add_cmd({'cmd': delete_cmd, 'state': 2, 'action': 'SET_STATE', 'args': [3]})
     dut.add_cmd({'cmd': 'show mac address-table', 'state': 3, 'action': 'PRINT', 'args': output_0})
 
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert dotted_mac not in d.mac.keys()
     d.mac.create(mac_address, ifc, sleep_time=dut.sleep_time)
@@ -214,7 +214,7 @@ VLAN port             mac            fwd
     d.close()
 
 
-def test_dotted_mac_crud(dut, log_level):
+def test_dotted_mac_crud(dut, log_level, use_mock):
     output_0 = ["""
 VLAN port             mac            fwd
 1    port1.0.1    0000.cd1d.7eb0   forward   dynamic
@@ -253,7 +253,7 @@ VLAN port             mac            fwd
     dut.add_cmd({'cmd': delete_cmd, 'state': 2, 'action': 'SET_STATE', 'args': [3]})
     dut.add_cmd({'cmd': 'show mac address-table', 'state': 3, 'action': 'PRINT', 'args': output_0})
 
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert dotted_mac not in d.mac.keys()
     d.mac.create(mac_address, ifc, sleep_time=dut.sleep_time)
@@ -265,7 +265,7 @@ VLAN port             mac            fwd
     d.close()
 
 
-def test_delete_all(dut, log_level):
+def test_delete_all(dut, log_level, use_mock):
     output_0 = ["""
 VLAN port             mac            fwd
 1    port1.0.1    0000.cd1d.7eb0   forward   dynamic
@@ -291,7 +291,7 @@ VLAN port             mac            fwd
     dut.add_cmd({'cmd': 'clear mac address-table static', 'state': 1, 'action': 'SET_STATE', 'args': [2]})
     dut.add_cmd({'cmd': 'show mac address-table', 'state': 2, 'action': 'PRINT', 'args': output_0})
 
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     d.mac.create(mac_address, ifc, sleep_time=dut.sleep_time)
     assert d.mac._check_static_entry_presence() is True

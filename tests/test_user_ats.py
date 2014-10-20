@@ -28,7 +28,7 @@ Serial number:
     """]})
 
 
-def test_add_user(dut, log_level):
+def test_add_user(dut, log_level, use_mock):
     config_0 = ["""
 interface range ethernet 1/e(1-16)
 spanning-tree portfast
@@ -58,7 +58,7 @@ username operator password cde2fde1fa1551a704d775ce2315915d  encrypted
     dut.add_cmd({'cmd': 'show running-config', 'state': 0, 'action': 'PRINT', 'args': config_0})
     dut.add_cmd({'cmd': 'username operator password enemy level 1', 'state': 0, 'action': 'SET_STATE', 'args': [1]})
     dut.add_cmd({'cmd': 'show running-config', 'state': 1, 'action': 'PRINT', 'args': config_1})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert 'operator' not in d.user.keys()
     d.user.create("operator", password="enemy", privilege_level=1)
@@ -73,7 +73,7 @@ username operator password cde2fde1fa1551a704d775ce2315915d  encrypted
     d.close()
 
 
-def test_change_user_password(dut, log_level):
+def test_change_user_password(dut, log_level, use_mock):
     config_0 = ["""
 !
 service password-encryption
@@ -143,7 +143,7 @@ end
     dut.add_cmd({'cmd': 'show running-config', 'state': 1, 'action': 'PRINT', 'args': config_1})
     dut.add_cmd({'cmd': 'username operator password enemy', 'state': 1, 'action': 'SET_STATE', 'args': [2]})
     dut.add_cmd({'cmd': 'show running-config', 'state': 2, 'action': 'PRINT', 'args': config_2})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     old_pwd = d.user['operator']['password']
     d.user.update("operator", password="newpwd")
@@ -161,7 +161,7 @@ end
     d.close()
 
 
-def test_change_user_privilege(dut, log_level):
+def test_change_user_privilege(dut, log_level, use_mock):
     config_0 = ["""
 !
 service password-encryption
@@ -231,7 +231,7 @@ end
     dut.add_cmd({'cmd': 'show running-config', 'state': 1, 'action': 'PRINT', 'args': config_1})
     dut.add_cmd({'cmd': 'username operator level 1', 'state': 1, 'action': 'SET_STATE', 'args': [2]})
     dut.add_cmd({'cmd': 'show running-config', 'state': 2, 'action': 'PRINT', 'args': config_2})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert d.user['operator']['privilege_level'] == '1'
     d.user.update("operator", privilege_level=2)
@@ -241,7 +241,7 @@ end
     d.close()
 
 
-def test_remove_user(dut, log_level):
+def test_remove_user(dut, log_level, use_mock):
     config_0 = ["""
 !
 service password-encryption
@@ -287,7 +287,7 @@ end
     dut.add_cmd({'cmd': 'show running-config', 'state': 0, 'action': 'PRINT', 'args': config_0})
     dut.add_cmd({'cmd': 'no username operator', 'state': 0, 'action': 'SET_STATE', 'args': [1]})
     dut.add_cmd({'cmd': 'show running-config', 'state': 1, 'action': 'PRINT', 'args': config_1})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     d.user.delete("operator")
     with pytest.raises(KeyError):
@@ -295,7 +295,7 @@ end
     d.close()
 
 
-def test_encrypted_password(dut, log_level):
+def test_encrypted_password(dut, log_level, use_mock):
     config_0 = ["""
 !
 service password-encryption
@@ -394,7 +394,7 @@ end
     dut.add_cmd({'cmd': 'show running-config', 'state': 2, 'action': 'PRINT', 'args': config_2})
     dut.add_cmd({'cmd': 'no username encuser', 'state': 2, 'action': 'SET_STATE', 'args': [3]})
     dut.add_cmd({'cmd': 'show running-config', 'state': 3, 'action': 'PRINT', 'args': config_3})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert usr not in d.user.keys()
     d.user.create(usr, password=enc_pwd_1, privilege_level=10, encrypted=True)

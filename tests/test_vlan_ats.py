@@ -29,7 +29,7 @@ Serial number:
 """]})
 
 
-def test_get_vlan(dut, log_level):
+def test_get_vlan(dut, log_level, use_mock):
     setup_dut(dut)
     dut.add_cmd({'cmd': 'show interfaces status', 'state': 0, 'action': 'PRINT', 'args': ["""
 
@@ -243,7 +243,7 @@ hostname nac_dev
 ip ssh server
     """]})
 
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     if dut.mode == 'emulated':
         assert dict(d.vlan) == {"4045": {"untagged": [], "tagged": [], "type": "permanent", "name": "4045"},
@@ -272,7 +272,7 @@ ip ssh server
     d.close()
 
 
-def test_vlan_dashed_list(dut, log_level):
+def test_vlan_dashed_list(dut, log_level, use_mock):
     if dut.mode != 'emulated':
         pytest.skip("only on emulated")
     output_show_rcfg = ["""
@@ -321,7 +321,7 @@ Vlan       Name                   Ports                Type     Authorization
     setup_dut(dut)
     dut.add_cmd({'cmd': 'show running-config', 'state': 0, 'action': 'PRINT', 'args': output_show_rcfg})
     dut.add_cmd({'cmd': 'show vlan', 'state': 0, 'action': 'PRINT', 'args': output_show_vlan})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     with pytest.raises(TypeError) as excinfo:
         d.vlan[d.vlan]
@@ -345,7 +345,7 @@ Vlan       Name                   Ports                Type     Authorization
     d.close()
 
 
-def test_crud_vlan(dut, log_level):
+def test_crud_vlan(dut, log_level, use_mock):
     output_rc_0 = ["""
 interface vlan 1
 ip address 10.17.39.252 255.255.255.0
@@ -471,7 +471,7 @@ Vlan       Name                   Ports                Type     Authorization
     dut.add_cmd({'cmd': 'show running-config', 'state': 8, 'action': 'PRINT', 'args': output_rc_0})
     dut.add_cmd({'cmd': 'show vlan', 'state': 8, 'action': 'PRINT', 'args': output_vl_0})
 
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     d.vlan.create(10, name='new vlan')
     assert '10' in d.vlan
@@ -486,7 +486,7 @@ Vlan       Name                   Ports                Type     Authorization
     d.close()
 
 
-def test_get_interface_config(dut, log_level):
+def test_get_interface_config(dut, log_level, use_mock):
     if dut.mode != 'emulated':
         pytest.skip("only on emulated")
     setup_dut(dut)
@@ -515,7 +515,7 @@ exit
 hostname nac_dev
 ip ssh server
     """]})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert d.vlan._interface_config['1.0.10']['switchport mode'] == 'trunk'
     assert d.vlan._interface_config['1.0.10']['switchport trunk allowed'] == '10'
@@ -527,7 +527,7 @@ ip ssh server
     d.close()
 
 
-def test_add_and_delete_interface_1(dut, log_level):
+def test_add_and_delete_interface_1(dut, log_level, use_mock):
     output_rc_0 = ["""
 vlan database
 vlan 10
@@ -609,7 +609,7 @@ Vlan       Name                   Ports                Type     Authorization
     dut.add_cmd({'cmd': 'show running-config', 'state': 4, 'action': 'PRINT', 'args': output_rc_0})
     dut.add_cmd({'cmd': 'show vlan', 'state': 4, 'action': 'PRINT', 'args': output_vl_0})
 
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     d.vlan.add_interface(10, '1.0.20')
     assert '1.0.20' in d.vlan[10]['untagged']
@@ -634,7 +634,7 @@ Vlan       Name                   Ports                Type     Authorization
     d.close()
 
 
-def test_add_and_delete_interface_2(dut, log_level):
+def test_add_and_delete_interface_2(dut, log_level, use_mock):
     output_rc_0 = ["""
 vlan database
 vlan 10
@@ -718,7 +718,7 @@ Vlan       Name                   Ports                Type     Authorization
     dut.add_cmd({'cmd': 'show running-config', 'state': 5, 'action': 'PRINT', 'args': output_rc_0})
     dut.add_cmd({'cmd': 'show vlan', 'state': 5, 'action': 'PRINT', 'args': output_vl_0})
 
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     d.vlan.add_interface(10, '1.0.20', tagged=True)
     assert '1.0.20' in d.vlan[1]['untagged']
@@ -729,7 +729,7 @@ Vlan       Name                   Ports                Type     Authorization
     d.close()
 
 
-def test_add_and_delete_interface_3(dut, log_level):
+def test_add_and_delete_interface_3(dut, log_level, use_mock):
     output_rc_0 = ["""
 vlan database
 vlan 10
@@ -811,7 +811,7 @@ Vlan       Name                   Ports                Type     Authorization
     dut.add_cmd({'cmd': 'show running-config', 'state': 4, 'action': 'PRINT', 'args': output_rc_0})
     dut.add_cmd({'cmd': 'show vlan', 'state': 4, 'action': 'PRINT', 'args': output_vl_0})
 
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     d.vlan.add_interface(10, '1.0.20')
     assert '1.0.20' in d.vlan[10]['untagged']
@@ -820,7 +820,7 @@ Vlan       Name                   Ports                Type     Authorization
     d.close()
 
 
-def test_add_interface4(dut, log_level):
+def test_add_interface4(dut, log_level, use_mock):
     if dut.mode != 'emulated':
         pytest.skip("only on emulated")
     setup_dut(dut)
@@ -896,18 +896,18 @@ exit
 hostname nac_dev
 ip ssh server
     """]})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     d.vlan.add_interface(10, '1.0.20', tagged=True)
     assert '1.0.20' in d.vlan[10]['tagged']
     d.close()
 
 
-def test_get_vlan_ids(dut, log_level):
+def test_get_vlan_ids(dut, log_level, use_mock):
     if dut.mode != 'emulated':
         pytest.skip("only on emulated")
     setup_dut(dut)
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert d.vlan._get_vlan_ids('10,20,30,40,50') == [10, 20, 30, 40, 50]
     assert d.vlan._get_vlan_ids('10-15') == [10, 11, 12, 13, 14, 15]

@@ -180,7 +180,9 @@ Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
     assert label in d.license.keys()
     assert d.license[label]['features'] == 'BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT, VRF-LITE, VRF-LITE-63'
     assert d.license[label]['releases'] == ''
-    assert (label, {'customer': d.license[label]['customer'], 'quantity': d.license[label]['quantity'], 'type': d.license[label]['type'], 'issue_date': d.license[label]['issue_date'], 'expire_date': d.license[label]['expire_date'], 'features': d.license[label]['features'], 'releases': ''}) in d.license.items()
+    assert (label, {'customer': d.license[label]['customer'], 'quantity': d.license[label]['quantity'], 'type': d.license[label]['type'],
+                    'issue_date': d.license[label]['issue_date'], 'expire_date': d.license[label]['expire_date'],
+                    'features': d.license[label]['features'], 'releases': ''}) in d.license.items()
     with pytest.raises(KeyError) as excinfo:
         d.license.delete(label='Bbase')
     assert 'label Bbase does not exist' in excinfo.value

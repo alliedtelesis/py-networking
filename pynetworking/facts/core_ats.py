@@ -14,7 +14,8 @@ def core_ats(dev):
     # ------------------- ------------------- ------------------- -------------------
     #         1               3.0.0.44            1.0.1.07            00.01.00
 
-    m = re.search("Unit\s+SW\sversion\s+Boot\sversion\s+HW\sversion\s*\n[^\n]+\n\s+(?P<unit>\d)\s+(?P<version>[\d\.]+)\s+(?P<boot_version>[\d\.]+)\s+(?P<hardware_rev>[\d\.]+)", out)
+    m = re.search("Unit\s+SW\sversion\s+Boot\sversion\s+HW\sversion\s*\n[^\n]+\n\s+(?P<unit>\d)\s+(?P<version>[\d\.]+)"
+                  "\s+(?P<boot_version>[\d\.]+)\s+(?P<hardware_rev>[\d\.]+)", out)
 
     if m:
         ret['os'] = 'ats'

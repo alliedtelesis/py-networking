@@ -80,7 +80,8 @@ VLAN ID  Name            Type    State   Member ports
                              }
         assert d.vlan[7] == {"current state": "ACTIVE", "untagged": ("1.0.29",), "type": "STATIC", "name": "VLAN0007", "tagged": ("1.0.28",)}
         assert d.vlan[20] == {"current state": "ACTIVE", "untagged": ("1.0.42",), "type": "STATIC", "name": "this is a long vlan name", "tagged": ("1.0.43",)}
-        assert d.vlan[10] == {"current state": "ACTIVE", "untagged": ("1.0.29",), "type": "STATIC", "name": "VLAN0010", "tagged": ("1.0.28", "1.0.19", "1.0.30")}
+        assert d.vlan[10] == {"current state": "ACTIVE", "untagged": ("1.0.29",), "type": "STATIC", "name": "VLAN0010",
+                              "tagged": ("1.0.28", "1.0.19", "1.0.30")}
     else:
         assert d.vlan[1]['tagged'] == ()
         assert d.vlan[1]['untagged'] != ()
@@ -401,7 +402,8 @@ VLAN ID  Name            Type    State   Member ports
     d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     d.vlan.create(10, name='this is a long vlan name', mtu=1200)
-    assert d.vlan[10] == {'current state': 'ACTIVE', 'tagged': (), 'type': 'STATIC', 'untagged': (), 'state': 'enable', 'name': 'this is a long vlan name', 'mtu': 1200}
+    assert d.vlan[10] == {'current state': 'ACTIVE', 'tagged': (), 'type': 'STATIC', 'untagged': (), 'state': 'enable',
+                          'name': 'this is a long vlan name', 'mtu': 1200}
     with pytest.raises(KeyError) as excinfo:
         d.vlan.update(30, name='does not exist')
     assert '[30] vlans do not exist' in excinfo.value

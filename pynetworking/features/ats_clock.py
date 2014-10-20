@@ -191,11 +191,13 @@ class ats_clock(Feature):
 
             m = ifre4.match(line)
             if m:
-                summertime_start = self._get_summertime_str(m.group('bweek'), m.group('bday'), m.group('bmonth'), the_year) + m.group('bhour') + ':' + m.group('bmin') + ':00'
+                summertime_start = self._get_summertime_str(m.group('bweek'), m.group('bday'), m.group('bmonth'), the_year)
+                summertime_start += m.group('bhour') + ':' + m.group('bmin') + ':00'
 
             m = ifre5.match(line)
             if m:
-                summertime_end = self._get_summertime_str(m.group('eweek'), m.group('eday'), m.group('emonth'), the_year) + m.group('ehour') + ':' + m.group('emin') + ':00'
+                summertime_end = self._get_summertime_str(m.group('eweek'), m.group('eday'), m.group('emonth'), the_year)
+                summertime_end += m.group('ehour') + ':' + m.group('emin') + ':00'
 
             m = ifre6.match(line)
             if m:

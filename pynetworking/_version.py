@@ -14,7 +14,7 @@ git_full = "$Format:%H$"
 
 
 import subprocess
-import sys
+# import sys
 import errno
 
 

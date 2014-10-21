@@ -54,51 +54,70 @@ class ats_clock(Feature):
             if datetime is not None:
                 loc_now = datetime
             loc_dt = timezone.localize(loc_now)
-            tz_name = loc_dt.strftime('%Z')
-            offset = loc_dt.strftime('%z')
-
-            sign = offset[0:1]
-            if (offset[1] == '0'):
-                off_h = offset[2:3]
-            else:
-                off_h = offset[1:3]
-
-            # clock timezone hours-offset [minutes minutes-offset] [zone acronym]
-            if sign == '+':
-                sign = ''
-            tz_cmd = "clock timezone {0}{1} zone {2}".format(sign, off_h, tz_name)
-            cmds = {'cmds': [{'cmd': 'conf', 'prompt': '\(config\)\#'},
-                             {'cmd': tz_cmd, 'prompt': '\(config\)\#'}
-                             ]}
+            cmds = {'cmds': [{'cmd': 'conf', 'prompt': '\(config\)\#'}]}
 
             # set the DST rules
             begin_dst = self._get_begin_dst(timezone, loc_dt)
             end_dst = self._get_end_dst(timezone, loc_dt)
             if (begin_dst is not None and end_dst is not None):
+                # timezone uses DST
                 hh = int(begin_dst.strftime('%H')) - 1
                 mm = begin_dst.strftime('%M')
                 bt = "{0}:{1}".format(hh, mm)
                 bd = begin_dst.strftime('%a')
-                bd = bd.lower()
                 bw = str((int(begin_dst.strftime('%d')) - 1) / 7 + 1)
                 bm = begin_dst.strftime('%b')
-                bm = bm.lower()
+                summer_time_zone = begin_dst.strftime('%Z')
 
                 hh = int(end_dst.strftime('%H'))
                 mm = end_dst.strftime('%M')
                 et = "{0}:{1}".format(hh, mm)
                 ed = end_dst.strftime('%a')
-                ed = ed.lower()
                 ew = str((int(end_dst.strftime('%d')) - 1) / 7 + 1)
                 em = end_dst.strftime('%b')
-                em = em.lower()
+                no_dst_tz_name = end_dst.strftime('%Z')
+
+                offset = end_dst.strftime('%z')
+                sign = offset[0:1]
+                if (offset[1] == '0'):
+                    off_h = offset[2:3]
+                else:
+                    off_h = offset[1:3]
+
+                if sign == '+':
+                    sign = ''
 
                 om = '60'
+                bd = bd.lower()
+                bm = bm.lower()
+                ed = ed.lower()
+                em = em.lower()
+
+                # clock timezone hours-offset [minutes minutes-offset] [zone acronym]
+                tz_cmd = "clock timezone {0}{1} zone {2}".format(sign, off_h, no_dst_tz_name)
+                cmds['cmds'].append({'cmd': tz_cmd, 'prompt': '\(config\)\#'})
 
                 # clock summer-time recurring week day month hh:mm week day month hh:mm [offset offset] [zone acronym]
-                st_cmd = "clock su r {0} {1} {2} {3} {4} {5} {6} {7} o {8} z {9}".format(bw, bd, bm, bt, ew, ed, em, et, om, tz_name)
+                st_cmd = "clock su r {0} {1} {2} {3} {4} {5} {6} {7} o {8} z {9}".format(bw, bd, bm, bt, ew, ed, em, et, om, summer_time_zone)
                 cmds['cmds'].append({'cmd': st_cmd, 'prompt': '\(config\)\#'})
             else:
+                tz_name = loc_dt.strftime('%Z')
+                offset = loc_dt.strftime('%z')
+
+                sign = offset[0:1]
+                if (offset[1] == '0'):
+                    off_h = offset[2:3]
+                else:
+                    off_h = offset[1:3]
+
+                if sign == '+':
+                    sign = ''
+
+                # clock timezone hours-offset [minutes minutes-offset] [zone acronym]
+                tz_cmd = "clock timezone {0}{1} zone {2}".format(sign, off_h, tz_name)
+                cmds['cmds'].append({'cmd': tz_cmd, 'prompt': '\(config\)\#'})
+
+                # timezone does not use DST
                 st_cmd = "no clock summer-time r"
                 cmds['cmds'].append({'cmd': st_cmd, 'prompt': '\(config\)\#'})
 
@@ -130,8 +149,9 @@ class ats_clock(Feature):
 
         local_time = ''
         utc_time = ''
-        timezone_name = 'UTC'
+        timezone_name = ''
         timezone_offset = ''
+        summertime_zone = ''
         summertime_start = ''
         summertime_end = ''
         summertime_offset = ''
@@ -146,7 +166,7 @@ class ats_clock(Feature):
         # Offset is UTC+10
         #
         # Summertime:
-        # Acronym is AEST
+        # Acronym is AEDT
         # Recurring every year.
         # Begins at 01 01 10 02:00.
         # Ends at 01 01 04 03:00.
@@ -187,7 +207,10 @@ class ats_clock(Feature):
 
             m = ifre3.match(line)
             if m:
-                timezone_name = m.group('timezone_name')
+                if timezone_name == '':
+                    timezone_name = m.group('timezone_name')
+                else:
+                    summertime_zone = m.group('timezone_name')
 
             m = ifre4.match(line)
             if m:
@@ -212,6 +235,7 @@ class ats_clock(Feature):
                        'utc_time': utc_time,
                        'timezone_name': timezone_name,
                        'timezone_offset': timezone_offset,
+                       'summertime_zone': summertime_zone,
                        'summertime_start': summertime_start,
                        'summertime_end': summertime_end,
                        'summertime_offset': summertime_offset

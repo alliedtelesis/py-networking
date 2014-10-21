@@ -83,8 +83,7 @@ Summer time zone: None
 
     setup_dut(dut)
 
-    # tests use a fixed date, otherwise they can fail depending on the current date
-    dt = datetime(2014, 9, 19, 11, 2, 0)     # dt = datetime.now()
+    dt = datetime.now()
 
     tz1 = timezone('Europe/Rome')
     tz2 = timezone('America/Montevideo')

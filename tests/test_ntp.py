@@ -13,7 +13,7 @@ Build type : RELEASE
     """]})
 
 
-def test_ntp_crud(dut, log_level):
+def test_ntp_crud(dut, log_level, use_mock):
     # Add the routes manually to have the NTP servers reachable.
     # Add a DNS server to solve host names.
     #
@@ -80,7 +80,7 @@ end
     dut.add_cmd({'cmd': delete_cmd_2, 'state': 3, 'action': 'SET_STATE', 'args': [4]})
     dut.add_cmd({'cmd': 'show ntp associations', 'state': 4, 'action': 'PRINT', 'args': output_0})
 
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     with pytest.raises(KeyError) as excinfo:
         d.ntp[bad_ntp_address]

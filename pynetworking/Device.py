@@ -27,7 +27,7 @@ class Device(object):
     """ test doc
     """
     def __init__(self, host, username='manager', password='friend', protocol='ssh', port='auto', os='auto',
-                 log_level='NOTSET', log_output='console:', connection_timeout=20, unit_test=True):
+                 log_level='NOTSET', log_output='console:', connection_timeout=20, mock='n'):
         if protocol not in ('telnet', 'ssh', 'serial'):
             raise ValueError("Unsupported protocol " + protocol)
         self._proxy = None
@@ -39,7 +39,8 @@ class Device(object):
         self._password = password
         self._protocol = protocol
         self._port = port
-        self._unittest = unit_test
+
+        self._mock_test = self._get_mock_opt(mock.lower())
 
         self._log_level = getattr(logging, log_level.upper())
         hdl = logging.StreamHandler()
@@ -106,7 +107,7 @@ class Device(object):
             return False
 
     def open(self):
-        if self._unittest is False:
+        if self._mock_test is False:
             self._open()
         else:
             self._mocked_open()
@@ -163,6 +164,12 @@ class Device(object):
         except zmq.error.ZMQError, e:
             self.log_warn("ZMQError {0}".format(repr(e)))
             raise DeviceException("ZMQError {0}".format(repr(e)))
+
+    def _get_mock_opt(self, mock):
+        ret = False
+        if self._host == '127.0.0.1' and (mock == 'y' or mock == 'yes'):
+            ret = True
+        return ret
 
     def _load_core_facts(self):
         self.log_info("loading core facts")
@@ -275,44 +282,44 @@ class Device(object):
         self.load_system()
 
     def _mocked_open(self):
-        self.log_info("mocked open")
-        frm = inspect.stack()[2]  # 2 is because is a second level nesting (test_...(dut, log_level) - open() - _mocked_open())
-        mod = inspect.getmodule(frm[0])
-        feat = mod.__name__.split('_')[1]
-        os = mod.__name__.split('_')[-1]
-        if feat == os:
-            os = 'awp'
-        if os == 'coverage':  # extra tests to cover it all
-            self._open()
-            return
+        # use 2 because is a second level nesting (test_...(dut, log_level) - open() - _mocked_open())
+        frm = inspect.stack()[2]           # pragma: no cover
+        mod = inspect.getmodule(frm[0])    # pragma: no cover
+        feat = mod.__name__.split('_')[1]  # pragma: no cover
+        os = mod.__name__.split('_')[-1]   # pragma: no cover
+        if feat == os:                     # pragma: no cover
+            os = 'awp'                     # pragma: no cover
+        if os == 'coverage':               # pragma: no cover
+            self._open()                   # pragma: no cover
+            return                         # pragma: no cover
 
-        yaml_load_mocked = MagicMock()
-        load_facts_mocked = MagicMock()
-        with patch('pynetworking.Device._load_core_facts', load_facts_mocked):
-            with patch('yaml.load', yaml_load_mocked):
-                yaml_load_mocked.return_value = self._mock_load_features(os=os, feat=feat)
-                load_facts_mocked.side_effect = self._mock_load_facts(os)
-                self.cmd({'cmds': [{'cmd': '_status', 'prompt': ''}]})
-                self._load_core_facts()
-                self._load_features()
-                self.load_system()
+        yaml_load_mocked = MagicMock()                                                      # pragma: no cover
+        load_facts_mocked = MagicMock()                                                     # pragma: no cover
+        with patch('pynetworking.Device._load_core_facts', load_facts_mocked):              # pragma: no cover
+            with patch('yaml.load', yaml_load_mocked):                                      # pragma: no cover
+                yaml_load_mocked.return_value = self._mock_load_features(os=os, feat=feat)  # pragma: no cover
+                load_facts_mocked.side_effect = self._mock_load_facts(os)                   # pragma: no cover
+                self.cmd({'cmds': [{'cmd': '_status', 'prompt': ''}]})                      # pragma: no cover
+                self._load_core_facts()                                                     # pragma: no cover
+                self._load_features()                                                       # pragma: no cover
+                self.load_system()                                                          # pragma: no cover
 
     def _mock_load_features(self, os, feat):
-        if feat == 'device':
-            return {'system': os + '_system', 'features': {'file': os + '_file', 'vlan': os + '_vlan'}}
-        if feat == 'license':
-            return {'system': os + '_system', 'features': {'license': os + '_license', 'file': os + '_file'}}
-        if feat == 'vlan' and os == 'ats':
-            return {'system': os + '_system', 'features': {'interface': os + '_interface', 'vlan': os + '_vlan'}}
-        return {'system': os + '_system', 'features': {feat: os + '_' + feat}}
+        if feat == 'device':                                                                                       # pragma: no cover
+            return {'system': os + '_system', 'features': {'file': os + '_file', 'vlan': os + '_vlan'}}            # pragma: no cover
+        if feat == 'license':                                                                                      # pragma: no cover
+            return {'system': os + '_system', 'features': {'license': os + '_license', 'file': os + '_file'}}      # pragma: no cover
+        if feat == 'vlan' and os == 'ats':                                                                         # pragma: no cover
+            return {'system': os + '_system', 'features': {'interface': os + '_interface', 'vlan': os + '_vlan'}}  # pragma: no cover
+        return {'system': os + '_system', 'features': {feat: os + '_' + feat}}                                     # pragma: no cover
 
     def _mock_load_facts(self, os):
-        if (os == 'ats'):
-            self._facts = {'model': u'AT-8000S/24', 'version': u'3.0.0.44', 'unit_number': u'1', 'os': 'ats',
-                           'serial_number': u'1122334455', 'boot version': u'1.0.1.07', 'hardware_rev': u'00.01.00'}
-            return
-        if (os == 'awp'):
-            self._facts = {'build_date': u'Wed Sep 25 12:57:26 NZST 2013', 'version': u'5.4.2', 'sw_release': u'5.4.2',
-                           'build_name': u'x600-5.4.2-3.14.rel', 'os': 'awp', 'build_type': u'RELEASE'}
-            return
-        self._facts = {}
+        if (os == 'ats'):                                                                                                # pragma: no cover
+            self._facts = {'model': u'AT-8000S/24', 'version': u'3.0.0.44', 'unit_number': u'1', 'os': 'ats',            # pragma: no cover
+                           'serial_number': u'1122334455', 'boot version': u'1.0.1.07', 'hardware_rev': u'00.01.00'}     # pragma: no cover
+            return                                                                                                       # pragma: no cover
+        if (os == 'awp'):                                                                                                # pragma: no cover
+            self._facts = {'build_date': u'Wed Sep 25 12:57:26 NZST 2013', 'version': u'5.4.2', 'sw_release': u'5.4.2',  # pragma: no cover
+                           'build_name': u'x600-5.4.2-3.14.rel', 'os': 'awp', 'build_type': u'RELEASE'}                  # pragma: no cover
+            return                                                                                                       # pragma: no cover
+        self._facts = {}                                                                                                 # pragma: no cover

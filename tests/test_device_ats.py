@@ -89,7 +89,7 @@ def clean_test_firmware_upgrade(dut, image_name):
     os.rmdir('tftp_server_dir')
 
 
-def test_facts_1(dut, log_level):
+def test_facts_1(dut, log_level, use_mock):
     if dut.mode != 'emulated':
         pytest.skip("only on emulated")
 
@@ -118,7 +118,7 @@ Serial Number:   1122334231
     setup_dut(dut)
     dut.add_cmd({'cmd': 'show system', 'state': 0, 'action': 'PRINT', 'args': [out_sys]})
     dut.add_cmd({'cmd': 'show version', 'state': 0, 'action': 'PRINT', 'args': [out_ver]})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, unit_test=False)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock='n')
     d.open()
     assert d.facts['model'] == 'not found'
     assert d.facts['unit_number'] == 'not found'
@@ -126,7 +126,7 @@ Serial Number:   1122334231
     d.close()
 
 
-def test_facts_2(dut, log_level):
+def test_facts_2(dut, log_level, use_mock):
     if dut.mode != 'emulated':
         pytest.skip("only on emulated")
 
@@ -155,14 +155,14 @@ serial nr:   1122334455
     setup_dut(dut)
     dut.add_cmd({'cmd': 'show system', 'state': 0, 'action': 'PRINT', 'args': [out_sys]})
     dut.add_cmd({'cmd': 'show version', 'state': 0, 'action': 'PRINT', 'args': [out_ver]})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, unit_test=False)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock='n')
     with pytest.raises(DeviceException) as excinfo:
         d.open()
     assert 'device not supported' in excinfo.value
     d.close()
 
 
-def test_save_config(dut, log_level):
+def test_save_config(dut, log_level, use_mock):
     setup_dut(dut)
     config_no_vlan = """
 interface range ethernet 1/e(1-16)
@@ -219,7 +219,7 @@ ip ssh server
     dut.add_cmd({'cmd': 'show running-config', 'state': 8, 'action': 'PRINT', 'args': [config_no_vlan]})
     dut.add_cmd({'cmd': 'show startup-config', 'state': 8, 'action': 'PRINT', 'args': [config_no_vlan]})
 
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert d.config == d.system.get_startup_config()
     d.vlan.create(3999)
@@ -233,15 +233,15 @@ ip ssh server
     d.close()
 
 
-def test_ping1(dut, log_level):
+def test_ping1(dut, log_level, use_mock):
     setup_dut(dut)
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert d.ping()
     d.close()
 
 
-def test_firmware_upgrade(dut, log_level):
+def test_firmware_upgrade(dut, log_level, use_mock):
     output_0 = ["""
 Unit  Image  Filename   Version    Date                    Status
 ----  -----  ---------  ---------  ---------------------   -----------
@@ -289,7 +289,7 @@ Unit  Image  Filename   Version    Date                    Status
     clean_test_firmware_upgrade(dut, image_name)
 
 
-def test_full_path_firmware_upgrade(dut, log_level):
+def test_full_path_firmware_upgrade(dut, log_level, use_mock):
     output_0 = ["""
 Unit  Image  Filename   Version    Date                    Status
 ----  -----  ---------  ---------  ---------------------   -----------

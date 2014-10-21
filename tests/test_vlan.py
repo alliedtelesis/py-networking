@@ -13,7 +13,7 @@ Build type : RELEASE
     """]})
 
 
-def test_get_vlan(dut, log_level):
+def test_get_vlan(dut, log_level, use_mock):
     setup_dut(dut)
     dut.add_cmd({'cmd': 'show running-config', 'state': 0, 'action': 'PRINT', 'args': ["""
 !
@@ -67,7 +67,7 @@ VLAN ID  Name            Type    State   Member ports
 10      VLAN0010         STATIC  ACTIVE  port1.0.28(t) port1.0.29(u)
                                          port1.0.19(t) port1.0.30(t)
     """]})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     if dut.mode == 'emulated':
         assert d.vlan[1] == {"tagged": ("1.0.12", "1.0.20"),
@@ -92,7 +92,7 @@ VLAN ID  Name            Type    State   Member ports
     d.close()
 
 
-def test_vlan_dashed_list(dut, log_level):
+def test_vlan_dashed_list(dut, log_level, use_mock):
     if dut.mode != 'emulated':
         pytest.skip("only on emulated")
     output_show_rcfg = ["""
@@ -166,7 +166,7 @@ VLAN ID  Name            Type    State   Member ports
     setup_dut(dut)
     dut.add_cmd({'cmd': 'show running-config', 'state': 0, 'action': 'PRINT', 'args': output_show_rcfg})
     dut.add_cmd({'cmd': 'show vlan all', 'state': 0, 'action': 'PRINT', 'args': output_show_vlan})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert '21' in d.vlan
     assert d.vlan[21]['name'] == 'twentyone'
@@ -193,7 +193,7 @@ VLAN ID  Name            Type    State   Member ports
     d.close()
 
 
-def test_create_vlan(dut, log_level):
+def test_create_vlan(dut, log_level, use_mock):
     output_rc_0 = ["""
 !
 interface port1.0.1-1.0.50
@@ -398,7 +398,7 @@ VLAN ID  Name            Type    State   Member ports
     dut.add_cmd({'cmd': 'show running-config', 'state': 8, 'action': 'PRINT', 'args': output_rc_3})
     dut.add_cmd({'cmd': 'show vlan all', 'state': 8, 'action': 'PRINT', 'args': output_va_3})
 
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     d.vlan.create(10, name='this is a long vlan name', mtu=1200)
     assert d.vlan[10] == {'current state': 'ACTIVE', 'tagged': (), 'type': 'STATIC', 'untagged': (), 'state': 'enable', 'name': 'this is a long vlan name', 'mtu': 1200}
@@ -415,7 +415,7 @@ VLAN ID  Name            Type    State   Member ports
     d.close()
 
 
-def test_crud_vlan(dut, log_level):
+def test_crud_vlan(dut, log_level, use_mock):
     output_rc_0 = ["""
 !
 interface port1.0.1-1.0.50
@@ -572,7 +572,7 @@ VLAN ID  Name            Type    State   Member ports
     dut.add_cmd({'cmd': 'show running-config', 'state': 8, 'action': 'PRINT', 'args': output_rc_0})
     dut.add_cmd({'cmd': 'show vlan all', 'state': 8, 'action': 'PRINT', 'args': output_va_0})
 
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert '30' not in d.vlan
     d.vlan.create(30, mtu=1300, name='vlan_name')
@@ -588,7 +588,7 @@ VLAN ID  Name            Type    State   Member ports
     d.close()
 
 
-def test_add_and_delete_interface_1(dut, log_level):
+def test_add_and_delete_interface_1(dut, log_level, use_mock):
     output_rc_0 = ["""
 !
 interface port1.0.1-1.0.50
@@ -700,7 +700,7 @@ VLAN ID  Name            Type    State   Member ports
     dut.add_cmd({'cmd': 'show running-config', 'state': 4, 'action': 'PRINT', 'args': output_rc_0})
     dut.add_cmd({'cmd': 'show vlan all', 'state': 4, 'action': 'PRINT', 'args': output_va_0})
 
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     d.vlan.add_interface(10, '1.0.14')
     assert '1.0.14' in d.vlan[10]['untagged']
@@ -724,7 +724,7 @@ VLAN ID  Name            Type    State   Member ports
     d.close()
 
 
-def test_add_and_delete_interface_2(dut, log_level):
+def test_add_and_delete_interface_2(dut, log_level, use_mock):
     output_rc_0 = ["""
 !
 interface port1.0.1-1.0.50
@@ -848,7 +848,7 @@ VLAN ID  Name            Type    State   Member ports
     dut.add_cmd({'cmd': 'show running-config', 'state': 5, 'action': 'PRINT', 'args': output_rc_0})
     dut.add_cmd({'cmd': 'show vlan all', 'state': 5, 'action': 'PRINT', 'args': output_va_0})
 
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert '1.0.15' in d.vlan[1]['untagged']
     assert '1.0.15' not in d.vlan[10]['tagged']
@@ -862,7 +862,7 @@ VLAN ID  Name            Type    State   Member ports
     d.close()
 
 
-def test_add_and_delete_interface_3(dut, log_level):
+def test_add_and_delete_interface_3(dut, log_level, use_mock):
     output_rc_0 = ["""
 !
 interface port1.0.1-1.0.15
@@ -994,7 +994,7 @@ VLAN ID  Name            Type    State   Member ports
     dut.add_cmd({'cmd': 'show running-config', 'state': 4, 'action': 'PRINT', 'args': output_rc_0})
     dut.add_cmd({'cmd': 'show vlan all', 'state': 4, 'action': 'PRINT', 'args': output_va_0})
 
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert '1.0.16' in d.vlan[1]['untagged']
     assert '1.0.16' not in d.vlan[10]['untagged']
@@ -1007,7 +1007,7 @@ VLAN ID  Name            Type    State   Member ports
     d.close()
 
 
-def test_add_and_delete_interface_4(dut, log_level):
+def test_add_and_delete_interface_4(dut, log_level, use_mock):
     output_rc_0 = ["""
 !
 interface port1.0.1-1.0.50
@@ -1132,7 +1132,7 @@ VLAN ID  Name            Type    State   Member ports
     dut.add_cmd({'cmd': 'show running-config', 'state': 4, 'action': 'PRINT', 'args': output_rc_0})
     dut.add_cmd({'cmd': 'show vlan all', 'state': 4, 'action': 'PRINT', 'args': output_va_0})
 
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert '1.0.17' in d.vlan[1]['untagged']
     assert '1.0.17' not in d.vlan[10]['tagged']
@@ -1145,7 +1145,7 @@ VLAN ID  Name            Type    State   Member ports
     d.close()
 
 
-def test_add_and_delete_interface_5(dut, log_level):
+def test_add_and_delete_interface_5(dut, log_level, use_mock):
     output_rc_0 = ["""
 !
 interface port1.0.1-1.0.50
@@ -1262,7 +1262,7 @@ VLAN ID  Name            Type    State   Member ports
     dut.add_cmd({'cmd': 'show running-config', 'state': 4, 'action': 'PRINT', 'args': output_rc_0})
     dut.add_cmd({'cmd': 'show vlan all', 'state': 4, 'action': 'PRINT', 'args': output_va_0})
 
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert '1.0.18' in d.vlan[1]['untagged']
     assert '1.0.18' not in d.vlan[10]['tagged']

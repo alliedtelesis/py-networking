@@ -64,7 +64,7 @@ end
     """]})
 
 
-def test_config(dut, log_level):
+def test_config(dut, log_level, use_mock):
     if dut.mode != 'emulated':
         pytest.skip("only on emulated")
     setup_dut(dut)
@@ -97,7 +97,7 @@ def test_config(dut, log_level):
         show_interface += show_interface_template.render(env).encode('ascii', 'ignore')
     dut.add_cmd({'cmd': 'show interface', 'state': 0, 'action': 'PRINT', 'args': [show_interface]})
 
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
 
     assert d.facts['os'] == 'awp'
@@ -128,7 +128,7 @@ def test_config(dut, log_level):
     d.close()
 
 
-def test_enable(dut, log_level):
+def test_enable(dut, log_level, use_mock):
     setup_dut(dut)
     show_interface = ''
     for interface in range(1, 51):
@@ -166,7 +166,7 @@ def test_enable(dut, log_level):
         }
         show_interface += show_interface_template.render(env).encode('ascii', 'ignore')
     dut.add_cmd({'cmd': 'show interface', 'state': 4, 'action': 'PRINT', 'args': [show_interface]})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert d.interface['1.0.10']['enable'] is True
     assert ("1.0.10", {"current polarity": "mdix", "description": "test1", "configured duplex": "auto", "current duplex": "full", "configured speed": "auto", "enable": True, "configured polarity": "auto", "current speed": "1000", "link": True}) in d.interface.items()
@@ -177,7 +177,7 @@ def test_enable(dut, log_level):
     d.close()
 
 
-def test_description(dut, log_level):
+def test_description(dut, log_level, use_mock):
     if dut.mode != 'emulated':
         pytest.skip("only on emulated")
     setup_dut(dut)
@@ -240,7 +240,7 @@ interface port1.0.10
 end
     """]})
     dut.add_cmd({'cmd': 'show interface', 'state': 6, 'action': 'PRINT', 'args': [show_interface]})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert d.interface['1.0.10']['description'] == 'test1'
     d.interface.update('1.0.10', description='camera_1')
@@ -251,7 +251,7 @@ end
     d.close()
 
 
-def test_unexisting_interface(dut, log_level):
+def test_unexisting_interface(dut, log_level, use_mock):
     setup_dut(dut)
     show_interface = ''
     max_if_id = 24
@@ -270,7 +270,7 @@ def test_unexisting_interface(dut, log_level):
     dut.add_cmd({'cmd': max_if_cmd, 'state': 0, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
     dut.add_cmd({'cmd': max_if_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
     dut.add_cmd({'cmd': 'show interface', 'state': 1, 'action': 'PRINT', 'args': [show_interface]})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     with pytest.raises(ValueError) as excinfo:
         d.interface.update(max_if_name, enable=False)

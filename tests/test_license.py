@@ -109,7 +109,7 @@ def clean_test_environment(dut, cert_file):
         os.rmdir(tftp_server_dir)
 
 
-def test_feature_license_label_key(dut, log_level):
+def test_feature_license_label_key(dut, log_level, use_mock):
     output_0 = ["""
 OEM Territory : Global
 Software Licenses
@@ -164,7 +164,7 @@ Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
     dut.add_cmd({'cmd': 'show license', 'state': 1, 'action': 'PRINT', 'args': output_1})
     dut.add_cmd({'cmd': delete_cmd, 'state': 1, 'action': 'SET_STATE', 'args': [2]})
     dut.add_cmd({'cmd': 'show license', 'state': 2, 'action': 'PRINT', 'args': output_0})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     with pytest.raises(KeyError) as excinfo:
         d.license.set_license(label='', key=key)
@@ -189,7 +189,7 @@ Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
     d.close()
 
 
-def test_feature_license_path(dut, log_level):
+def test_feature_license_path(dut, log_level, use_mock):
     output_0 = ["""
 OEM Territory : Global
 Software Licenses
@@ -249,7 +249,7 @@ Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
     dut.add_cmd({'cmd': 'show license', 'state': 1, 'action': 'PRINT', 'args': output_1})
     dut.add_cmd({'cmd': delete_cmd, 'state': 1, 'action': 'SET_STATE', 'args': [2]})
     dut.add_cmd({'cmd': 'show license', 'state': 2, 'action': 'PRINT', 'args': output_0})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     with pytest.raises(KeyError) as excinfo:
         d.license.set_license(certificate=false_cert_file)
@@ -268,7 +268,7 @@ Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
     clean_test_environment(dut, cert_name)
 
 
-def test_feature_license_tftp(dut, log_level):
+def test_feature_license_tftp(dut, log_level, use_mock):
     output_0 = ["""
 OEM Territory : Global
 Software Licenses
@@ -327,7 +327,7 @@ Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
     dut.add_cmd({'cmd': 'show license', 'state': 1, 'action': 'PRINT', 'args': output_1})
     dut.add_cmd({'cmd': delete_cmd, 'state': 1, 'action': 'SET_STATE', 'args': [2]})
     dut.add_cmd({'cmd': 'show license', 'state': 2, 'action': 'PRINT', 'args': output_0})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     with pytest.raises(KeyError) as excinfo:
         d.license.set_license(certificate=false_cert_url)
@@ -345,7 +345,7 @@ Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
     clean_test_environment(dut, cert_file)
 
 
-def test_release_license(dut, log_level):
+def test_release_license(dut, log_level, use_mock):
     output_0 = ["""
 OEM Territory : ATI USA
 Software Licenses
@@ -405,7 +405,7 @@ Release                       : 5.4.4
     dut.add_cmd({'cmd': 'show license', 'state': 1, 'action': 'PRINT', 'args': output_1})
     dut.add_cmd({'cmd': delete_cmd, 'state': 1, 'action': 'SET_STATE', 'args': [2]})
     dut.add_cmd({'cmd': 'show license', 'state': 2, 'action': 'PRINT', 'args': output_0})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert label not in d.license.keys()
     assert cert_file not in d.file.keys()

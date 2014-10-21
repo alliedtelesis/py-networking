@@ -37,7 +37,7 @@ class awp_ntp(Feature):
                                   }
         self._d.log_info(self._ntp)
 
-    def create(self, address):
+    def create(self, address, sleep_time=1):
         self._d.log_info("add NTP server {0}".format(address))
         self._update_ntp()
 
@@ -51,10 +51,10 @@ class awp_ntp(Feature):
                          {'cmd': chr(26), 'prompt': '\#'}
                          ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
-        sleep(1)
+        sleep(sleep_time)
         self._update_ntp()
 
-    def delete(self, address=''):
+    def delete(self, address='', sleep_time=1):
         self._d.log_info("remove NTP server {0}".format(address))
         self._update_ntp()
 
@@ -76,7 +76,7 @@ class awp_ntp(Feature):
 
         cmds['cmds'].append({'cmd': chr(26), 'prompt': '\#'})
         self._device.cmd(cmds, cache=False, flush_cache=True)
-        sleep(1)
+        sleep(sleep_time)
         self._update_ntp()
 
     def items(self):

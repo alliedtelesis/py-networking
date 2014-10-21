@@ -475,7 +475,7 @@ Build type : RELEASE
     dut.add_cmd({'cmd': 'show version', 'state': 0, 'action': 'PRINT', 'args': output_show_version})
     dut.add_cmd({'cmd': update_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
     dut.add_cmd({'cmd': 'show boot', 'state': 1, 'action': 'PRINT', 'args': output_1})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock='n')
     d.open()
     d.system.update_firmware(release_file, dontwait=dut.dontwait)
     if (dut.mode == 'emulated'):
@@ -595,7 +595,7 @@ Build type : RELEASE
     dut.add_cmd({'cmd': 'show version', 'state': 0, 'action': 'PRINT', 'args': output_show_version})
     dut.add_cmd({'cmd': update_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
     dut.add_cmd({'cmd': 'show boot', 'state': 1, 'action': 'PRINT', 'args': output_show_boot_1})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock='n')
     d.open()
     d.system.update_firmware(release_file, dontwait=dut.dontwait)
     if (dut.mode == 'emulated'):

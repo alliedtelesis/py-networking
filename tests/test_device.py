@@ -76,7 +76,7 @@ def test_open_close1(dut, log_level, use_mock):
 
 def test_open_close2(dut, log_level, use_mock):
     setup_dut(dut)
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, connection_timeout=3)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, connection_timeout=3, mock=use_mock)
     d.open()
     sleep(4)
     d.close()
@@ -97,12 +97,12 @@ def test_open_close4(dut, log_level, use_mock):
     #     d.open()
     # assert str(excinfo.value).startswith("cannot open a ssh transport to") is True
 
-    d = Device(host=dut.host, port=2323, protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=2323, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     with pytest.raises(DeviceException) as excinfo:
         d.open()
     assert str(excinfo.value).startswith("cannot connect to") is True
 
-    d = Device(host=dut.host, port=dut.port, username='wronguser', protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, username='wronguser', protocol=dut.protocol, log_level=log_level, mock=use_mock)
     with pytest.raises(DeviceException) as excinfo:
         d.open()
     assert str(excinfo.value).startswith("authentication failed") is True

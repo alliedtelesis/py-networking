@@ -3,14 +3,10 @@ from pynetworking import Feature
 from pprint import pformat
 import re
 import json
+import os
 import pytz
 from datetime import datetime, timedelta
 from pytz import timezone
-try:
-    from collections import OrderedDict
-except ImportError: #pragma: no cover
-    from ordereddict import OrderedDict
-
 
 class awp_clock(Feature):
     """
@@ -19,7 +15,6 @@ class awp_clock(Feature):
     def __init__(self, device, **kvargs):
         Feature.__init__(self, device, **kvargs)
         self._d = device
-        self._d._clock = {}
         self._d.log_debug("loading feature")
 
 
@@ -27,44 +22,36 @@ class awp_clock(Feature):
         self._d.log_info("loading config")
 
 
-    def update(self, datetime=None, timezone=None):
+    def create(self, name, protocol='http', text='', filename=''):
+        self._d.log_info("create file {0}".format(name))
+
+
+    def update(self, dt=None, tz=None):
         self._d.log_info("update")
 
-        if (datetime == None and timezone == None):
-            raise KeyError('either datetime or timezone argument must be given')
+        if (dt == None and tz == None):
+            raise KeyError('either dt or timezone argument must be given')
 
-        if (datetime != None):
+        if (dt != None):
             # set date and time
-            hh = datetime.strftime('%H')
-            mm = datetime.strftime('%M')
-            ss = datetime.strftime('%S')
-            day = datetime.strftime('%d')
-            month = datetime.strftime('%b')
-            year = datetime.strftime('%Y')
+            hh = dt.strftime('%H')
+            mm = dt.strftime('%M')
+            ss = dt.strftime('%S')
+            day = dt.strftime('%d')
+            month = dt.strftime('%b')
+            year = dt.strftime('%Y')
+
+            self._d.log_info("Setting time={0}:{1}:{2}, date={3}/{4}/{5}".format(hh, mm, ss, day, month, year))
 
             #clock set 14:00:00 25 Jan 2008
-            set_cmd = "clock set {0}:{1}:{2} {3} {4} {5}".format(hh, mm, ss, day, month, year)
-            cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
-                            {'cmd': 'conf t', 'prompt':'\(config\)\#'},
-                            {'cmd': set_cmd , 'prompt':'\(config\)\#'},
-                            {'cmd': chr(26) , 'prompt':'\#'},
-                           ]}
+            cmd = "clock set {0}:{1}:{2} {3} {4} {5}".format(hh, mm, ss, day, month, year)
+            self._d.log_info("Command is {0}".format(cmd))
 
-            self._device.cmd(cmds, cache=False, flush_cache=True)
-
-        if (timezone != None):
+        if (tz != None):
             # set the timezone
-            loc_now = self._now()
-            loc_dt = timezone.localize(loc_now)
-            tz_name = loc_dt.strftime('%Z')
-            offset = loc_dt.strftime('%z')
-
-            sign = offset[0:1]
-            if (offset[1] == '0'):
-                off_h = offset[2:3]
-            else:
-                off_h = offset[1:3]
-            off_m = offset[3:5]
+            loc_now = datetime.now()
+            loc_dt = tz.localize(loc_now)
+            self._d.log_info("Setting timezone {0} with offset {1}{2}:{3}".format(tz_name, sign, off_h, off_m))
 
             if sign == '-':
                 sign_key = 'minus'
@@ -72,11 +59,12 @@ class awp_clock(Feature):
                 sign_key = 'plus'
 
             # clock timezone <timezone-name> {plus|minus} <0-12>
-            tz_cmd = "clock timezone {0} {1} {2}".format(tz_name, sign_key, off_h)
+            cmd = "clock timezone {0} {1} {2}:{3}".format(tz_name, sign_key, off_h, off_m)
+            self._d.log_info("Command is {0}".format(cmd))
 
             # set the DST rules
-            begin_dst = self._get_begin_dst(timezone, loc_dt)
-            end_dst = self._get_end_dst(timezone, loc_dt)
+            begin_dst = self._get_begin_dst(tz, loc_dt)
+            end_dst = self._get_end_dst(tz, loc_dt)
             if (begin_dst != None and end_dst != None):
                 hh = int(begin_dst.strftime('%H')) - 1
                 mm = begin_dst.strftime('%M')
@@ -92,150 +80,209 @@ class awp_clock(Feature):
                 ew = str((int(end_dst.strftime('%d')) - 1)/7 + 1)
                 em = end_dst.strftime('%b')
 
+                # # DST begin rules
+                # go_in_the_day_before = False
+                # go_in_the_day_after = False
+                #
+                # mm = begin_dst.strftime('%M')
+                # hh = int(begin_dst.strftime('%H'))
+                #
+                # if sign == '-':
+                #     if (hh - int(off_h) < 0):
+                #         go_in_the_day_before = True
+                # else:
+                #     if (hh + int(off_h) >= 24):
+                #         go_in_the_day_after = True
+                #
+                # if sign == '-':
+                #     if (go_in_the_day_before == False):
+                #          hh = hh - int(off_h)
+                #     else:
+                #          hh = hh + 24 - int(off_h)
+                # else:
+                #     if (go_in_the_day_after == False):
+                #         hh = hh + int(off_h)
+                #     else:
+                #         hh = hh + int(off_h) - 24
+                # bt = "{0}:{1}".format(hh,mm)
+                #
+                # dd = int(begin_dst.strftime('%w'))
+                # ww = int(begin_dst.strftime('%d'))
+                # if sign == '-':
+                #     if (go_in_the_day_before == True):
+                #          if (dd - 1 < 0):
+                #              dd = 6
+                #              ww = ww - 1
+                #          else:
+                #              dd = dd - 1
+                # else:
+                #     if (go_in_the_day_after == True):
+                #          if (dd + 1 > 6):
+                #              dd = 0
+                #              ww = ww + 1
+                #          else:
+                #              dd = dd + 1
+                # bd = str(dd)
+                # bw = str(ww)
+                #
+                # bm = begin_dst.strftime('%b')
+                #
+                # # DST end rules
+                # go_in_the_day_before = False
+                # go_in_the_day_after = False
+                #
+                # mm = end_dst.strftime('%M')
+                # hh = int(end_dst.strftime('%H'))
+                #
+                # if sign == '-':
+                #     if (hh - int(off_h) < 0):
+                #         go_in_the_day_before = True
+                # else:
+                #     if (hh + int(off_h) >= 24):
+                #         go_in_the_day_after = True
+                #
+                # if sign == '-':
+                #     if (go_in_the_day_before == False):
+                #          hh = hh - int(off_h)
+                #     else:
+                #          hh = hh + 24 - int(off_h)
+                # else:
+                #     if (go_in_the_day_after == False):
+                #         hh = hh + int(off_h)
+                #     else:
+                #         hh = hh + int(off_h) - 24
+                # et = "{0}:{1}".format(hh,mm)
+                #
+                # em = end_dst.strftime('%b')
+                #
+                # dd = int(end_dst.strftime('%a'))
+                # ww = int(end_dst.strftime('%d'))
+                # if sign == '-':
+                #     if (go_in_the_day_before == True):
+                #          if (dd - 1 < 0):
+                #              dd = 6
+                #              ww = ww - 1
+                #          else:
+                #              dd = dd - 1
+                # else:
+                #     if (go_in_the_day_after == True):
+                #          if (dd + 1 > 6):
+                #              dd = 0
+                #              ww = ww + 1
+                #          else:
+                #              dd = dd + 1
+                # ed = str(dd)
+                # ew = str(ww)
+
+                # bw = str((int(begin_dst.strftime('%d')) - 1)/7 + 1)
+                # bd = begin_dst.strftime('%a')
+                # bm = begin_dst.strftime('%b')
+                # hh = int(begin_dst.strftime('%H'))
+                # mm = begin_dst.strftime('%M')
+                # if sign == '-':
+                #     if (hh + int(off_h) >= 0):
+                #         hh -= int(off_h)
+                #     else:
+                #         hh = hh + 24 - int(off_h)
+                # else:
+                #     if (hh + int(off_h) < 24):
+                #         hh += int(off_h)
+                #     else:
+                #         hh = hh + int(off_h) - 24
+                #         if (int(begin_dst.strftime('%d')) - 1)/7 < 0:
+                #             bw = '6'
+                #             bd = str(int(bd)-1)
+                #         else:
+                #             bw = str((int(begin_dst.strftime('%d')) - 1)/7)
+                # bt = "{0}:{1}".format(hh,mm)
+                #
+                # ew = str((int(end_dst.strftime('%d')) - 1)/7 + 1)
+                # ed = end_dst.strftime('%a')
+                # em = end_dst.strftime('%b')
+                # hh = int(end_dst.strftime('%H'))
+                # mm = end_dst.strftime('%M')
+                # if sign == '-':
+                #     hh -= int(off_h) + 1
+                # else:
+                #     if (hh + int(off_h) + 1 < 24):
+                #         hh += int(off_h) + 1
+                #     else:
+                #         hh = hh + int(off_h) + 1 - 24
+                #         if (int(begin_dst.strftime('%d')) - 1)/7 + 1 < 6:
+                #             bw = str((int(begin_dst.strftime('%d')) - 1)/7 + 2)
+                #         else:
+                #             bw = '0'
+                #             bd = str(int(bd)+1)
+                #
+                # et = "{0}:{1}".format(hh,mm)
                 om = '60'
 
+                self._d.log_info("Setting timezone {0} with {1} {2} {3} {4} {5} {6} {7} {8} {9}".format(tz_name, bw, bd, bm, bt, ew, ed, em, et, om))
+
                 # clock summer-time <zone-name> recurring <start-week> <start-day> <start-month> <start-time> <end-week> <end-day> <end-month> <end-time> <1-180>
-                st_cmd = "clock summer-time {0} recurring {1} {2} {3} {4} {5} {6} {7} {8} {9}".format(tz_name, bw, bd, bm, bt, ew, ed, em, et, om)
-            else:
-                st_cmd = "no clock summer-time"
+                cmd = "clock summer-time {0} recurring {1} {2} {3} {4} {5} {6} {7} {8} {9}".format(tz_name, bw, bd, bm, bt, ew, ed, em, et, om)
+                self._d.log_info("Command is {0}".format(cmd))
 
-            cmds = {'cmds':[{'cmd': 'enable', 'prompt':'\#'},
-                            {'cmd': 'conf t', 'prompt':'\(config\)\#'},
-                            {'cmd': tz_cmd  , 'prompt':'\(config\)\#'},
-                            {'cmd': st_cmd  , 'prompt':'\(config\)\#'},
-                            {'cmd': chr(26) , 'prompt':'\#'},
-                           ]}
 
-            self._device.cmd(cmds, cache=False, flush_cache=True)
-
-        self._update_clock()
+    def delete(self, file_name):
+        self._d.log_info("remove {0}".format(file_name))
 
 
     def items(self):
-        self._update_clock()
-        return self._clock.items()
+        self._update_file()
+        return self._file.items()
 
 
     def keys(self):
-        self._update_clock()
-        return self._clock.keys()
-
-
-    def __getitem__(self, id):
-        self._update_clock()
-        if id in self._clock.keys():
-            return self._clock[id]
-        raise KeyError('data {0} does not exist'.format(id))
-
-
-    def _now(self):
-        return datetime.now()
-
-
-    def _update_clock(self):
-        self._d.log_info("_update_clock")
-        self._clock = OrderedDict()
-
-        # Local Time: Thu, 18 Sep 2014 10:21:17 -0400
-        # UTC Time:   Thu, 18 Sep 2014 14:21:17 +0000
-        # Timezone: EDT
-        # Timezone Offset: -05:00
-        # Summer time zone: EDT
-        # Summer time starts: Second Sunday in March at 02:00:00
-        # Summer time ends: First Sunday in November at 02:00:00
-        # Summer time offset: 60 mins
-        # Summer time recurring: Yes
-        ifre1 = re.compile('(\s|'')+Local\s+Time:\s+(?P<local_time>[^\n]+)\s+'
-                          '\s+UTC\s+Time:\s+(?P<utc_time>[^\n]+)\s+'
-                          '\s+Timezone:\s+(?P<tz_name>[^\n]+)\s+'
-                          '\s+Timezone\s+Offset:\s+(?P<timezone_offset>[^\s]+)\s+'
-                          '\s+Summer\s+time\s+zone:\s+(?P<st_zone>[^\s]+)\s+'
-                          '\s+Summer\s+time\s+starts:\s+(?P<st_start>[^\n]+)\s+'
-                          '\s+Summer\s+time\s+ends:\s+(?P<st_stop>[^\n]+)\s+'
-                          '\s+Summer\s+time\s+offset:\s+(?P<st_offset>\d+)\s+mins\s+'
-                          '\s+Summer\s+time\s+recurring:\s+Yes')
-
-        # Local Time: Fri, 19 Sep 2014 17:04:20 +0800
-        # UTC Time:   Fri, 19 Sep 2014 09:04:20 +0000
-        # Timezone: CST
-        # Timezone Offset: +08:00
-        # Summer time zone: None
-        ifre2 = re.compile('(\s|'')+Local\s+Time:\s+(?P<local_time>[^\n]+)\s+'
-                          '\s+UTC\s+Time:\s+(?P<utc_time>[^\n]+)\s+'
-                          '\s+Timezone:\s+(?P<tz_name>[^\n]+)\s+'
-                          '\s+Timezone\s+Offset:\s+(?P<timezone_offset>[^\s]+)\s+'
-                          '\s+Summer\s+time\s+zone:\s+None\s+')
-
-        output = self._device.cmd("show clock")
-        m = ifre1.match(output)
-        if m:
-            self._clock = {'local_time': m.group('local_time'),
-                           'utc_time': m.group('utc_time'),
-                           'timezone_name': m.group('tz_name'),
-                           'timezone_offset': m.group('timezone_offset'),
-                           'summertime_start': m.group('st_start'),
-                           'summertime_end': m.group('st_stop'),
-                           'summertime_offset': m.group('st_offset')
-                          }
-        else:
-            m = ifre2.match(output)
-            if m:
-                self._clock = {'local_time': m.group('local_time'),
-                               'utc_time': m.group('utc_time'),
-                               'timezone_name': m.group('tz_name'),
-                               'timezone_offset': m.group('timezone_offset'),
-                               'summertime_start': '',
-                               'summertime_end': '',
-                               'summertime_offset': ''
-                              }
-        self._d.log_debug("File {0}".format(pformat(json.dumps(self._clock))))
+        self._update_file()
+        return self._file.keys()
 
 
     def _get_begin_dst(self, tz, dt):
         tt = tz._utc_transition_times
         offset = dt.hour
         year = dt.year
-        ret = None
+        self._d.log_info("offset {0} year {1}".format(offset, year))
 
         for index in range(len(tt)):
-            if tt[index].year >= year:
-                # search the maximum day value so to detect whether or not the day is in week 5
+            if tt[index].year == year:
+                # self._d.log_info("index is {0}".format(index))
+                # self._d.log_info("begin with {0}".format(tt[index]))
                 utc = pytz.utc
                 utc_dt = datetime(tt[index].year, tt[index].month, tt[index].day, tt[index].hour + 1, tt[index].minute + 1, tzinfo = utc)
                 temp_dt = utc_dt.astimezone(tz)
-                if temp_dt.dst() == timedelta(0) or tt[index+2].day > tt[index].day or tt[index-2].day > tt[index].day:
+                if temp_dt.dst() == timedelta(0):
                     continue
-                self._d.log_debug("DST start is {0} (index {1})".format(tt[index], index))
+                self._d.log_info("index is {0}".format(index))
+                self._d.log_info("begin with {0}".format(tt[index]))
                 a_tt = datetime(tt[index].year, tt[index].month, tt[index].day, tt[index].hour, tt[index].minute, tzinfo = utc)
                 ret_tt = a_tt.astimezone(tz)
-                ret = ret_tt
-                break
+                return ret_tt
 
-        return ret
+        return None
 
 
     def _get_end_dst(self, tz, dt):
         tt = tz._utc_transition_times
         offset = dt.hour
         year = dt.year
-        ret = None
+        self._d.log_info("offset {0} year {1} {2}".format(offset, year, len(tt)))
 
         for index in range(len(tt)):
-            if tt[index].year >= year:
-                # search the maximum day value so to detect whether or not the day is in week 5
+            if tt[index].year == year:
+                # self._d.log_info("index is {0}".format(index))
+                # self._d.log_info("end with {0}".format(tt[index]))
                 utc = pytz.utc
                 utc_dt = datetime(tt[index].year, tt[index].month, tt[index].day, tt[index].hour + 1, tt[index].minute + 1, tzinfo = utc)
                 temp_dt = utc_dt.astimezone(tz)
-                if temp_dt.dst() != timedelta(0) or tt[index+2].day > tt[index].day or tt[index-2].day > tt[index].day:
+                if temp_dt.dst() != timedelta(0):
                     continue
-                self._d.log_debug("DST end is {0} (index {1})".format(tt[index], index))
-
-                # adjustment due to DST time
+                self._d.log_info("index is {0}".format(index))
+                self._d.log_info("end with {0}".format(tt[index]))
                 a_tt = datetime(tt[index].year, tt[index].month, tt[index].day, tt[index].hour + 1, tt[index].minute, tzinfo = utc)
                 ret_tt = a_tt.astimezone(tz)
-                ret = ret_tt
-                break
+                return ret_tt
 
-        return ret
+        return None
 
 

@@ -272,7 +272,7 @@ Unit  Image  Filename   Version    Date                    Status
     dut.add_cmd({'cmd': 'show bootvar', 'state': 0, 'action': 'PRINT', 'args': output_0})
     dut.add_cmd({'cmd': update_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
     dut.add_cmd({'cmd': 'show bootvar', 'state': 1, 'action': 'PRINT', 'args': output_1})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, connection_timeout=300)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, connection_timeout=300, mock=use_mock)
     d.open()
     with pytest.raises(KeyError) as excinfo:
         d.system.update_firmware(filename=false_image_name, protocol='tftp', port=dut.tftp_port)
@@ -320,7 +320,7 @@ Unit  Image  Filename   Version    Date                    Status
     dut.add_cmd({'cmd': 'show bootvar', 'state': 0, 'action': 'PRINT', 'args': output_0})
     dut.add_cmd({'cmd': update_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
     dut.add_cmd({'cmd': 'show bootvar', 'state': 1, 'action': 'PRINT', 'args': output_1})
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, connection_timeout=300)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, connection_timeout=300, mock=use_mock)
     d.open()
     d.system.update_firmware(filename=image_name, protocol='tftp', port=dut.tftp_port, dontwait=dut.dontwait)
     if (dut.mode == 'emulated'):

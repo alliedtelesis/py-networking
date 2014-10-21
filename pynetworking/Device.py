@@ -166,9 +166,9 @@ class Device(object):
             raise DeviceException("ZMQError {0}".format(repr(e)))
 
     def _get_mock_opt(self, mock):
-        ret = False
-        if self._host == '127.0.0.1' and (mock == 'y' or mock == 'yes'):
-            ret = True
+        ret = True
+        if self._host != '127.0.0.1' or (mock != 'y' and mock != 'yes'):
+            ret = False
         return ret
 
     def _load_core_facts(self):

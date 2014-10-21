@@ -1,16 +1,12 @@
 import pytest
-from pynetworking import Device, DeviceException
-from time import sleep
-from paramiko.rsakey import RSAKey
+from pynetworking import Device
 from mock import MagicMock
 from mock import patch
-import yaml
-import zmq
 
 
 def setup_dut(dut):
     dut.reset()
-    dut.add_cmd({'cmd':'show version',        'state':-1, 'action': 'PRINT','args':["""
+    dut.add_cmd({'cmd': 'show version', 'state': -1, 'action': 'PRINT', 'args': ["""
 AlliedWare Plus (TM) 5.4.2 09/25/13 12:57:26
 
 Build name : x600-5.4.2-3.14.rel
@@ -234,25 +230,25 @@ Build type : RELEASE
 # until the end of the whole test suite.
 # Just to be clear, if a function is mocked so to get the open() failing,
 # you won't be able to open a device anymore.
-def test_load_system(dut, log_level):
+def test_load_system(dut, log_level, use_mock):
     setup_dut(dut)
 
-    yaml_load_mocked = MagicMock(return_value = {'features': None, 'system': None})
+    yaml_load_mocked = MagicMock(return_value={'features': None, 'system': None})
 
     with patch('yaml.load', yaml_load_mocked):
-        d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+        d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
         with pytest.raises(ImportError) as excinfo:
             d.open()
         assert str(excinfo.value) == 'No module named None'
 
 
-def test_load_features(dut, log_level):
+def test_load_features(dut, log_level, use_mock):
     setup_dut(dut)
 
     yaml_load_mocked = MagicMock()
 
     with patch('yaml.load', yaml_load_mocked):
-        d=Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+        d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
 
         yaml_load_mocked.return_value = {'system': 'awp_system', 'features': {'dhcp': 'awp_dhcp'}}
         with pytest.raises(ImportError) as excinfo:
@@ -270,35 +266,35 @@ def test_load_features(dut, log_level):
         assert str(excinfo.value) == '\'Device\' object has no attribute \'system\''
 
 
-def test_timeout(dut, log_level):
+def test_timeout(dut, log_level, use_mock):
     setup_dut(dut)
 
     # Timeout mocked returning an empty string, as the device had not answered
-    zmq_poller_poll_mocked = MagicMock(return_value = '')
+    zmq_poller_poll_mocked = MagicMock(return_value='')
 
     with patch('zmq.Poller.poll', zmq_poller_poll_mocked):
-        d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
-        with pytest.raises(DeviceException) as excinfo:
+        d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+        with pytest.raises(Exception) as excinfo:
             d.open()
         assert str(excinfo.value) == 'proxy exited with error (None)'
 
 
-def ttest_zmq_error(dut, log_level):
-    setup_dut(dut)
+# def test_zmq_error(dut, log_level, use_mock):
+#     setup_dut(dut)
+#
+#     # ZMQ undefined error simulated
+#     zmq_context_socket = MagicMock(side_effect=zmq.error.ZMQError)
+#
+#     with patch('zmq.Context.socket', zmq_context_socket):
+#         d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
+#         with pytest.raises(Exception) as excinfo:
+#             d.open()
+#         assert str(excinfo.value) == 'ZMQError ZMQError(\'Undefined error: 0\')'
 
-    # ZMQ undefined error simulated
-    zmq_context_socket = MagicMock(side_effect = zmq.error.ZMQError)
 
-    with patch('zmq.Context.socket', zmq_context_socket):
-        d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
-        with pytest.raises(DeviceException) as excinfo:
-            d.open()
-        assert str(excinfo.value) == 'ZMQError ZMQError(\'Undefined error: 0\')'
-
-
-def test_last(dut, log_level):
+def test_last(dut, log_level, use_mock):
     # If this is working, it means that the previous mocked functions has a local effect as they should
     setup_dut(dut)
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
     d.open()
     d.close()

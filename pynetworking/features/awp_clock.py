@@ -27,20 +27,20 @@ class awp_clock(Feature):
         self._d.log_info("loading config")
 
 
-    def update(self, dt=None, tz=None):
+    def update(self, datetime=None, timezone=None):
         self._d.log_info("update")
 
-        if (dt == None and tz == None):
+        if (datetime == None and timezone == None):
             raise KeyError('either datetime or timezone argument must be given')
 
-        if (dt != None):
+        if (datetime != None):
             # set date and time
-            hh = dt.strftime('%H')
-            mm = dt.strftime('%M')
-            ss = dt.strftime('%S')
-            day = dt.strftime('%d')
-            month = dt.strftime('%b')
-            year = dt.strftime('%Y')
+            hh = datetime.strftime('%H')
+            mm = datetime.strftime('%M')
+            ss = datetime.strftime('%S')
+            day = datetime.strftime('%d')
+            month = datetime.strftime('%b')
+            year = datetime.strftime('%Y')
 
             self._d.log_info("Setting time={0}:{1}:{2}, date={3}-{4}-{5}".format(hh, mm, ss, day, month, year))
 
@@ -55,10 +55,20 @@ class awp_clock(Feature):
 
             self._device.cmd(cmds, cache=False, flush_cache=True)
 
-        if (tz != None):
+        if (timezone != None):
             # set the timezone
-            loc_now = datetime.now()
-            loc_dt = tz.localize(loc_now)
+            loc_now = self._now()
+            loc_dt = timezone.localize(loc_now)
+            tz_name = loc_dt.strftime('%Z')
+            offset = loc_dt.strftime('%z')
+
+            sign = offset[0:1]
+            if (offset[1] == '0'):
+                off_h = offset[2:3]
+            else:
+                off_h = offset[1:3]
+            off_m = offset[3:5]
+
             self._d.log_info("Setting timezone {0} with offset {1}{2}:{3}".format(tz_name, sign, off_h, off_m))
 
             if sign == '-':
@@ -71,8 +81,8 @@ class awp_clock(Feature):
             self._d.log_info("Command is {0}".format(tz_cmd))
 
             # set the DST rules
-            begin_dst = self._get_begin_dst(tz, loc_dt)
-            end_dst = self._get_end_dst(tz, loc_dt)
+            begin_dst = self._get_begin_dst(timezone, loc_dt)
+            end_dst = self._get_end_dst(timezone, loc_dt)
             if (begin_dst != None and end_dst != None):
                 hh = int(begin_dst.strftime('%H')) - 1
                 mm = begin_dst.strftime('%M')
@@ -127,6 +137,10 @@ class awp_clock(Feature):
         raise KeyError('data {0} does not exist'.format(id))
 
 
+    def _now(self):
+        return datetime.now()
+
+
     def _update_clock(self):
         self._d.log_info("_update_clock")
         self._clock = OrderedDict()
@@ -162,7 +176,6 @@ class awp_clock(Feature):
                           '\s+Summer\s+time\s+zone:\s+None\s+')
 
         output = self._device.cmd("show clock")
-        # output = output.replace('\r','')
         m = ifre1.match(output)
         if m:
             self._clock = {'local_time': m.group('local_time'),

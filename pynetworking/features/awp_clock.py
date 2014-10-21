@@ -44,8 +44,7 @@ class awp_clock(Feature):
             # clock set 14:00:00 25 Jan 2008
             set_cmd = "clock set {0}:{1}:{2} {3} {4} {5}".format(hh, mm, ss, day, month, year)
             cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
-                             {'cmd': 'conf t', 'prompt': '\(config\)\#'},
-                             {'cmd': set_cmd, 'prompt': '\(config\)\#'},
+                             {'cmd': set_cmd, 'prompt': '\#'},
                              {'cmd': chr(26), 'prompt': '\#'}
                              ]}
 
@@ -57,33 +56,19 @@ class awp_clock(Feature):
             if datetime is not None:
                 loc_now = datetime
             loc_dt = timezone.localize(loc_now)
-            tz_name = loc_dt.strftime('%Z')
-            offset = loc_dt.strftime('%z')
-
-            sign = offset[0:1]
-            if (offset[1] == '0'):
-                off_h = offset[2:3]
-            else:
-                off_h = offset[1:3]
-
-            if sign == '-':
-                sign_key = 'minus'
-            else:
-                sign_key = 'plus'
-
-            # clock timezone <timezone-name> {plus|minus} <0-12>
-            tz_cmd = "clock timezone {0} {1} {2}".format(tz_name, sign_key, off_h)
 
             # set the DST rules
             begin_dst = self._get_begin_dst(timezone, loc_dt)
             end_dst = self._get_end_dst(timezone, loc_dt)
             if (begin_dst is not None and end_dst is not None):
+                # timezone uses DST
                 hh = int(begin_dst.strftime('%H')) - 1
                 mm = begin_dst.strftime('%M')
                 bt = "{0}:{1}".format(hh, mm)
                 bd = begin_dst.strftime('%a')
                 bw = str((int(begin_dst.strftime('%d')) - 1) / 7 + 1)
                 bm = begin_dst.strftime('%b')
+                summer_time_zone = begin_dst.strftime('%Z')
 
                 hh = int(end_dst.strftime('%H'))
                 mm = end_dst.strftime('%M')
@@ -91,12 +76,46 @@ class awp_clock(Feature):
                 ed = end_dst.strftime('%a')
                 ew = str((int(end_dst.strftime('%d')) - 1) / 7 + 1)
                 em = end_dst.strftime('%b')
+                no_dst_tz_name = end_dst.strftime('%Z')
+
+                offset = end_dst.strftime('%z')
+                sign = offset[0:1]
+                if (offset[1] == '0'):
+                    off_h = offset[2:3]
+                else:
+                    off_h = offset[1:3]
+
+                if sign == '-':
+                    sign_key = 'minus'
+                else:
+                    sign_key = 'plus'
 
                 om = '60'
 
-                # clock summer-time <zone-name> rec <start-week> <start-day> <start-month> <start-time> <end-week> <end-day> <end-month> <end-time> <1-180>
-                st_cmd = "clock summer-time {0} recurring {1} {2} {3} {4} {5} {6} {7} {8} {9}".format(tz_name, bw, bd, bm, bt, ew, ed, em, et, om)
+                # clock timezone <timezone-name> {plus|minus} <0-12>
+                tz_cmd = "clock timezone {0} {1} {2}".format(no_dst_tz_name, sign_key, off_h)
+
+                # clock summer-time <zone-name> recurring <start-week> <start-day> <start-month> <start-time>
+                # <end-week> <end-day> <end-month> <end-time> <1-180>
+                st_cmd = "clock summer-time {0} recurring {1} {2} {3} {4} {5} {6} {7} {8} {9}".format(summer_time_zone, bw, bd, bm, bt, ew, ed, em, et, om)
             else:
+                # timezone does not use DST
+                tz_name = loc_dt.strftime('%Z')
+                offset = loc_dt.strftime('%z')
+
+                sign = offset[0:1]
+                if (offset[1] == '0'):
+                    off_h = offset[2:3]
+                else:
+                    off_h = offset[1:3]
+
+                if sign == '-':
+                    sign_key = 'minus'
+                else:
+                    sign_key = 'plus'
+
+                # clock timezone <timezone-name> {plus|minus} <0-12>
+                tz_cmd = "clock timezone {0} {1} {2}".format(tz_name, sign_key, off_h)
                 st_cmd = "no clock summer-time"
 
             cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
@@ -168,6 +187,7 @@ class awp_clock(Feature):
                            'utc_time': m.group('utc_time'),
                            'timezone_name': m.group('tz_name'),
                            'timezone_offset': m.group('timezone_offset'),
+                           'summertime_zone': m.group('st_zone'),
                            'summertime_start': m.group('st_start'),
                            'summertime_end': m.group('st_stop'),
                            'summertime_offset': m.group('st_offset')
@@ -179,6 +199,7 @@ class awp_clock(Feature):
                                'utc_time': m.group('utc_time'),
                                'timezone_name': m.group('tz_name'),
                                'timezone_offset': m.group('timezone_offset'),
+                               'summertime_zone': '',
                                'summertime_start': '',
                                'summertime_end': '',
                                'summertime_offset': ''

@@ -12,6 +12,12 @@ Build date : Wed Sep 25 12:57:26 NZST 2013
 Build type : RELEASE
     """]})
 
+    # this sleep time is just a trick to have the NTP server set correctly
+    if dut.mode != 'emulated':
+        dut.sleep_time = 1
+    else:
+        dut.sleep_time = 0
+
 
 def test_ntp_crud(dut, log_level, use_mock):
     # Add the routes manually to have the NTP servers reachable.
@@ -86,13 +92,13 @@ end
         d.ntp[bad_ntp_address]
     assert 'NTP server {0} is not present'.format(bad_ntp_address) in excinfo.value
     assert ntp1_address not in d.ntp.keys()
-    d.ntp.create(ntp1_address)
+    d.ntp.create(ntp1_address, sleep_time=dut.sleep_time)
     assert ntp1_address in d.ntp.keys()
     with pytest.raises(KeyError) as excinfo:
-        d.ntp.create(ntp1_address)
+        d.ntp.create(ntp1_address, sleep_time=dut.sleep_time)
     assert 'NTP server {0} already added'.format(ntp1_address) in excinfo.value
     assert ntp2_address not in d.ntp.keys()
-    d.ntp.create(ntp2_address)
+    d.ntp.create(ntp2_address, sleep_time=dut.sleep_time)
     assert ntp2_address in d.ntp.keys()
 
     pt = d.ntp[ntp1_address]['polltime']
@@ -100,10 +106,10 @@ end
     assert (ntp1_address, {'polltime': pt, 'status': st}) in d.ntp.items()
 
     with pytest.raises(KeyError) as excinfo:
-        d.ntp.delete(bad_ntp_address)
+        d.ntp.delete(bad_ntp_address, sleep_time=dut.sleep_time)
     assert 'NTP server {0} is not present'.format(bad_ntp_address) in excinfo.value
-    d.ntp.delete(ntp2_address)
+    d.ntp.delete(ntp2_address, sleep_time=dut.sleep_time)
     assert ntp2_address not in d.ntp.keys()
-    d.ntp.delete()
+    d.ntp.delete(sleep_time=dut.sleep_time)
     assert ntp1_address not in d.ntp.keys()
     d.close()

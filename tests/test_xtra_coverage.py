@@ -279,19 +279,6 @@ def test_timeout(dut, log_level, use_mock):
         assert str(excinfo.value) == 'proxy exited with error (None)'
 
 
-# def test_zmq_error(dut, log_level, use_mock):
-#     setup_dut(dut)
-#
-#     # ZMQ undefined error simulated
-#     zmq_context_socket = MagicMock(side_effect=zmq.error.ZMQError)
-#
-#     with patch('zmq.Context.socket', zmq_context_socket):
-#         d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level)
-#         with pytest.raises(Exception) as excinfo:
-#             d.open()
-#         assert str(excinfo.value) == 'ZMQError ZMQError(\'Undefined error: 0\')'
-
-
 def test_last(dut, log_level, use_mock):
     # If this is working, it means that the previous mocked functions has a local effect as they should
     setup_dut(dut)

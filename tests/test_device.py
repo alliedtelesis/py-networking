@@ -70,17 +70,8 @@ def clean_test_firmware_upgrade(dut, release_file):
 
 def test_open_close1(dut, log_level, use_mock):
     setup_dut(dut)
-    with pytest.raises(ValueError) as excinfo:
-        d = Device(host=dut.host, port=dut.port, protocol='snmp', log_level=log_level, mock=use_mock)
-    assert str(excinfo.value) == 'Unsupported protocol snmp'
-    with pytest.raises(ValueError) as excinfo:
-        d = Device(host=dut.host, port=dut.port, protocol='serial', log_level=log_level, os='awp', mock=use_mock)
-    assert str(excinfo.value) == 'Protocol serial is not supported'
-    tmpfile = NamedTemporaryFile()
-    tmpname = 'file://' + tmpfile.name
-    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, log_output=tmpname, mock=use_mock)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
-    assert d.log_level == d._log_level
     d.close()
 
 
@@ -116,6 +107,25 @@ def test_open_close4(dut, log_level, use_mock):
     with pytest.raises(DeviceException) as excinfo:
         d.open()
     assert str(excinfo.value).startswith("authentication failed") is True
+
+
+def test_open_close5(dut, log_level, use_mock):
+    setup_dut(dut)
+    with pytest.raises(ValueError) as excinfo:
+        d = Device(host=dut.host, port=dut.port, protocol='snmp', log_level=log_level, mock=use_mock)
+    assert str(excinfo.value) == 'Unsupported protocol snmp'
+    with pytest.raises(ValueError) as excinfo:
+        d = Device(host=dut.host, port=dut.port, protocol='serial', log_level=log_level, os='awp', mock=use_mock)
+    assert str(excinfo.value) == 'Protocol serial is not supported'
+    tmpfile = NamedTemporaryFile()
+    tmpname = 'file://' + tmpfile.name
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, log_output=tmpname, mock=use_mock)
+    d.open()
+    old_log_level = log_level
+    d.log_level = 'debug'
+    assert d.log_level == 10
+    d.log_level = old_log_level
+    d.close()
 
 
 def test_ping1(dut, log_level, use_mock):

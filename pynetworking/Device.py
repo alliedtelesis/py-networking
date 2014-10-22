@@ -107,10 +107,11 @@ class Device(object):
             return False
 
     def open(self):
+        self.log_info("open")
         if self._mock_test is False:
             self._open()
         else:
-            self._mocked_open()
+            self._mocked_open()  # pragma: no cover
 
     def close(self):
         self.log_info("close")
@@ -275,7 +276,6 @@ class Device(object):
             self.log_debug("proxy process started")
 
     def _open(self):
-        self.log_info("open")
         self.cmd({'cmds': [{'cmd': '_status', 'prompt': ''}]})
         self._load_core_facts()
         self._load_features()

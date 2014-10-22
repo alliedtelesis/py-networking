@@ -6,23 +6,20 @@ import tftpy
 import threading
 import getpass
 
-from pynetworking import Device, DeviceException
-from time import sleep
-from paramiko.rsakey import RSAKey
-from pprint import pprint
+from pynetworking.Device import Device, DeviceException
 
 
 def setup_dut(dut):
     dut.reset()
     dut.prompt = '#'
-    dut.add_cmd({'cmd':'show version', 'state':-1, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd': 'show version', 'state': -1, 'action': 'PRINT', 'args': ["""
 
         Unit             SW version         Boot version         HW version
 ------------------- ------------------- ------------------- -------------------
          1               3.0.0.44            1.0.1.07            00.01.00
 
     """]})
-    dut.add_cmd({'cmd':'show system', 'state':-1, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd': 'show system', 'state': -1, 'action': 'PRINT', 'args': ["""
 
 Unit        Type
 ---- -------------------
@@ -39,9 +36,9 @@ Serial number:   1122334455
 
 
 def tftp_make_dir(tftp_client_dir, tftp_server_dir):
-    if (os.path.exists(tftp_client_dir) == False):
+    if (os.path.exists(tftp_client_dir) is False):
         os.mkdir(tftp_client_dir)
-    if (os.path.exists(tftp_server_dir) == False):
+    if (os.path.exists(tftp_server_dir) is False):
         os.mkdir(tftp_server_dir)
 
 
@@ -92,7 +89,7 @@ def clean_test_firmware_upgrade(dut, image_name):
     os.rmdir('tftp_server_dir')
 
 
-def test_facts_1(dut, log_level):
+def test_facts_1(dut, log_level, use_mock):
     if dut.mode != 'emulated':
         pytest.skip("only on emulated")
 
@@ -119,9 +116,9 @@ Serial Number:   1122334231
     """
 
     setup_dut(dut)
-    dut.add_cmd({'cmd':'show system' , 'state':0, 'action':'PRINT','args':[out_sys]})
-    dut.add_cmd({'cmd':'show version', 'state':0, 'action':'PRINT','args':[out_ver]})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    dut.add_cmd({'cmd': 'show system', 'state': 0, 'action': 'PRINT', 'args': [out_sys]})
+    dut.add_cmd({'cmd': 'show version', 'state': 0, 'action': 'PRINT', 'args': [out_ver]})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock='n')
     d.open()
     assert d.facts['model'] == 'not found'
     assert d.facts['unit_number'] == 'not found'
@@ -129,7 +126,7 @@ Serial Number:   1122334231
     d.close()
 
 
-def test_facts_2(dut, log_level):
+def test_facts_2(dut, log_level, use_mock):
     if dut.mode != 'emulated':
         pytest.skip("only on emulated")
 
@@ -156,15 +153,16 @@ serial nr:   1122334455
     """
 
     setup_dut(dut)
-    dut.add_cmd({'cmd':'show system' , 'state':0, 'action':'PRINT','args':[out_sys]})
-    dut.add_cmd({'cmd':'show version', 'state':0, 'action':'PRINT','args':[out_ver]})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    dut.add_cmd({'cmd': 'show system', 'state': 0, 'action': 'PRINT', 'args': [out_sys]})
+    dut.add_cmd({'cmd': 'show version', 'state': 0, 'action': 'PRINT', 'args': [out_ver]})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock='n')
     with pytest.raises(DeviceException) as excinfo:
         d.open()
+    assert 'device not supported' in excinfo.value
     d.close()
 
 
-def test_save_config(dut, log_level):
+def test_save_config(dut, log_level, use_mock):
     setup_dut(dut)
     config_no_vlan = """
 interface range ethernet 1/e(1-16)
@@ -183,7 +181,7 @@ exit
 hostname nac_dev
 ip ssh server
 """
-    config_with_vlan="""
+    config_with_vlan = """
 interface range ethernet 1/e(1-16)
 spanning-tree portfast
 exit
@@ -200,28 +198,28 @@ exit
 hostname nac_dev
 ip ssh server
 """
-    dut.add_cmd({'cmd': 'show running-config', 'state':0, 'action':'PRINT','args':[config_no_vlan]})
-    dut.add_cmd({'cmd': 'show startup-config', 'state':0, 'action':'PRINT','args':[config_no_vlan]})
-    dut.add_cmd({'cmd': 'vlan database'      , 'state':0, 'action':'SET_PROMPT','args':['(config-vlan)#']})
-    dut.add_cmd({'cmd': 'vlan database'      , 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'vlan 3999'          , 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'show running-config', 'state':2, 'action':'PRINT','args':[config_with_vlan]})
-    dut.add_cmd({'cmd': 'show startup-config', 'state':2, 'action':'PRINT','args':[config_no_vlan]})
-    dut.add_cmd({'cmd': 'copy r s'           , 'state':2, 'action':'SET_STATE','args':[3]})
-    dut.add_cmd({'cmd': 'y'                  , 'state':3, 'action':'SET_STATE','args':[4]})
-    dut.add_cmd({'cmd': 'show running-config', 'state':4, 'action':'PRINT','args':[config_with_vlan]})
-    dut.add_cmd({'cmd': 'show startup-config', 'state':4, 'action':'PRINT','args':[config_with_vlan]})
-    dut.add_cmd({'cmd': 'vlan database'      , 'state':4, 'action':'SET_PROMPT','args':['(config-vlan)#']})
-    dut.add_cmd({'cmd': 'vlan database'      , 'state':4, 'action':'SET_STATE','args':[5]})
-    dut.add_cmd({'cmd': 'no vlan 3999'       , 'state':5, 'action':'SET_STATE','args':[6]})
-    dut.add_cmd({'cmd': 'show running-config', 'state':6, 'action':'PRINT','args':[config_no_vlan]})
-    dut.add_cmd({'cmd': 'show startup-config', 'state':6, 'action':'PRINT','args':[config_with_vlan]})
-    dut.add_cmd({'cmd': 'copy r s'           , 'state':6, 'action':'SET_STATE','args':[7]})
-    dut.add_cmd({'cmd': 'y'                  , 'state':7, 'action':'SET_STATE','args':[8]})
-    dut.add_cmd({'cmd': 'show running-config', 'state':8, 'action':'PRINT','args':[config_no_vlan]})
-    dut.add_cmd({'cmd': 'show startup-config', 'state':8, 'action':'PRINT','args':[config_no_vlan]})
+    dut.add_cmd({'cmd': 'show running-config', 'state': 0, 'action': 'PRINT', 'args': [config_no_vlan]})
+    dut.add_cmd({'cmd': 'show startup-config', 'state': 0, 'action': 'PRINT', 'args': [config_no_vlan]})
+    dut.add_cmd({'cmd': 'vlan database', 'state': 0, 'action': 'SET_PROMPT', 'args': ['(config-vlan)#']})
+    dut.add_cmd({'cmd': 'vlan database', 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'vlan 3999', 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd': 'show running-config', 'state': 2, 'action': 'PRINT', 'args': [config_with_vlan]})
+    dut.add_cmd({'cmd': 'show startup-config', 'state': 2, 'action': 'PRINT', 'args': [config_no_vlan]})
+    dut.add_cmd({'cmd': 'copy r s', 'state': 2, 'action': 'SET_STATE', 'args': [3]})
+    dut.add_cmd({'cmd': 'y', 'state': 3, 'action': 'SET_STATE', 'args': [4]})
+    dut.add_cmd({'cmd': 'show running-config', 'state': 4, 'action': 'PRINT', 'args': [config_with_vlan]})
+    dut.add_cmd({'cmd': 'show startup-config', 'state': 4, 'action': 'PRINT', 'args': [config_with_vlan]})
+    dut.add_cmd({'cmd': 'vlan database', 'state': 4, 'action': 'SET_PROMPT', 'args': ['(config-vlan)#']})
+    dut.add_cmd({'cmd': 'vlan database', 'state': 4, 'action': 'SET_STATE', 'args': [5]})
+    dut.add_cmd({'cmd': 'no vlan 3999', 'state': 5, 'action': 'SET_STATE', 'args': [6]})
+    dut.add_cmd({'cmd': 'show running-config', 'state': 6, 'action': 'PRINT', 'args': [config_no_vlan]})
+    dut.add_cmd({'cmd': 'show startup-config', 'state': 6, 'action': 'PRINT', 'args': [config_with_vlan]})
+    dut.add_cmd({'cmd': 'copy r s', 'state': 6, 'action': 'SET_STATE', 'args': [7]})
+    dut.add_cmd({'cmd': 'y', 'state': 7, 'action': 'SET_STATE', 'args': [8]})
+    dut.add_cmd({'cmd': 'show running-config', 'state': 8, 'action': 'PRINT', 'args': [config_no_vlan]})
+    dut.add_cmd({'cmd': 'show startup-config', 'state': 8, 'action': 'PRINT', 'args': [config_no_vlan]})
 
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert d.config == d.system.get_startup_config()
     d.vlan.create(3999)
@@ -235,15 +233,15 @@ ip ssh server
     d.close()
 
 
-def test_ping1(dut, log_level):
+def test_ping1(dut, log_level, use_mock):
     setup_dut(dut)
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert d.ping()
     d.close()
 
 
-def test_firmware_upgrade(dut, log_level):
+def test_firmware_upgrade(dut, log_level, use_mock):
     output_0 = ["""
 Unit  Image  Filename   Version    Date                    Status
 ----  -----  ---------  ---------  ---------------------   -----------
@@ -267,29 +265,31 @@ Unit  Image  Filename   Version    Date                    Status
 
     setup_dut(dut)
     setup_test_firmware_upgrade(dut, image_name)
-    assert (os.path.exists(image_name) == True)
-    assert (os.path.exists(false_image_name) == False)
+    assert (os.path.exists(image_name) is True)
+    assert (os.path.exists(false_image_name) is False)
 
     update_cmd = 'copy\s+tftp://{0}/{1}\s+image'.format(socket.gethostbyname(socket.getfqdn()), image_name)
-    dut.add_cmd({'cmd': 'show bootvar', 'state':0, 'action':'PRINT','args': output_0})
-    dut.add_cmd({'cmd': update_cmd    , 'state':0, 'action':'SET_STATE','args': [1]})
-    dut.add_cmd({'cmd': 'show bootvar', 'state':1, 'action':'PRINT','args': output_1})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level,connection_timeout=300)
+    dut.add_cmd({'cmd': 'show bootvar', 'state': 0, 'action': 'PRINT', 'args': output_0})
+    dut.add_cmd({'cmd': update_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'show bootvar', 'state': 1, 'action': 'PRINT', 'args': output_1})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, connection_timeout=300, mock=use_mock)
     d.open()
     with pytest.raises(KeyError) as excinfo:
         d.system.update_firmware(filename=false_image_name, protocol='tftp', port=dut.tftp_port)
+    assert 'firmware {0} not available'.format(false_image_name) in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.system.update_firmware(filename=image_name, port=dut.tftp_port)
+    assert 'protocol http not supported' in excinfo.value
     d.system.update_firmware(filename=image_name, protocol='tftp', port=dut.tftp_port, dontwait=dut.dontwait)
     if (dut.mode == 'emulated'):
         # Real devices will be rebooting here
-        assert d.system._is_boot_bank_changed() == True
+        assert d.system._is_boot_bank_changed() is True
     d.close()
 
     clean_test_firmware_upgrade(dut, image_name)
 
 
-def test_full_path_firmware_upgrade(dut, log_level):
+def test_full_path_firmware_upgrade(dut, log_level, use_mock):
     output_0 = ["""
 Unit  Image  Filename   Version    Date                    Status
 ----  -----  ---------  ---------  ---------------------   -----------
@@ -314,18 +314,18 @@ Unit  Image  Filename   Version    Date                    Status
 
     setup_dut(dut)
     setup_test_firmware_upgrade(dut, image_name)
-    assert (os.path.exists(image_name) == True)
+    assert (os.path.exists(image_name) is True)
 
     update_cmd = 'copy\s+tftp://{0}/{1}\s+image'.format(socket.gethostbyname(socket.getfqdn()), image_file)
-    dut.add_cmd({'cmd': 'show bootvar', 'state':0, 'action':'PRINT','args': output_0})
-    dut.add_cmd({'cmd': update_cmd    , 'state':0, 'action':'SET_STATE','args': [1]})
-    dut.add_cmd({'cmd': 'show bootvar', 'state':1, 'action':'PRINT','args': output_1})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level,connection_timeout=300)
+    dut.add_cmd({'cmd': 'show bootvar', 'state': 0, 'action': 'PRINT', 'args': output_0})
+    dut.add_cmd({'cmd': update_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'show bootvar', 'state': 1, 'action': 'PRINT', 'args': output_1})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, connection_timeout=300, mock=use_mock)
     d.open()
     d.system.update_firmware(filename=image_name, protocol='tftp', port=dut.tftp_port, dontwait=dut.dontwait)
     if (dut.mode == 'emulated'):
         # Real devices will be rebooting here
-        assert d.system._is_boot_bank_changed() == True
+        assert d.system._is_boot_bank_changed() is True
     d.close()
 
     clean_test_firmware_upgrade(dut, image_name)

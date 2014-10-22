@@ -2,13 +2,15 @@
 
 try:
     from hashlib import md5
-except ImportError: #pragma: no cover
+except ImportError:  # pragma: no cover
     from md5 import new as md5
 from time import time
 import json
 
+
 class CacheMissException(Exception):
     pass
+
 
 class Cache(object):
     def __init__(self, enable=True, default_timeout=30):
@@ -32,8 +34,7 @@ class Cache(object):
             timeout = self.default_timeout
 
         k = md5(json.dumps(cmd)).hexdigest()
-        self.cache[k] = (time()+timeout, value)
+        self.cache[k] = (time() + timeout, value)
 
     def flush(self):
         self.cache = {}
-

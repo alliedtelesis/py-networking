@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-from pynetworking import Feature
+from pynetworking.Feature import Feature
 from pprint import pformat
 import re
 import json
 try:
     from collections import OrderedDict
-except ImportError: #pragma: no cover
+except ImportError:  # pragma: no cover
     from ordereddict import OrderedDict
 
 
@@ -18,7 +18,6 @@ class ats_ntp(Feature):
         self._sntp = {}
         self._d = device
         self._d.log_debug("loading feature")
-
 
     def load_config(self, config):
         self._d.log_info("loading config")
@@ -35,10 +34,9 @@ class ats_ntp(Feature):
             if m:
                 key = m.group('address')
                 self._sntp[key] = {'polltime': 60,
-                                   'status'  : 'Unknown'
-                                  }
+                                   'status': 'Unknown'
+                                   }
         self._d.log_info(self._sntp)
-
 
     def create(self, address, poll=60):
         self._d.log_info("add SNTP server {0}".format(address))
@@ -51,39 +49,37 @@ class ats_ntp(Feature):
         poll_cmd = 'sntp client poll timer {0}'.format(poll)
         source_cmd = 'clock source sntp'
         enable_cmd = 'sntp unicast client enable'
-        cmds = {'cmds': [{'cmd': 'conf'    , 'prompt': '\(config\)\#'},
-                         {'cmd': set_cmd   , 'prompt': '\(config\)\#'},
-                         {'cmd': poll_cmd  , 'prompt': '\(config\)\#'},
+        cmds = {'cmds': [{'cmd': 'conf', 'prompt': '\(config\)\#'},
+                         {'cmd': set_cmd, 'prompt': '\(config\)\#'},
+                         {'cmd': poll_cmd, 'prompt': '\(config\)\#'},
                          {'cmd': source_cmd, 'prompt': '\(config\)\#'},
                          {'cmd': enable_cmd, 'prompt': '\(config\)\#'},
-                         {'cmd': chr(26)   , 'prompt': '\#'}
-                        ]}
+                         {'cmd': chr(26), 'prompt': '\#'}
+                         ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._update_sntp()
-
 
     def update(self, address, poll=60):
         self._d.log_info("add SNTP server {0}".format(address))
         self._update_sntp()
 
         if address not in self._sntp.keys():
-            raise KeyError('SNTP server {0} not present'.format(address))
+            raise KeyError('SNTP server {0} is not present'.format(address))
 
         poll_cmd = 'sntp client poll timer {0}'.format(poll)
-        cmds = {'cmds': [{'cmd': 'conf'  , 'prompt': '\(config\)\#'},
+        cmds = {'cmds': [{'cmd': 'conf', 'prompt': '\(config\)\#'},
                          {'cmd': poll_cmd, 'prompt': '\(config\)\#'},
-                         {'cmd': chr(26) , 'prompt': '\#'}
-                        ]}
+                         {'cmd': chr(26), 'prompt': '\#'}
+                         ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._update_sntp()
-
 
     def delete(self, address=''):
         self._d.log_info("remove SNTP server {0}".format(address))
         self._update_sntp()
 
         if address != '' and address not in self._sntp.keys():
-            raise KeyError('SNTP server {0} not present'.format(address))
+            raise KeyError('SNTP server {0} is not present'.format(address))
 
         cmds = {'cmds': [{'cmd': 'conf', 'prompt': '\(config\)\#'}]}
 
@@ -101,29 +97,25 @@ class ats_ntp(Feature):
         self._update_sntp()
 
         if self._sntp.keys() == []:
-            cmds = {'cmds': [{'cmd': 'conf'   , 'prompt': '\(config\)\#'},
+            cmds = {'cmds': [{'cmd': 'conf', 'prompt': '\(config\)\#'},
                              {'cmd': 'no c so', 'prompt': '\(config\)\#'},
-                             {'cmd': chr(26)  , 'prompt': '\#'}
-                            ]}
+                             {'cmd': chr(26), 'prompt': '\#'}
+                             ]}
             self._device.cmd(cmds, cache=False, flush_cache=True)
-
 
     def items(self):
         self._update_sntp()
         return self._sntp.items()
 
-
     def keys(self):
         self._update_sntp()
         return self._sntp.keys()
 
-
     def __getitem__(self, address):
         self._update_sntp()
         if address not in self._sntp.keys():
-            raise KeyError('SNTP server {0} does not exist'.format(address))
+            raise KeyError('SNTP server {0} is not present'.format(address))
         return self._sntp[address]
-
 
     def _update_sntp(self):
         self._d.log_info("_update_sntp")
@@ -165,7 +157,7 @@ class ats_ntp(Feature):
         #                           30 2014             689
         # 193.204.114.233    up     08:44:27.0 UTC Sep  252398668    0
         #                           30 2014             629
-        #........
+        # ........
         ifre2 = re.compile('(\s+|'')(?P<address>[^\s]+)\s+(?P<status>[^\s]+)\s+')
         for line in self._device.cmd("show sntp status").split('\n'):
             self._d.log_debug("line is {0}".format(line))
@@ -174,6 +166,6 @@ class ats_ntp(Feature):
                 key = m.group('address')
                 self._sntp[key] = {'polltime': polltime,
                                    'status': m.group('status')
-                                  }
+                                   }
 
         self._d.log_debug("ntp {0}".format(pformat(json.dumps(self._sntp))))

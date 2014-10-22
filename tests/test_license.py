@@ -1,18 +1,15 @@
 import pytest
-import logging
 import os
 import socket
 import tftpy
 import threading
 import getpass
-from pynetworking import Device, DeviceException
-from time import sleep
-from paramiko.rsakey import RSAKey
-from pprint import pprint
+from pynetworking.Device import Device
+
 
 def setup_dut(dut):
     dut.reset()
-    dut.add_cmd({'cmd':'show system',         'state':0, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd': 'show system', 'state': 0, 'action': 'PRINT', 'args': ["""
 Switch System Status                                   Fri Mar 21 15:45:13 2014
 
 Board       ID  Bay   Board Name                         Rev   Serial number
@@ -42,7 +39,7 @@ System Contact
 System Location
 
     """]})
-    dut.add_cmd({'cmd':'show version',        'state':0, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd': 'show version', 'state': 0, 'action': 'PRINT', 'args': ["""
 AlliedWare Plus (TM) 5.4.2 09/25/13 12:57:26
 
 Build name : x600-5.4.2-3.14.rel
@@ -63,20 +60,20 @@ def tftp_server_for_ever(port, tftp_server_dir):
 
 
 def setup_test_certificate(dut, cert_file, label, key, mac='', tftp_server=False):
-    if (os.path.exists(cert_file) == False):
+    if (os.path.exists(cert_file) is False):
         myfile = open(cert_file, 'w')
         myfile.write('# certificate file for tests\n')
         if (mac == ''):
-           license_entry = '*,{0},{1}\n'.format(label, key)
-           myfile.write('# feature licenses\n')
-           myfile.write(license_entry)
+            license_entry = '*,{0},{1}\n'.format(label, key)
+            myfile.write('# feature licenses\n')
+            myfile.write(license_entry)
         else:
-           release_entry = '{0},{1},{2}\n'.format(mac, label, key)
-           myfile.write('# release licenses\n')
-           myfile.write(release_entry)
+            release_entry = '{0},{1},{2}\n'.format(mac, label, key)
+            myfile.write('# release licenses\n')
+            myfile.write(release_entry)
         myfile.close()
 
-    if (tftp_server == True):
+    if (tftp_server is True):
         if (dut.mode != 'emulated'):
             assert 'root' == getpass.getuser()
         dut.tftp_port = 69
@@ -85,9 +82,9 @@ def setup_test_certificate(dut, cert_file, label, key, mac='', tftp_server=False
 
         client_dir = './tftp_client_dir'
         server_dir = './tftp_server_dir'
-        if (os.path.exists(client_dir) == False):
+        if (os.path.exists(client_dir) is False):
             os.mkdir(client_dir)
-        if (os.path.exists(server_dir) == False):
+        if (os.path.exists(server_dir) is False):
             os.mkdir(server_dir)
         if not hasattr(dut, 'tftp_server_thread'):
             dut.tftp_server_thread = threading.Thread(target=tftp_server_for_ever, args=(dut.tftp_port, server_dir,))
@@ -99,20 +96,20 @@ def setup_test_certificate(dut, cert_file, label, key, mac='', tftp_server=False
 
 
 def clean_test_environment(dut, cert_file):
-    if (os.path.exists(cert_file) == True):
+    if (os.path.exists(cert_file) is True):
         os.remove(cert_file)
     tftp_client_dir = './tftp_client_dir'
-    if (os.path.exists(tftp_client_dir) == True):
+    if (os.path.exists(tftp_client_dir) is True):
         os.rmdir(tftp_client_dir)
     tftp_server_dir = './tftp_server_dir'
     tftp_server_file = tftp_server_dir + '/' + cert_file
-    if (os.path.exists(tftp_server_file) == True):
+    if (os.path.exists(tftp_server_file) is True):
         os.remove(tftp_server_file)
-    if (os.path.exists(tftp_server_dir) == True):
+    if (os.path.exists(tftp_server_dir) is True):
         os.rmdir(tftp_server_dir)
 
 
-def test_feature_license_label_key(dut, log_level):
+def test_feature_license_label_key(dut, log_level, use_mock):
     output_0 = ["""
 OEM Territory : Global
 Software Licenses
@@ -162,33 +159,39 @@ Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
     set_cmd = 'license {0} {1}'.format(label, key)
     delete_cmd = 'no license {0}'.format(label)
 
-    dut.add_cmd({'cmd': 'show license', 'state':0, 'action':'PRINT','args': output_0})
-    dut.add_cmd({'cmd': set_cmd       , 'state':0, 'action':'SET_STATE','args': [1]})
-    dut.add_cmd({'cmd': 'show license', 'state':1, 'action':'PRINT','args': output_1})
-    dut.add_cmd({'cmd': delete_cmd    , 'state':1, 'action':'SET_STATE','args': [2]})
-    dut.add_cmd({'cmd': 'show license', 'state':2, 'action':'PRINT','args': output_0})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    dut.add_cmd({'cmd': 'show license', 'state': 0, 'action': 'PRINT', 'args': output_0})
+    dut.add_cmd({'cmd': set_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'show license', 'state': 1, 'action': 'PRINT', 'args': output_1})
+    dut.add_cmd({'cmd': delete_cmd, 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd': 'show license', 'state': 2, 'action': 'PRINT', 'args': output_0})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     with pytest.raises(KeyError) as excinfo:
         d.license.set_license(label='', key=key)
+    assert 'either label and key or certificate must be given' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.license.set_license(label=label, key='')
+    assert 'either label and key or certificate must be given' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.license['Bbase']
+    assert 'license Bbase does not exist' in excinfo.value
     assert label not in d.license.keys()
     d.license.set_license(label=label, key=key)
     assert label in d.license.keys()
     assert d.license[label]['features'] == 'BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT, VRF-LITE, VRF-LITE-63'
     assert d.license[label]['releases'] == ''
-    assert (label, {'customer': d.license[label]['customer'], 'quantity': d.license[label]['quantity'], 'type': d.license[label]['type'], 'issue_date': d.license[label]['issue_date'], 'expire_date': d.license[label]['expire_date'], 'features' : d.license[label]['features'], 'releases' : ''}) in d.license.items()
+    assert (label, {'customer': d.license[label]['customer'], 'quantity': d.license[label]['quantity'], 'type': d.license[label]['type'],
+                    'issue_date': d.license[label]['issue_date'], 'expire_date': d.license[label]['expire_date'],
+                    'features': d.license[label]['features'], 'releases': ''}) in d.license.items()
     with pytest.raises(KeyError) as excinfo:
         d.license.delete(label='Bbase')
+    assert 'label Bbase does not exist' in excinfo.value
     d.license.delete(label=label)
     assert label not in d.license.keys()
     d.close()
 
 
-def test_feature_license_path(dut, log_level):
+def test_feature_license_path(dut, log_level, use_mock):
     output_0 = ["""
 OEM Territory : Global
 Software Licenses
@@ -243,15 +246,16 @@ Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
     set_cmd = 'license certificate {0}'.format(cert_file)
     delete_cmd = 'no license {0}'.format(label)
 
-    dut.add_cmd({'cmd': 'show license', 'state':0, 'action':'PRINT','args': output_0})
-    dut.add_cmd({'cmd': set_cmd       , 'state':0, 'action':'SET_STATE','args': [1]})
-    dut.add_cmd({'cmd': 'show license', 'state':1, 'action':'PRINT','args': output_1})
-    dut.add_cmd({'cmd': delete_cmd    , 'state':1, 'action':'SET_STATE','args': [2]})
-    dut.add_cmd({'cmd': 'show license', 'state':2, 'action':'PRINT','args': output_0})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    dut.add_cmd({'cmd': 'show license', 'state': 0, 'action': 'PRINT', 'args': output_0})
+    dut.add_cmd({'cmd': set_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'show license', 'state': 1, 'action': 'PRINT', 'args': output_1})
+    dut.add_cmd({'cmd': delete_cmd, 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd': 'show license', 'state': 2, 'action': 'PRINT', 'args': output_0})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     with pytest.raises(KeyError) as excinfo:
         d.license.set_license(certificate=false_cert_file)
+    assert 'certificate file {0} does not exist'.format(false_cert_file) in excinfo.value
     assert label not in d.license.keys()
     d.license.set_license(certificate=cert_name)
     assert label in d.license.keys()
@@ -266,7 +270,7 @@ Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
     clean_test_environment(dut, cert_name)
 
 
-def test_feature_license_tftp(dut, log_level):
+def test_feature_license_tftp(dut, log_level, use_mock):
     output_0 = ["""
 OEM Territory : Global
 Software Licenses
@@ -320,15 +324,16 @@ Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
     set_cmd = 'license certificate {0}'.format(cert_url)
     delete_cmd = 'no license {0}'.format(label)
 
-    dut.add_cmd({'cmd': 'show license', 'state':0, 'action':'PRINT','args': output_0})
-    dut.add_cmd({'cmd': set_cmd       , 'state':0, 'action':'SET_STATE','args': [1]})
-    dut.add_cmd({'cmd': 'show license', 'state':1, 'action':'PRINT','args': output_1})
-    dut.add_cmd({'cmd': delete_cmd    , 'state':1, 'action':'SET_STATE','args': [2]})
-    dut.add_cmd({'cmd': 'show license', 'state':2, 'action':'PRINT','args': output_0})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    dut.add_cmd({'cmd': 'show license', 'state': 0, 'action': 'PRINT', 'args': output_0})
+    dut.add_cmd({'cmd': set_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'show license', 'state': 1, 'action': 'PRINT', 'args': output_1})
+    dut.add_cmd({'cmd': delete_cmd, 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd': 'show license', 'state': 2, 'action': 'PRINT', 'args': output_0})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     with pytest.raises(KeyError) as excinfo:
         d.license.set_license(certificate=false_cert_url)
+    assert 'protocol http not supported' in excinfo.value
     assert label not in d.license.keys()
     assert cert_file not in d.file.keys()
     d.license.set_license(certificate=cert_url)
@@ -342,7 +347,7 @@ Features included             : BGP-5K, OSPF-FULL, PIM, PIM-100, VlanDT,
     clean_test_environment(dut, cert_file)
 
 
-def test_release_license(dut, log_level):
+def test_release_license(dut, log_level, use_mock):
     output_0 = ["""
 OEM Territory : ATI USA
 Software Licenses
@@ -397,12 +402,12 @@ Release                       : 5.4.4
     set_cmd = 'license certificate {0}'.format(cert_url)
     delete_cmd = 'no license {0}'.format(label)
 
-    dut.add_cmd({'cmd': 'show license', 'state':0, 'action':'PRINT','args': output_0})
-    dut.add_cmd({'cmd': set_cmd       , 'state':0, 'action':'SET_STATE','args': [1]})
-    dut.add_cmd({'cmd': 'show license', 'state':1, 'action':'PRINT','args': output_1})
-    dut.add_cmd({'cmd': delete_cmd    , 'state':1, 'action':'SET_STATE','args': [2]})
-    dut.add_cmd({'cmd': 'show license', 'state':2, 'action':'PRINT','args': output_0})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol,log_level=log_level)
+    dut.add_cmd({'cmd': 'show license', 'state': 0, 'action': 'PRINT', 'args': output_0})
+    dut.add_cmd({'cmd': set_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'show license', 'state': 1, 'action': 'PRINT', 'args': output_1})
+    dut.add_cmd({'cmd': delete_cmd, 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd': 'show license', 'state': 2, 'action': 'PRINT', 'args': output_0})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert label not in d.license.keys()
     assert cert_file not in d.file.keys()

@@ -1,14 +1,12 @@
 import pytest
 import os
 import socket
-from pynetworking import Device
-from time import sleep
-from paramiko.rsakey import RSAKey
+from pynetworking.Device import Device
 
 
 def setup_dut(dut):
     dut.reset()
-    dut.add_cmd({'cmd':'show version',        'state':-1, 'action': 'PRINT','args':["""
+    dut.add_cmd({'cmd': 'show version', 'state': -1, 'action': 'PRINT', 'args': ["""
 AlliedWare Plus (TM) 5.4.2 09/25/13 12:57:26
 
 Build name : x600-5.4.2-3.14.rel
@@ -17,7 +15,7 @@ Build type : RELEASE
     """]})
 
 
-def test_create_file_with_failures(dut, log_level):
+def test_create_file_with_failures(dut, log_level, use_mock):
     dir_0 = ["""
       588 -rw- Jun 10 2014 12:38:10  video-2.cfg
       588 -rw- Jun 10 2014 12:38:10  video.cfg
@@ -50,22 +48,26 @@ interface vlan1
 end
 """
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'dir'   , 'state':0, 'action':'PRINT','args': dir_0})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    dut.add_cmd({'cmd': 'dir', 'state': 0, 'action': 'PRINT', 'args': dir_0})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert 'default.cfg' in d.file.keys()
     with pytest.raises(KeyError) as excinfo:
         d.file.create(name='default.cfg', text=host_content)
+    assert 'file default.cfg is already existing' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file.create(name='test_file.cfg', text=host_content, filename='default.cfg')
+    assert 'cannot have both source device file name and host string not empty' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file.create(name='test_file.cfg', protocol='tftp', text=host_content)
+    assert 'protocol tftp not supported' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file['video-3.cfg']
+    assert 'file video-3.cfg does not exist' in excinfo.value
     d.close()
 
 
-def test_create_empty_file(dut, log_level):
+def test_create_empty_file(dut, log_level, use_mock):
     dir_0 = ["""
       588 -rw- Jun 10 2014 12:38:10  video-2.cfg
       588 -rw- Jun 10 2014 12:38:10  video.cfg
@@ -92,19 +94,21 @@ def test_create_empty_file(dut, log_level):
     setup_dut(dut)
     host_file_name = 'test_file_0.cfg'
     create_cmd = 'copy\s+http://{0}:\d+/test_file_0.cfg\s+test_file_0.cfg'.format(socket.gethostbyname(socket.getfqdn()))
-    dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
-    dut.add_cmd({'cmd': create_cmd, 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'dir'     , 'state':1, 'action':'PRINT','args': dir_1})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    dut.add_cmd({'cmd': 'dir', 'state': 0, 'action': 'PRINT', 'args': dir_0})
+    dut.add_cmd({'cmd': create_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'dir', 'state': 1, 'action': 'PRINT', 'args': dir_1})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert host_file_name not in d.file.keys()
     d.file.create(name=host_file_name)
     assert host_file_name in d.file.keys()
-    assert (host_file_name, {'size': '0', 'mdate': d.file[host_file_name]['mdate'], 'permission': '-rw-', 'mtime': d.file[host_file_name]['mtime']}) in d.file.items()
+    mm_date = d.file[host_file_name]['mdate']
+    mm_time = d.file[host_file_name]['mtime']
+    assert (host_file_name, {'size': '0', 'mdate': mm_date, 'permission': '-rw-', 'mtime': mm_time}) in d.file.items()
     d.close()
 
 
-def test_create_file_from_another_file(dut, log_level):
+def test_create_file_from_another_file(dut, log_level, use_mock):
     dir_0 = ["""
       588 -rw- Jun 10 2014 12:38:10  video-2.cfg
       588 -rw- Jun 10 2014 12:38:10  video.cfg
@@ -150,15 +154,14 @@ end
 """
     setup_dut(dut)
     host_file_name = 'local.cfg'
-    device_file_name = 'test_file_1.cfg'
     myfile = open(host_file_name, 'w')
     myfile.write(host_content)
     myfile.close()
     create_cmd = 'copy\s+http://{0}:\d+/local.cfg\s+test_file_1.cfg'.format(socket.gethostbyname(socket.getfqdn()))
-    dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
-    dut.add_cmd({'cmd': create_cmd, 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'dir'     , 'state':1, 'action':'PRINT','args': dir_1})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    dut.add_cmd({'cmd': 'dir', 'state': 0, 'action': 'PRINT', 'args': dir_0})
+    dut.add_cmd({'cmd': create_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'dir', 'state': 1, 'action': 'PRINT', 'args': dir_1})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert 'test_file_1.cfg' not in d.file.keys()
     d.file.create(name='test_file_1.cfg', filename='local.cfg')
@@ -168,7 +171,7 @@ end
     os.remove(host_file_name)
 
 
-def test_create_file_from_string(dut, log_level):
+def test_create_file_from_string(dut, log_level, use_mock):
     dir_0 = ["""
       588 -rw- Jun 16 2014 15:15:15  test_file_1.cfg
       588 -rw- Jun 10 2014 12:38:10  video-2.cfg
@@ -215,12 +218,11 @@ interface vlan1
 end
 """
     setup_dut(dut)
-    host_file_name = 'test_file_2.cfg'
     create_cmd = 'copy\s+http://{0}:\d+/test_file_2.cfg\s+test_file_2.cfg'.format(socket.gethostbyname(socket.getfqdn()))
-    dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
-    dut.add_cmd({'cmd': create_cmd, 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'dir'     , 'state':1, 'action':'PRINT','args': dir_1})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    dut.add_cmd({'cmd': 'dir', 'state': 0, 'action': 'PRINT', 'args': dir_0})
+    dut.add_cmd({'cmd': create_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'dir', 'state': 1, 'action': 'PRINT', 'args': dir_1})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert 'test_file_2.cfg' not in d.file.keys()
     d.file.create(name='test_file_2.cfg', text=host_content)
@@ -229,7 +231,7 @@ end
     d.close()
 
 
-def test_read_file(dut, log_level):
+def test_read_file(dut, log_level, use_mock):
     dir_0 = ["""
       588 -rw- Jun 10 2014 12:38:10  video-2.cfg
       588 -rw- Jun 10 2014 12:38:10  video.cfg
@@ -278,13 +280,13 @@ end
 """
     setup_dut(dut)
     create_cmd = 'copy\s+http://{0}:\d+/test_file_r.cfg\s+test_file_r.cfg'.format(socket.gethostbyname(socket.getfqdn()))
-    dut.add_cmd({'cmd': 'dir'                      , 'state':0, 'action':'PRINT','args': dir_0})
-    dut.add_cmd({'cmd': create_cmd                 , 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'dir'                      , 'state':1, 'action':'PRINT','args': dir_1})
-    dut.add_cmd({'cmd': 'show file test_file_r.cfg', 'state':1, 'action':'PRINT','args': [host_content]})
-    dut.add_cmd({'cmd': 'delete test_file_r.cfg'   , 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'dir'                      , 'state':2, 'action':'PRINT','args': dir_0})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    dut.add_cmd({'cmd': 'dir', 'state': 0, 'action': 'PRINT', 'args': dir_0})
+    dut.add_cmd({'cmd': create_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'dir', 'state': 1, 'action': 'PRINT', 'args': dir_1})
+    dut.add_cmd({'cmd': 'show file test_file_r.cfg', 'state': 1, 'action': 'PRINT', 'args': [host_content]})
+    dut.add_cmd({'cmd': 'delete test_file_r.cfg', 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd': 'dir', 'state': 2, 'action': 'PRINT', 'args': dir_0})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert 'test_file_r.cfg' not in d.file.keys()
     d.file.create(name='test_file_r.cfg', text=host_content)
@@ -295,7 +297,7 @@ end
     d.close()
 
 
-def test_update_file_with_failures(dut, log_level):
+def test_update_file_with_failures(dut, log_level, use_mock):
     dir_0 = ["""
       588 -rw- Jun 16 2014 15:15:15  test_file_1.cfg
       588 -rw- Jun 10 2014 12:38:10  video-2.cfg
@@ -329,24 +331,29 @@ ip address 10.17.39.253/24
 end
 """
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'dir'   , 'state':0, 'action':'PRINT','args': dir_0})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    dut.add_cmd({'cmd': 'dir', 'state': 0, 'action': 'PRINT', 'args': dir_0})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert 'default.cfg' in d.file.keys()
     with pytest.raises(KeyError) as excinfo:
         d.file.update(name='test_file_3.cfg', text=host_text)
+    assert 'file test_file_3.cfg does not exist' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file.update(name='test_file_1.cfg', text=host_text, new_name='default.cfg')
+    assert 'file default.cfg cannot be overwritten' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file.update(name='test_file_1.cfg')
+    assert 'cannot have both host file name and host string empty' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file.update(name='test_file_1.cfg', protocol='tftp', filename='host_temp.cfg', text=host_text)
+    assert 'protocol tftp not supported' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file.update(name='test_file_1.cfg', filename='host_temp.cfg', text=host_text)
+    assert 'cannot have both host file name and host string not empty' in excinfo.value
     d.close()
 
 
-def test_update_file_with_text(dut, log_level):
+def test_update_file_with_text(dut, log_level, use_mock):
     dir_0 = ["""
       588 -rw- Jun 16 2014 15:15:15  test_file_1.cfg
       588 -rw- Jun 10 2014 12:38:10  video-2.cfg
@@ -394,13 +401,12 @@ vlan 777 name video-vlan state enable
 !
 end
 """
-    name = 'test_file_1.cfg'
     update_cmd = 'copy\s+http://{0}:\d+/test_file_1.cfg\s+test_file_1.cfg'.format(socket.gethostbyname(socket.getfqdn()))
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
-    dut.add_cmd({'cmd': update_cmd, 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'dir'     , 'state':1, 'action':'PRINT','args': dir_1})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    dut.add_cmd({'cmd': 'dir', 'state': 0, 'action': 'PRINT', 'args': dir_0})
+    dut.add_cmd({'cmd': update_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'dir', 'state': 1, 'action': 'PRINT', 'args': dir_1})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert 'test_file_1.cfg' in d.file.keys()
     old_mtime = d.file['test_file_1.cfg']['mtime']
@@ -410,7 +416,7 @@ end
     d.close()
 
 
-def test_update_file_with_another_file(dut, log_level):
+def test_update_file_with_another_file(dut, log_level, use_mock):
     dir_0 = ["""
       588 -rw- Jun 16 2014 15:15:15  test_file_1.cfg
       588 -rw- Jun 10 2014 12:38:10  video-2.cfg
@@ -464,10 +470,10 @@ end
     myfile.close()
     update_cmd = 'copy\s+http://{0}:\d+/temp.cfg\s+test_file_1.cfg'.format(socket.gethostbyname(socket.getfqdn()))
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
-    dut.add_cmd({'cmd': update_cmd, 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'dir'     , 'state':1, 'action':'PRINT','args': dir_1})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    dut.add_cmd({'cmd': 'dir', 'state': 0, 'action': 'PRINT', 'args': dir_0})
+    dut.add_cmd({'cmd': update_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'dir', 'state': 1, 'action': 'PRINT', 'args': dir_1})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert 'test_file_1.cfg' in d.file.keys()
     old_mtime = d.file['test_file_1.cfg']['mtime']
@@ -478,7 +484,7 @@ end
     os.remove('temp.cfg')
 
 
-def test_update_file_and_rename(dut, log_level):
+def test_update_file_and_rename(dut, log_level, use_mock):
     dir_0 = ["""
       588 -rw- Jun 16 2014 15:15:15  test_file_1.cfg
       588 -rw- Jun 10 2014 12:38:10  video-2.cfg
@@ -544,12 +550,12 @@ end
     update_cmd = 'copy\s+http://{0}:\d+/test_file_1.cfg\s+test_file_3.cfg'.format(socket.gethostbyname(socket.getfqdn()))
     delete_cmd = 'delete test_file_1.cfg'
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
-    dut.add_cmd({'cmd': update_cmd, 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'dir'     , 'state':1, 'action':'PRINT','args': dir_1})
-    dut.add_cmd({'cmd': delete_cmd, 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'dir'     , 'state':2, 'action':'PRINT','args': dir_2})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    dut.add_cmd({'cmd': 'dir', 'state': 0, 'action': 'PRINT', 'args': dir_0})
+    dut.add_cmd({'cmd': update_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'dir', 'state': 1, 'action': 'PRINT', 'args': dir_1})
+    dut.add_cmd({'cmd': delete_cmd, 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd': 'dir', 'state': 2, 'action': 'PRINT', 'args': dir_2})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert 'test_file_1.cfg' in d.file.keys()
     assert 'test_file_3.cfg' not in d.file.keys()
@@ -560,7 +566,7 @@ end
     d.close()
 
 
-def test_remove_files(dut, log_level):
+def test_remove_files(dut, log_level, use_mock):
     dir_0 = ["""
         0 -rw- Jun 10 2014 12:38:10  test_file_0.cfg
       288 -rw- Jun 18 2014 07:53:11  test_file_2.cfg
@@ -600,14 +606,14 @@ def test_remove_files(dut, log_level):
       735 -rw- Aug 23 2013 08:48:35  exception.log
 """]
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'dir'                   , 'state':0, 'action':'PRINT','args': dir_0})
-    dut.add_cmd({'cmd': 'delete test_file_0.cfg', 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'dir'                   , 'state':1, 'action':'PRINT','args': dir_1})
-    dut.add_cmd({'cmd': 'delete test_file_2.cfg', 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'dir'                   , 'state':2, 'action':'PRINT','args': dir_2})
-    dut.add_cmd({'cmd': 'delete test_file_3.cfg', 'state':2, 'action':'SET_STATE','args':[3]})
-    dut.add_cmd({'cmd': 'dir'                   , 'state':3, 'action':'PRINT','args': dir_3})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    dut.add_cmd({'cmd': 'dir', 'state': 0, 'action': 'PRINT', 'args': dir_0})
+    dut.add_cmd({'cmd': 'delete test_file_0.cfg', 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'dir', 'state': 1, 'action': 'PRINT', 'args': dir_1})
+    dut.add_cmd({'cmd': 'delete test_file_2.cfg', 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd': 'dir', 'state': 2, 'action': 'PRINT', 'args': dir_2})
+    dut.add_cmd({'cmd': 'delete test_file_3.cfg', 'state': 2, 'action': 'SET_STATE', 'args': [3]})
+    dut.add_cmd({'cmd': 'dir', 'state': 3, 'action': 'PRINT', 'args': dir_3})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert 'test_file_0.cfg' in d.file.keys()
     assert 'test_file_2.cfg' in d.file.keys()
@@ -624,11 +630,12 @@ def test_remove_files(dut, log_level):
     d.file.delete("test_file_3.cfg")
     with pytest.raises(KeyError) as excinfo:
         d.file.delete("test_file_x.cfg")
+    assert 'file test_file_x.cfg does not exist' in excinfo.value
     assert 'test_file_0.cfg' not in d.file.keys()
     assert 'test_file_2.cfg' not in d.file.keys()
     assert 'test_file_3.cfg' not in d.file.keys()
     d.close()
 
 
-def test_clean(dut, log_level):
+def test_clean(dut, log_level, use_mock):
     os.remove('test_file_0.cfg')

@@ -1,20 +1,18 @@
 import pytest
-from pynetworking import Device
-from time import sleep
-from paramiko.rsakey import RSAKey
+from pynetworking.Device import Device
 
 
 def setup_dut(dut):
     dut.reset()
     dut.prompt = '#'
-    dut.add_cmd({'cmd':'show version', 'state':-1, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd': 'show version', 'state': -1, 'action': 'PRINT', 'args': ["""
 
         Unit             SW version         Boot version         HW version
 ------------------- ------------------- ------------------- -------------------
          1               3.0.0.44            1.0.1.07            00.01.00
 
     """]})
-    dut.add_cmd({'cmd':'show system', 'state':-1, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd': 'show system', 'state': -1, 'action': 'PRINT', 'args': ["""
 
 Unit        Type
 ---- -------------------
@@ -30,7 +28,7 @@ Serial number:   1122334455
     """]})
 
 
-def test_ntp_crud(dut, log_level):
+def test_ntp_crud(dut, log_level, use_mock):
     # Get the SNTP servers reachable:  ip default-gateway 10.17.39.1
     # Give a DNS service:              ip name-server 10.17.39.11
     #
@@ -178,47 +176,49 @@ Unicast servers:
     delete_cmd_1 = 'no sntp server {0}'.format(ntp_address_2)
     delete_cmd_2 = 'no sntp server {0}'.format(ntp_address_1)
 
-    dut.add_cmd({'cmd': 'show running-config', 'state':0, 'action':'PRINT'    ,'args': output_r_c})
-    dut.add_cmd({'cmd': 'show sntp config'   , 'state':0, 'action':'PRINT'    ,'args': output_c_0})
-    dut.add_cmd({'cmd': 'show sntp status'   , 'state':0, 'action':'PRINT'    ,'args': output_s_0})
-    dut.add_cmd({'cmd': create_cmd_1         , 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'show sntp config'   , 'state':1, 'action':'PRINT'    ,'args': output_c_1})
-    dut.add_cmd({'cmd': 'show sntp status'   , 'state':1, 'action':'PRINT'    ,'args': output_s_1})
-    dut.add_cmd({'cmd': create_cmd_2         , 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'show sntp config'   , 'state':2, 'action':'PRINT'    ,'args': output_c_2})
-    dut.add_cmd({'cmd': 'show sntp status'   , 'state':2, 'action':'PRINT'    ,'args': output_s_2})
-    dut.add_cmd({'cmd': update_cmd_1         , 'state':2, 'action':'SET_STATE','args':[3]})
-    dut.add_cmd({'cmd': 'show sntp config'   , 'state':3, 'action':'PRINT'    ,'args': output_c_3})
-    dut.add_cmd({'cmd': 'show sntp status'   , 'state':3, 'action':'PRINT'    ,'args': output_s_3})
-    dut.add_cmd({'cmd': update_cmd_2         , 'state':3, 'action':'SET_STATE','args':[4]})
-    dut.add_cmd({'cmd': 'show sntp config'   , 'state':4, 'action':'PRINT'    ,'args': output_c_4})
-    dut.add_cmd({'cmd': 'show sntp status'   , 'state':4, 'action':'PRINT'    ,'args': output_s_4})
-    dut.add_cmd({'cmd': delete_cmd_1         , 'state':4, 'action':'SET_STATE','args':[5]})
-    dut.add_cmd({'cmd': 'show sntp config'   , 'state':5, 'action':'PRINT'    ,'args': output_c_5})
-    dut.add_cmd({'cmd': 'show sntp status'   , 'state':5, 'action':'PRINT'    ,'args': output_s_5})
-    dut.add_cmd({'cmd': delete_cmd_2         , 'state':5, 'action':'SET_STATE','args':[6]})
-    dut.add_cmd({'cmd': 'show sntp config'   , 'state':6, 'action':'PRINT'    ,'args': output_c_0})
-    dut.add_cmd({'cmd': 'show sntp status'   , 'state':6, 'action':'PRINT'    ,'args': output_s_0})
+    dut.add_cmd({'cmd': 'show running-config', 'state': 0, 'action': 'PRINT', 'args': output_r_c})
+    dut.add_cmd({'cmd': 'show sntp config', 'state': 0, 'action': 'PRINT', 'args': output_c_0})
+    dut.add_cmd({'cmd': 'show sntp status', 'state': 0, 'action': 'PRINT', 'args': output_s_0})
+    dut.add_cmd({'cmd': create_cmd_1, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'show sntp config', 'state': 1, 'action': 'PRINT', 'args': output_c_1})
+    dut.add_cmd({'cmd': 'show sntp status', 'state': 1, 'action': 'PRINT', 'args': output_s_1})
+    dut.add_cmd({'cmd': create_cmd_2, 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd': 'show sntp config', 'state': 2, 'action': 'PRINT', 'args': output_c_2})
+    dut.add_cmd({'cmd': 'show sntp status', 'state': 2, 'action': 'PRINT', 'args': output_s_2})
+    dut.add_cmd({'cmd': update_cmd_1, 'state': 2, 'action': 'SET_STATE', 'args': [3]})
+    dut.add_cmd({'cmd': 'show sntp config', 'state': 3, 'action': 'PRINT', 'args': output_c_3})
+    dut.add_cmd({'cmd': 'show sntp status', 'state': 3, 'action': 'PRINT', 'args': output_s_3})
+    dut.add_cmd({'cmd': update_cmd_2, 'state': 3, 'action': 'SET_STATE', 'args': [4]})
+    dut.add_cmd({'cmd': 'show sntp config', 'state': 4, 'action': 'PRINT', 'args': output_c_4})
+    dut.add_cmd({'cmd': 'show sntp status', 'state': 4, 'action': 'PRINT', 'args': output_s_4})
+    dut.add_cmd({'cmd': delete_cmd_1, 'state': 4, 'action': 'SET_STATE', 'args': [5]})
+    dut.add_cmd({'cmd': 'show sntp config', 'state': 5, 'action': 'PRINT', 'args': output_c_5})
+    dut.add_cmd({'cmd': 'show sntp status', 'state': 5, 'action': 'PRINT', 'args': output_s_5})
+    dut.add_cmd({'cmd': delete_cmd_2, 'state': 5, 'action': 'SET_STATE', 'args': [6]})
+    dut.add_cmd({'cmd': 'show sntp config', 'state': 6, 'action': 'PRINT', 'args': output_c_0})
+    dut.add_cmd({'cmd': 'show sntp status', 'state': 6, 'action': 'PRINT', 'args': output_s_0})
 
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     with pytest.raises(KeyError) as excinfo:
         d.ntp[bad_ntp_address]
-
+    assert 'SNTP server {0} is not present'.format(bad_ntp_address) in excinfo.value
     assert ntp_address_1 not in d.ntp.keys()
     d.ntp.create(ntp_address_1)
     with pytest.raises(KeyError) as excinfo:
         d.ntp.create(ntp_address_1)
+    assert 'SNTP server {0} already added'.format(ntp_address_1) in excinfo.value
     assert ntp_address_1 in d.ntp.keys()
     assert ntp_address_2 not in d.ntp.keys()
     d.ntp.create(ntp_address_2, polltime_1)
     assert ntp_address_2 in d.ntp.keys()
     assert d.ntp[ntp_address_1]['polltime'] == polltime_1
     assert d.ntp[ntp_address_2]['polltime'] == polltime_1
-    assert (ntp_address_1, {'polltime' : polltime_1, 'status' : 'up'}) in d.ntp.items()
+    assert (ntp_address_1, {'polltime': polltime_1, 'status': 'up'}) in d.ntp.items()
 
     with pytest.raises(KeyError) as excinfo:
         d.ntp.update(bad_ntp_address)
+    assert 'SNTP server {0} is not present'.format(bad_ntp_address) in excinfo.value
     d.ntp.update(ntp_address_1, polltime_2)
     assert d.ntp[ntp_address_1]['polltime'] == polltime_2
     assert d.ntp[ntp_address_2]['polltime'] == polltime_2
@@ -228,6 +228,7 @@ Unicast servers:
 
     with pytest.raises(KeyError) as excinfo:
         d.ntp.delete(bad_ntp_address)
+    assert 'SNTP server {0} is not present'.format(bad_ntp_address) in excinfo.value
     d.ntp.delete(ntp_address_2)
     assert ntp_address_2 not in d.ntp.keys()
     d.ntp.delete()

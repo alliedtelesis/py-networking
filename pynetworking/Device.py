@@ -1,43 +1,46 @@
 # -*- coding: utf-8 -*-
-from paramiko import SSHClient, AutoAddPolicy
-from pprint import pprint,pformat
+from pprint import pformat
 import yaml
 import re
 import logging
 import sys
 import zmq
-import socket
 import json
 import inspect
 import traceback
-from os import listdir,unlink
+from os import listdir
 from os.path import dirname, isfile, join
 from jinja2 import Template
-from pynetworking import Feature
-from pynetworking import SSHProxy
+from pynetworking.Proxy import SSHProxy
 from multiprocessing import Process
 from time import sleep
 from tempfile import NamedTemporaryFile
+from mock import MagicMock
+from mock import patch
+
 
 class DeviceException(Exception):
     pass
+
 
 class Device(object):
     """ test doc
     """
     def __init__(self, host, username='manager', password='friend', protocol='ssh', port='auto', os='auto',
-                 log_level='NOTSET', log_output='console:', connection_timeout=20):
-        if protocol not in ('telnet','ssh','serial'):
-            raise ValueError("Unsupported protocol "+protocol)
+                 log_level='NOTSET', log_output='console:', connection_timeout=20, mock='n'):
+        if protocol not in ('telnet', 'ssh', 'serial'):
+            raise ValueError("Unsupported protocol " + protocol)
         self._proxy = None
         self._proxy_ipc_file = NamedTemporaryFile().name
         self._proxy_url = "ipc://{0}".format(self._proxy_ipc_file)
-        self._proxy_connection_timeout=connection_timeout*1000
+        self._proxy_connection_timeout = connection_timeout * 1000
         self._host = host
         self._username = username
         self._password = password
         self._protocol = protocol
         self._port = port
+
+        self._mock_test = self._get_mock_opt(mock.lower())
 
         self._log_level = getattr(logging, log_level.upper())
         hdl = logging.StreamHandler()
@@ -105,32 +108,32 @@ class Device(object):
 
     def open(self):
         self.log_info("open")
-        self.cmd({'cmds':[{'cmd': '_status', 'prompt':''}]})
-        self._load_core_facts()
-        self._load_features()
-        self.load_system()
+        if self._mock_test is False:
+            self._open()
+        else:
+            self._mocked_open()  # pragma: no cover
 
     def close(self):
         self.log_info("close")
-        if isinstance(self._proxy,Process) and (isinstance(self._proxy,Process) and self._proxy.is_alive()):
-            self.cmd({'cmds':[{'cmd':'_exit', 'prompt': ''}]})
+        if isinstance(self._proxy, Process) and (isinstance(self._proxy, Process) and self._proxy.is_alive()):
+            self.cmd({'cmds': [{'cmd': '_exit', 'prompt': ''}]})
             self._proxy.join(10)
 
     def cmd(self, cmd, use_cache=True, cache=False, flush_cache=False):
-        timeout=12000
+        timeout = 12000
         if type(cmd) is str:
-             self.log_info("executing command '{0}'".format(cmd))
-             cmd = {'cmds':[{'cmd':cmd,'prompt': self.system.shell_prompt()}]}
+            self.log_info("executing command '{0}'".format(cmd))
+            cmd = {'cmds': [{'cmd': cmd, 'prompt': self.system.shell_prompt()}]}
         else:
-             for c in cmd['cmds']:
-                 self.log_info("executing command '{0}' and wait for {1}".format(c['cmd'],repr(c['prompt'])))
-                 if ('timeout' in c.keys()):
-                     timeout += c['timeout']
+            for c in cmd['cmds']:
+                self.log_info("executing command '{0}' and wait for {1}".format(c['cmd'], repr(c['prompt'])))
+                if ('timeout' in c.keys()):
+                    timeout += c['timeout']
 
         if not cmd['cmds'][0]['cmd'].startswith('_'):
             self.log_info("adding shell initialization commands")
             try:
-                cmd['cmds'] = self.system.shell_init()+cmd['cmds']
+                cmd['cmds'] = self.system.shell_init() + cmd['cmds']
             except:
                 self.log_info("no shell init {0}".format(sys.exc_info()[0]))
 
@@ -138,13 +141,12 @@ class Device(object):
         cmd['flush_cache'] = flush_cache
 
         self._start_proxy()
-        sleep(1)
         try:
             context = zmq.Context()
             skt = context.socket(zmq.REQ)
             skt.setsockopt(zmq.LINGER, 1000)
             skt.connect(self._proxy_url)
-            skt.send_string(json.dumps(cmd),zmq.NOBLOCK)
+            skt.send_string(json.dumps(cmd), zmq.NOBLOCK)
 
             poller = zmq.Poller()
             poller.register(skt, zmq.POLLIN)
@@ -164,18 +166,24 @@ class Device(object):
             self.log_warn("ZMQError {0}".format(repr(e)))
             raise DeviceException("ZMQError {0}".format(repr(e)))
 
+    def _get_mock_opt(self, mock):
+        ret = True
+        if self._host != '127.0.0.1' or (mock != 'y' and mock != 'yes'):
+            ret = False
+        return ret
+
     def _load_core_facts(self):
         self.log_info("loading core facts")
         facts_dir = "{0}/facts/".format(dirname(__file__))
         cf_re = re.compile('^core_[^\.]+.py$')
-        cfs = [f.split(".")[0] for f in listdir(facts_dir) if isfile(join(facts_dir,f)) and cf_re.search(f)]
+        cfs = [f.split(".")[0] for f in listdir(facts_dir) if isfile(join(facts_dir, f)) and cf_re.search(f)]
         for cf in cfs:
             self.log_info("fact file {0}".format(cf))
             try:
                 f = __import__('pynetworking.facts.{0}'.format(cf))
-                for comp in ('facts',cf,cf):
+                for comp in ('facts', cf, cf):
                     f = getattr(f, comp)
-                self._facts =  dict(self._facts.items() + f(self).items())
+                self._facts = dict(self._facts.items() + f(self).items())
                 self.log_info("core facts loaded \n{0}".format(pformat(self._facts)))
                 if 'os' in self._facts:
                     break
@@ -194,23 +202,23 @@ class Device(object):
         with open("{0}/Device.yaml".format(dirname(__file__)), 'r') as f:
             self._models = yaml.load(Template(f.read()).render(self._facts))
             self.log_debug("models {0}".format(self._models))
-        if self._models == None:
+        if self._models is None:
             self.log_warn("no features loaded")
-            self._models = {'features':{}}
-        elif self._models['features'] == None:
+            self._models = {'features': {}}
+        elif self._models['features'] is None:
             self.log_warn("no features loaded")
             self._models['features'] = {}
-        for fname,fclass in self._models['features'].items():
-            self.log_info("loading feature {0}/{1}".format(fname,fclass))
+        for fname, fclass in self._models['features'].items():
+            self.log_info("loading feature {0}/{1}".format(fname, fclass))
             try:
                 m = __import__('pynetworking.features.{0}'.format(fclass))
-                for comp in ('features',fclass,fclass):
+                for comp in ('features', fclass, fclass):
                     m = getattr(m, comp)
                 o = m(self)
                 setattr(self, fname, o)
                 self._features[fname] = o
             except:
-                self.log_critical("Error loading class {1} for feature {0}".format(fname,fclass))
+                self.log_critical("Error loading class {1} for feature {0}".format(fname, fclass))
                 raise
 
     def load_system(self):
@@ -220,7 +228,7 @@ class Device(object):
             try:
                 self.log_info("loading system module {0}".format(self._models['system']))
                 m = __import__('pynetworking.system.{0}'.format(self._models['system']))
-                for comp in ('system',self._models['system'],self._models['system']):
+                for comp in ('system', self._models['system'], self._models['system']):
                     m = getattr(m, comp)
                 o = m(self)
                 setattr(self, 'system', o)
@@ -232,23 +240,23 @@ class Device(object):
 
         cfg = self.system.get_config()
         self.log_debug("device configuration\n{0}".format(cfg))
-        for fname,fobj in self._features.items():
+        for fname, fobj in self._features.items():
             fobj.load_config(cfg)
 
     def log_debug(self, msg):
-        self._logger(msg,'debug')
+        self._logger(msg, 'debug')
 
     def log_info(self, msg):
-        self._logger(msg,'info')
+        self._logger(msg, 'info')
 
     def log_warn(self, msg):
-        self._logger(msg,'warn')
+        self._logger(msg, 'warn')
 
     def log_error(self, msg):
-        self._logger(msg,'error')
+        self._logger(msg, 'error')
 
     def log_critical(self, msg):
-        self._logger(msg,'critical')
+        self._logger(msg, 'critical')
 
     def _logger(self, msg, level):
         (frame, filename, lineno, function_name, lines, index) = inspect.getouterframes(inspect.currentframe())[2]
@@ -260,13 +268,58 @@ class Device(object):
 
     def _start_proxy(self):
         self.log_debug("_start_proxy")
-        if not isinstance(self._proxy,Process) or (isinstance(self._proxy,Process) and not self._proxy.is_alive()):
+        if not isinstance(self._proxy, Process) or (isinstance(self._proxy, Process) and not self._proxy.is_alive()):
             self.log_info("creating proxy process {0} with zmq url {1}".format('cq-{0}'.format(self._host), self._proxy_url))
-            self._proxy = Process(name='cq-{0}'.format(self._host),
-                              target=self._proxy_target,
-                              args=(self,)
-                            )
+            self._proxy = Process(name='cq-{0}'.format(self._host), target=self._proxy_target, args=(self,))
             self._proxy.start()
+            sleep(1)
             self.log_debug("proxy process started")
 
+    def _open(self):
+        self.cmd({'cmds': [{'cmd': '_status', 'prompt': ''}]})
+        self._load_core_facts()
+        self._load_features()
+        self.load_system()
 
+    def _mocked_open(self):
+        # use 2 because is a second level nesting (test_...(dut, log_level) - open() - _mocked_open())
+        frm = inspect.stack()[2]           # pragma: no cover
+        mod = inspect.getmodule(frm[0])    # pragma: no cover
+        feat = mod.__name__.split('_')[1]  # pragma: no cover
+        os = mod.__name__.split('_')[-1]   # pragma: no cover
+        if feat == os:                     # pragma: no cover
+            os = 'awp'                     # pragma: no cover
+        if os == 'coverage':               # pragma: no cover
+            self._open()                   # pragma: no cover
+            return                         # pragma: no cover
+
+        yaml_load_mocked = MagicMock()                                                      # pragma: no cover
+        load_facts_mocked = MagicMock()                                                     # pragma: no cover
+        with patch('pynetworking.Device._load_core_facts', load_facts_mocked):              # pragma: no cover
+            with patch('yaml.load', yaml_load_mocked):                                      # pragma: no cover
+                yaml_load_mocked.return_value = self._mock_load_features(os=os, feat=feat)  # pragma: no cover
+                load_facts_mocked.side_effect = self._mock_load_facts(os)                   # pragma: no cover
+                self.cmd({'cmds': [{'cmd': '_status', 'prompt': ''}]})                      # pragma: no cover
+                self._load_core_facts()                                                     # pragma: no cover
+                self._load_features()                                                       # pragma: no cover
+                self.load_system()                                                          # pragma: no cover
+
+    def _mock_load_features(self, os, feat):
+        if feat == 'device':                                                                                       # pragma: no cover
+            return {'system': os + '_system', 'features': {'file': os + '_file', 'vlan': os + '_vlan'}}            # pragma: no cover
+        if feat == 'license':                                                                                      # pragma: no cover
+            return {'system': os + '_system', 'features': {'license': os + '_license', 'file': os + '_file'}}      # pragma: no cover
+        if feat == 'vlan' and os == 'ats':                                                                         # pragma: no cover
+            return {'system': os + '_system', 'features': {'interface': os + '_interface', 'vlan': os + '_vlan'}}  # pragma: no cover
+        return {'system': os + '_system', 'features': {feat: os + '_' + feat}}                                     # pragma: no cover
+
+    def _mock_load_facts(self, os):
+        if (os == 'ats'):                                                                                                # pragma: no cover
+            self._facts = {'model': u'AT-8000S/24', 'version': u'3.0.0.44', 'unit_number': u'1', 'os': 'ats',            # pragma: no cover
+                           'serial_number': u'1122334455', 'boot version': u'1.0.1.07', 'hardware_rev': u'00.01.00'}     # pragma: no cover
+            return                                                                                                       # pragma: no cover
+        if (os == 'awp'):                                                                                                # pragma: no cover
+            self._facts = {'build_date': u'Wed Sep 25 12:57:26 NZST 2013', 'version': u'5.4.2', 'sw_release': u'5.4.2',  # pragma: no cover
+                           'build_name': u'x600-5.4.2-3.14.rel', 'os': 'awp', 'build_type': u'RELEASE'}                  # pragma: no cover
+            return                                                                                                       # pragma: no cover
+        self._facts = {}                                                                                                 # pragma: no cover

@@ -98,6 +98,16 @@ timezone_offset
 
 **Description**: Timezone offset to UTC in format +hh:mm.
 
+summertime_zone
+"""""""""""""""
+**Mandatory**
+
+**ReadOnly**
+
+**Type:** String
+
+**Description**: Timezone name when the DST is on.
+
 summertime_start
 """"""""""""""""
 **Mandatory**

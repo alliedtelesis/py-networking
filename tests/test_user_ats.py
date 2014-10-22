@@ -1,20 +1,18 @@
 import pytest
-from pynetworking import Device
-from time import sleep
-from paramiko.rsakey import RSAKey
+from pynetworking.Device import Device
 
 
 def setup_dut(dut):
     dut.reset()
     dut.prompt = '#'
-    dut.add_cmd({'cmd':'show version', 'state':-1, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd': 'show version', 'state': -1, 'action': 'PRINT', 'args': ["""
 
         Unit             SW version         Boot version         HW version
 ------------------- ------------------- ------------------- -------------------
          1               3.0.0.44            1.0.1.07            00.01.00
 
     """]})
-    dut.add_cmd({'cmd':'show system', 'state':-1, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd': 'show system', 'state': -1, 'action': 'PRINT', 'args': ["""
 
 Unit        Type
 ---- -------------------
@@ -30,7 +28,7 @@ Serial number:
     """]})
 
 
-def test_add_user(dut, log_level):
+def test_add_user(dut, log_level, use_mock):
     config_0 = ["""
 interface range ethernet 1/e(1-16)
 spanning-tree portfast
@@ -57,19 +55,25 @@ username manager password 3af00c6cad11f7ab5db4467b66ce503e level 15 encrypted
 username operator password cde2fde1fa1551a704d775ce2315915d  encrypted
 """]
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'show running-config'                     , 'state':0, 'action':'PRINT','args': config_0})
-    dut.add_cmd({'cmd': 'username operator password enemy level 1', 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'show running-config'                     , 'state':1, 'action':'PRINT','args': config_1})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    dut.add_cmd({'cmd': 'show running-config', 'state': 0, 'action': 'PRINT', 'args': config_0})
+    dut.add_cmd({'cmd': 'username operator password enemy level 1', 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'show running-config', 'state': 1, 'action': 'PRINT', 'args': config_1})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert 'operator' not in d.user.keys()
     d.user.create("operator", password="enemy", privilege_level=1)
     assert 'operator' in d.user.keys()
     assert d.user['operator']['privilege_level'] == '1'
+    with pytest.raises(KeyError) as excinfo:
+        d.user.create("", password="enemy", privilege_level=1)
+    assert 'user name cannot be empty' in excinfo.value
+    with pytest.raises(KeyError) as excinfo:
+        d.user.create("operator", password="enemy", privilege_level=1)
+    assert 'user name {0} already exists'.format('operator') in excinfo.value
     d.close()
 
 
-def test_change_user_password(dut, log_level):
+def test_change_user_password(dut, log_level, use_mock):
     config_0 = ["""
 !
 service password-encryption
@@ -134,12 +138,12 @@ interface vlan1
 end
 """]
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'show running-config'              , 'state':0, 'action':'PRINT','args': config_0})
-    dut.add_cmd({'cmd': 'username operator password newpwd', 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'show running-config'              , 'state':1, 'action':'PRINT','args': config_1})
-    dut.add_cmd({'cmd': 'username operator password enemy' , 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'show running-config'              , 'state':2, 'action':'PRINT','args': config_2})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    dut.add_cmd({'cmd': 'show running-config', 'state': 0, 'action': 'PRINT', 'args': config_0})
+    dut.add_cmd({'cmd': 'username operator password newpwd', 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'show running-config', 'state': 1, 'action': 'PRINT', 'args': config_1})
+    dut.add_cmd({'cmd': 'username operator password enemy', 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd': 'show running-config', 'state': 2, 'action': 'PRINT', 'args': config_2})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     old_pwd = d.user['operator']['password']
     d.user.update("operator", password="newpwd")
@@ -148,10 +152,16 @@ end
     d.user.update("operator", password="enemy")
     assert old_pwd != d.user['operator']['password']
     old_pwd = d.user['operator']['password']
+    with pytest.raises(KeyError) as excinfo:
+        d.user.update("")
+    assert 'user name cannot be empty' in excinfo.value
+    with pytest.raises(KeyError) as excinfo:
+        d.user.update("xxxxxxxxxxxxxxxx", password="newpwd")
+    assert 'user name xxxxxxxxxxxxxxxx does not exist' in excinfo.value
     d.close()
 
 
-def test_change_user_privilege(dut, log_level):
+def test_change_user_privilege(dut, log_level, use_mock):
     config_0 = ["""
 !
 service password-encryption
@@ -216,12 +226,12 @@ interface vlan1
 end
 """]
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'show running-config'      , 'state':0, 'action':'PRINT','args': config_0})
-    dut.add_cmd({'cmd': 'username operator level 2', 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'show running-config'      , 'state':1, 'action':'PRINT','args': config_1})
-    dut.add_cmd({'cmd': 'username operator level 1', 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'show running-config'      , 'state':2, 'action':'PRINT','args': config_2})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    dut.add_cmd({'cmd': 'show running-config', 'state': 0, 'action': 'PRINT', 'args': config_0})
+    dut.add_cmd({'cmd': 'username operator level 2', 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'show running-config', 'state': 1, 'action': 'PRINT', 'args': config_1})
+    dut.add_cmd({'cmd': 'username operator level 1', 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd': 'show running-config', 'state': 2, 'action': 'PRINT', 'args': config_2})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert d.user['operator']['privilege_level'] == '1'
     d.user.update("operator", privilege_level=2)
@@ -231,7 +241,7 @@ end
     d.close()
 
 
-def test_remove_user(dut, log_level):
+def test_remove_user(dut, log_level, use_mock):
     config_0 = ["""
 !
 service password-encryption
@@ -274,10 +284,10 @@ interface vlan1
 end
 """]
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'show running-config' , 'state':0, 'action':'PRINT','args': config_0})
-    dut.add_cmd({'cmd': 'no username operator', 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'show running-config' , 'state':1, 'action':'PRINT','args': config_1})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    dut.add_cmd({'cmd': 'show running-config', 'state': 0, 'action': 'PRINT', 'args': config_0})
+    dut.add_cmd({'cmd': 'no username operator', 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'show running-config', 'state': 1, 'action': 'PRINT', 'args': config_1})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     d.user.delete("operator")
     with pytest.raises(KeyError):
@@ -285,7 +295,7 @@ end
     d.close()
 
 
-def test_encrypted_password(dut, log_level):
+def test_encrypted_password(dut, log_level, use_mock):
     config_0 = ["""
 !
 service password-encryption
@@ -377,14 +387,14 @@ end
     cmd_update = 'us ' + usr + ' p ' + enc_pwd_2 + ' encrypted'
 
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'show running-config', 'state':0, 'action':'PRINT','args': config_0})
-    dut.add_cmd({'cmd': cmd_create           , 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'show running-config', 'state':1, 'action':'PRINT','args': config_1})
-    dut.add_cmd({'cmd': cmd_update           , 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'show running-config', 'state':2, 'action':'PRINT','args': config_2})
-    dut.add_cmd({'cmd': 'no username encuser', 'state':2, 'action':'SET_STATE','args':[3]})
-    dut.add_cmd({'cmd': 'show running-config', 'state':3, 'action':'PRINT','args': config_3})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    dut.add_cmd({'cmd': 'show running-config', 'state': 0, 'action': 'PRINT', 'args': config_0})
+    dut.add_cmd({'cmd': cmd_create, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'show running-config', 'state': 1, 'action': 'PRINT', 'args': config_1})
+    dut.add_cmd({'cmd': cmd_update, 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd': 'show running-config', 'state': 2, 'action': 'PRINT', 'args': config_2})
+    dut.add_cmd({'cmd': 'no username encuser', 'state': 2, 'action': 'SET_STATE', 'args': [3]})
+    dut.add_cmd({'cmd': 'show running-config', 'state': 3, 'action': 'PRINT', 'args': config_3})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert usr not in d.user.keys()
     d.user.create(usr, password=enc_pwd_1, privilege_level=10, encrypted=True)
@@ -394,4 +404,10 @@ end
     d.user.delete(usr)
     with pytest.raises(KeyError):
         d.user[usr]
+    with pytest.raises(KeyError) as excinfo:
+        d.user.delete("")
+    assert 'user name cannot be empty' in excinfo.value
+    with pytest.raises(KeyError) as excinfo:
+        d.user.delete("xxxxxxxxxxxxxxxx")
+    assert 'user name xxxxxxxxxxxxxxxx does not exist' in excinfo.value
     d.close()

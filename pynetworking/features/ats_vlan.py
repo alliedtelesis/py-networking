@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from pynetworking import Feature
+from pynetworking.Feature import Feature
 from pynetworking.features.ats_vlan_config_lexer import VlanConfigLexer
 from pynetworking.features.ats_vlan_config_interface_lexer import VlanInterfaceConfigLexer
 from pprint import pformat
@@ -13,8 +13,8 @@ class ats_vlan(Feature):
     """
     def __init__(self, device, **kvargs):
         Feature.__init__(self, device, **kvargs)
-        self._vlan_config={}
-        self._vlan={}
+        self._vlan_config = {}
+        self._vlan = {}
         self._d = device
         self._d.log_debug("loading feature")
 
@@ -31,36 +31,36 @@ class ats_vlan(Feature):
         self._d.log_info("vlan interface configuration {0}".format(self._interface_config))
 
     def create(self, vlan_id, **kwargs):
-        self._d.log_info("create {0} {1}".format(vlan_id,pformat(kwargs)))
+        self._d.log_info("create {0} {1}".format(vlan_id, pformat(kwargs)))
         self._update_vlan()
-        cmds = {'cmds':[{'cmd': 'conf',                 'prompt':'\(config\)\#'},
-                        {'cmd': 'vlan database',        'prompt':'\(config-vlan\)\#'},
-                       ]}
+        cmds = {'cmds': [{'cmd': 'conf', 'prompt': '\(config\)\#'},
+                         {'cmd': 'vlan database', 'prompt': '\(config-vlan\)\#'},
+                         ]}
         vlan_cmd = 'vlan {0}'.format(vlan_id)
 
-        cmds['cmds'].append({'cmd': vlan_cmd,            'prompt':'\(config-vlan\)\#'})
-        cmds['cmds'].append({'cmd': chr(26),             'prompt':'\#'})
+        cmds['cmds'].append({'cmd': vlan_cmd, 'prompt': '\(config-vlan\)\#'})
+        cmds['cmds'].append({'cmd': chr(26), 'prompt': '\#'})
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()
 
         if len(self._get_vlan_ids(vlan_id)) == 1:
             if 'name' in kwargs:
-                self.update(vlan_id,**kwargs)
+                self.update(vlan_id, **kwargs)
 
     def delete(self, vlan_id):
         self._d.log_info("delete {0}".format(vlan_id))
         self._update_vlan()
         self._get_vlan_ids(vlan_id)
-        cmds = {'cmds':[{'cmd': 'conf',                       'prompt':'\(config\)\#'},
-                        {'cmd': 'vlan database',              'prompt':'\(config-vlan\)\#'},
-                        {'cmd': 'no vlan {0}'.format(vlan_id),'prompt':'\(config-vlan\)\#'},
-                        {'cmd': chr(26),                      'prompt':'\#'},
-                       ]}
+        cmds = {'cmds': [{'cmd': 'conf', 'prompt': '\(config\)\#'},
+                         {'cmd': 'vlan database', 'prompt': '\(config-vlan\)\#'},
+                         {'cmd': 'no vlan {0}'.format(vlan_id), 'prompt': '\(config-vlan\)\#'},
+                         {'cmd': chr(26), 'prompt': '\#'},
+                         ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()
 
     def update(self, vlan_id, **kwargs):
-        self._d.log_info("update {0} {1}".format(vlan_id,pformat(kwargs)))
+        self._d.log_info("update {0} {1}".format(vlan_id, pformat(kwargs)))
         self._update_vlan()
         vlan_ids = self._get_vlan_ids(vlan_id)
         existing_vlan_ids = []
@@ -71,15 +71,15 @@ class ats_vlan(Feature):
 
         if len(non_existing_ids) == 0:
             if 'name' in kwargs:
-                cmds = {'cmds':[{'cmd': 'conf',                              'prompt':'\(config\)\#'},
-                                {'cmd': 'interface vlan {0}'.format(vlan_id),'prompt':'\(config-if\)\#'},
-                                ]}
+                cmds = {'cmds': [{'cmd': 'conf', 'prompt': '\(config\)\#'},
+                                 {'cmd': 'interface vlan {0}'.format(vlan_id), 'prompt': '\(config-if\)\#'},
+                                 ]}
                 if ' ' in kwargs['name']:
                     vlan_cmd = 'name "{0}"'.format(kwargs['name'])
                 else:
                     vlan_cmd = "name {0}".format(kwargs['name'])
-                cmds['cmds'].append({'cmd': vlan_cmd,            'prompt':'\(config-if\)\#'})
-                cmds['cmds'].append({'cmd': chr(26),             'prompt':'\#'})
+                cmds['cmds'].append({'cmd': vlan_cmd, 'prompt': '\(config-if\)\#'})
+                cmds['cmds'].append({'cmd': chr(26), 'prompt': '\#'})
                 self._device.cmd(cmds, cache=False, flush_cache=True)
                 self._device.load_system()
         else:
@@ -97,22 +97,22 @@ class ats_vlan(Feature):
         else:
             mode = 'access'
 
-        cmds = {'cmds':[{'cmd': 'conf',                                                                'prompt':'\(config\)\#'},
-                        {'cmd': 'interface ethernet {0}'.format(self._d.interface._to_ifn_native(ifn)),'prompt':'\(config-if\)\#'},
-                       ]}
+        cmds = {'cmds': [{'cmd': 'conf', 'prompt': '\(config\)\#'},
+                         {'cmd': 'interface ethernet {0}'.format(self._d.interface._to_ifn_native(ifn)), 'prompt': '\(config-if\)\#'},
+                         ]}
 
-        if mode == 'access' and tagged == False:
-            cmds['cmds'].append({'cmd': 'switchport access vlan {0}'.format(vid) ,'prompt':'\(config-if\)\#'})
-        elif mode == 'access' and tagged == True:
-            ## should copy access vlan to native
-            cmds['cmds'].append({'cmd': 'switchport mode trunk'                             ,'prompt':'\(config-if\)\#'})
-            cmds['cmds'].append({'cmd': 'switchport trunk allowed vlan add {0}'.format(vid) ,'prompt':'\(config-if\)\#'})
-        elif mode == 'trunk' and tagged == False:
-            cmds['cmds'].append({'cmd': 'switchport trunk native vlan {0}'.format(vid) ,'prompt':'\(config-if\)\#'})
-        elif mode == 'trunk' and tagged == True:
-            cmds['cmds'].append({'cmd': 'switchport trunk allowed vlan add {0}'.format(vid) ,'prompt':'\(config-if\)\#'})
+        if mode == 'access' and tagged is False:
+            cmds['cmds'].append({'cmd': 'switchport access vlan {0}'.format(vid), 'prompt': '\(config-if\)\#'})
+        elif mode == 'access' and tagged is True:
+            # should copy access vlan to native
+            cmds['cmds'].append({'cmd': 'switchport mode trunk', 'prompt': '\(config-if\)\#'})
+            cmds['cmds'].append({'cmd': 'switchport trunk allowed vlan add {0}'.format(vid), 'prompt': '\(config-if\)\#'})
+        elif mode == 'trunk' and tagged is False:
+            cmds['cmds'].append({'cmd': 'switchport trunk native vlan {0}'.format(vid), 'prompt': '\(config-if\)\#'})
+        elif mode == 'trunk' and tagged is True:
+            cmds['cmds'].append({'cmd': 'switchport trunk allowed vlan add {0}'.format(vid), 'prompt': '\(config-if\)\#'})
 
-        cmds['cmds'].append({'cmd': chr(26),                               'prompt':'\#'})
+        cmds['cmds'].append({'cmd': chr(26), 'prompt': '\#'})
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()
 
@@ -124,33 +124,32 @@ class ats_vlan(Feature):
             raise ValueError('{0} is not a valid vlan id'.format(vid))
 
         if 'tagged' in self._vlan[vid] and ifn in self._vlan[vid]['tagged']:
-                tagged = True
+            tagged = True
         elif 'untagged' in self._vlan[vid] and ifn in self._vlan[vid]['untagged']:
-                tagged = False
+            tagged = False
         else:
-            raise ValueError('interface {0} does not belong to vlan {1}'.format(ifn,vid))
+            raise ValueError('interface {0} does not belong to vlan {1}'.format(ifn, vid))
 
         if ifn in self._interface_config:
             mode = self._interface_config[ifn].get('switchport mode', 'access')
         else:
             mode = 'access'
-    
 
-        cmds = {'cmds':[{'cmd': 'conf',                                                                'prompt':'\(config\)\#'},
-                        {'cmd': 'interface ethernet {0}'.format(self._d.interface._to_ifn_native(ifn)),'prompt':'\(config-if\)\#'},
-                       ]}
+        cmds = {'cmds': [{'cmd': 'conf', 'prompt': '\(config\)\#'},
+                         {'cmd': 'interface ethernet {0}'.format(self._d.interface._to_ifn_native(ifn)), 'prompt': '\(config-if\)\#'},
+                         ]}
 
         if mode == 'access' and vid != '1':
             # this actually move port back to vlan 1
-            cmds['cmds'].append({'cmd': 'no switchport access vlan','prompt':'\(config-if\)\#'})
-        elif mode == 'trunk' and tagged == False:
-            cmds['cmds'].append({'cmd': 'no switchport trunk native vlan' ,'prompt':'\(config-if\)\#'})
-        elif mode == 'trunk' and tagged == True:
-            cmds['cmds'].append({'cmd': 'switchport trunk allowed vlan remove {0}'.format(vid) ,'prompt':'\(config-if\)\#'})
+            cmds['cmds'].append({'cmd': 'no switchport access vlan', 'prompt': '\(config-if\)\#'})
+        elif mode == 'trunk' and tagged is False:
+            cmds['cmds'].append({'cmd': 'no switchport trunk native vlan', 'prompt': '\(config-if\)\#'})
+        elif mode == 'trunk' and tagged is True:
+            cmds['cmds'].append({'cmd': 'switchport trunk allowed vlan remove {0}'.format(vid), 'prompt': '\(config-if\)\#'})
         else:
-            raise ValueError('interface {0} cannot be delete from vlan {1}'.format(ifn,vid))
+            raise ValueError('interface {0} cannot be delete from vlan {1}'.format(ifn, vid))
 
-        cmds['cmds'].append({'cmd': chr(26),                               'prompt':'\#'})
+        cmds['cmds'].append({'cmd': chr(26), 'prompt': '\#'})
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._device.load_system()
 
@@ -166,7 +165,7 @@ class ats_vlan(Feature):
         self._update_vlan()
         return json.dumps(self._vlan)
 
-    __repr__ = __str__  #pragma: no cover
+    __repr__ = __str__  # pragma: no cover
 
     def __getitem__(self, vid):
         if isinstance(vid, str) or isinstance(vid, int) or isinstance(vid, unicode):
@@ -176,7 +175,7 @@ class ats_vlan(Feature):
                 return self._vlan[vid]
             raise KeyError('vlan id {0} does not exist'.format(vid))
         else:
-            raise TypeError, "Invalid argument type."
+            raise TypeError('invalid argument type')
 
     def __iter__(self):
         self._update_vlan()
@@ -187,11 +186,11 @@ class ats_vlan(Feature):
         vlan_id = str(vlan_id)
         vlan_ids = []
         for r in vlan_id.split(','):
-            m = re.search('^(?P<start>\d+)\-(?P<end>\d+)$',r)
+            m = re.search('^(?P<start>\d+)\-(?P<end>\d+)$', r)
             if m:
-                vlan_ids.extend(range(int(m.group('start')),int(m.group('end'))+1))
+                vlan_ids.extend(range(int(m.group('start')), int(m.group('end')) + 1))
                 continue
-            m  = re.match('\s*(?P<id>\d+)\s*',r)
+            m = re.match('\s*(?P<id>\d+)\s*', r)
             if m:
                 vlan_ids.append(int(m.group('id')))
                 continue
@@ -215,7 +214,7 @@ class ats_vlan(Feature):
                 if not vlan[cvid]['ports'].endswith(','):
                     cvid = ''
 
-        for vln,vli in vlan.items():
+        for vln, vli in vlan.items():
             vlan[vln]['tagged'] = []
             vlan[vln]['untagged'] = []
             if vln == '1':
@@ -234,7 +233,7 @@ class ats_vlan(Feature):
                     else:
                         vlan[vln]['untagged'].append(ifn)
             del vlan[vln]['ports']
-            for vlr,vlc in self._vlan_config.items():
+            for vlr, vlc in self._vlan_config.items():
                 vlan[vln] = dict(vlan[vln].items() + self._vlan_config[vln].items())
         self._vlan = vlan
         self._d.log_debug(pformat(json.dumps(self._vlan)))
@@ -259,13 +258,13 @@ class ats_vlan(Feature):
                         if self._d.facts['model'] == 'AT-8000S/24' and start_no > 24:
                             continue
                         if self._d.facts['model'] == 'AT-8000S/24' and end_no > 24:
-                             end_no = 24
-                        ret += ['{0}.0.{1}'.format(self._d.facts['unit_number'],n) for n in range(start_no,1+end_no)]
+                            end_no = 24
+                        ret += ['{0}.0.{1}'.format(self._d.facts['unit_number'], n) for n in range(start_no, 1 + end_no)]
                     else:
                         r = int(r)
                         if self._d.facts['model'] == 'AT-8000S/24' and r > 24:
                             continue
-                        ret.append('{0}.0.{1}'.format(self._d.facts['unit_number'],r))
+                        ret.append('{0}.0.{1}'.format(self._d.facts['unit_number'], r))
 
         m = re.search('{0}/g(?P<single>\d+)'.format(self._d.facts['unit_number']), ifranges)
         if m:
@@ -287,7 +286,7 @@ class ats_vlan(Feature):
                         if start_no > 2:
                             continue
                         if self._d.facts['model'] == 'AT-8000S/24' and end_no > 2:
-                             end_no = 2
+                            end_no = 2
 
                         if self._d.facts['model'] == 'AT-8000S/24':
                             start_no += 24
@@ -295,7 +294,7 @@ class ats_vlan(Feature):
                         else:
                             start_no += 48
                             end_no += 48
-                        ret += ['{0}.0.{1}'.format(self._d.facts['unit_number'],n) for n in range(start_no,1+end_no)]
+                        ret += ['{0}.0.{1}'.format(self._d.facts['unit_number'], n) for n in range(start_no, 1 + end_no)]
                     else:
                         r = int(r)
                         if r > 2:
@@ -304,7 +303,7 @@ class ats_vlan(Feature):
                             r += 24
                         else:
                             r += 48
-                        ret.append('{0}.0.{1}'.format(self._d.facts['unit_number'],r))
+                        ret.append('{0}.0.{1}'.format(self._d.facts['unit_number'], r))
 
         self._d.log_debug("_expand_interface_list return {0}".format(ret))
         return ret

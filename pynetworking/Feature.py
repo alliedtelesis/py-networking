@@ -7,7 +7,5 @@ class Feature(object):
         self._device = device
         self._opts = kvargs
 
-    def load_config(self, config):  #pragma: no cover
+    def load_config(self, config):  # pragma: no cover
         pass
-
-

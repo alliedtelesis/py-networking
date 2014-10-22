@@ -1,20 +1,18 @@
 import pytest
-from pynetworking import Device
-from time import sleep
-from paramiko.rsakey import RSAKey
+from pynetworking.Device import Device
 
 
 def setup_dut(dut):
     dut.reset()
     dut.prompt = '#'
-    dut.add_cmd({'cmd':'show version', 'state':-1, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd': 'show version', 'state': -1, 'action': 'PRINT', 'args': ["""
 
         Unit             SW version         Boot version         HW version
 ------------------- ------------------- ------------------- -------------------
          1               3.0.0.44            1.0.1.07            00.01.00
 
     """]})
-    dut.add_cmd({'cmd':'show system', 'state':-1, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd': 'show system', 'state': -1, 'action': 'PRINT', 'args': ["""
 
 Unit        Type
 ---- -------------------
@@ -30,7 +28,7 @@ Serial number:   1122334455
     """]})
 
 
-def test_nodots_mac_crud(dut, log_level):
+def test_nodots_mac_crud(dut, log_level, use_mock):
     output_a = ["""
 interface range ethernet 1/e(1-16)
 spanning-tree portfast
@@ -75,6 +73,7 @@ Aging time is 300 sec
     new_mac_addr = '0a0b0c0deeff'
     dyn_mac_addr = '00:00:cd:24:04:8b'
     missing_mac_address = '111111111111'
+    dotted_missing_mac_address = '1111.1111.1111'
     wrong_mac_address = '1111;1111;1111'
     dotted_mac = '0a0b.0c0d.0e0f'
     ifc = '1/e6'
@@ -83,37 +82,43 @@ Aging time is 300 sec
     update_cmd = 'bridge address ' + dotted_mac + ' ethernet ' + ifu + ' permanent'
     delete_cmd = 'no bridge address ' + dotted_mac
 
-    dut.add_cmd({'cmd': 'show running-config'      , 'state':0, 'action':'PRINT'     ,'args': output_a})
-    dut.add_cmd({'cmd': 'show bridge address-table', 'state':0, 'action':'PRINT'     ,'args': output_0})
-    dut.add_cmd({'cmd': 'interface vlan 1'         , 'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': create_cmd                 , 'state':0, 'action':'SET_STATE' ,'args':[1]})
-    dut.add_cmd({'cmd': 'show bridge address-table', 'state':1, 'action':'PRINT'     ,'args': output_1})
-    dut.add_cmd({'cmd': 'interface vlan 1'         , 'state':1, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': update_cmd                 , 'state':1, 'action':'SET_STATE' ,'args':[2]})
-    dut.add_cmd({'cmd': 'show bridge address-table', 'state':2, 'action':'PRINT'     ,'args': output_2})
-    dut.add_cmd({'cmd': 'interface vlan 1'         , 'state':2, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': delete_cmd                 , 'state':2, 'action':'SET_STATE' ,'args':[3]})
-    dut.add_cmd({'cmd': 'show bridge address-table', 'state':3, 'action':'PRINT'     ,'args': output_0})
+    dut.add_cmd({'cmd': 'show running-config', 'state': 0, 'action': 'PRINT', 'args': output_a})
+    dut.add_cmd({'cmd': 'show bridge address-table', 'state': 0, 'action': 'PRINT', 'args': output_0})
+    dut.add_cmd({'cmd': 'interface vlan 1', 'state': 0, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
+    dut.add_cmd({'cmd': create_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'show bridge address-table', 'state': 1, 'action': 'PRINT', 'args': output_1})
+    dut.add_cmd({'cmd': 'interface vlan 1', 'state': 1, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
+    dut.add_cmd({'cmd': update_cmd, 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd': 'show bridge address-table', 'state': 2, 'action': 'PRINT', 'args': output_2})
+    dut.add_cmd({'cmd': 'interface vlan 1', 'state': 2, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
+    dut.add_cmd({'cmd': delete_cmd, 'state': 2, 'action': 'SET_STATE', 'args': [3]})
+    dut.add_cmd({'cmd': 'show bridge address-table', 'state': 3, 'action': 'PRINT', 'args': output_0})
 
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     with pytest.raises(KeyError) as excinfo:
         d.mac[missing_mac_address]
+    assert 'MAC address {0} does not exist'.format(missing_mac_address) in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.mac.create(wrong_mac_address, ifc)
+    assert 'MAC address {0} is not valid'.format(wrong_mac_address) in excinfo.value
     assert dotted_mac not in d.mac.keys()
     d.mac.create(mac_address, ifc)
     assert dotted_mac in d.mac.keys()
     assert (dotted_mac, {'vlan': '1', 'interface': ifc, 'action': 'forward', 'type': 'static'}) in d.mac.items()
     with pytest.raises(KeyError) as excinfo:
         d.mac.create(mac_address, ifc)
+    assert 'MAC address {0} is already existing'.format(dotted_mac) in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.mac.create(new_mac_addr, ifu, forward=False)
+    assert 'Discard option not supported' in excinfo.value
 
     with pytest.raises(KeyError) as excinfo:
         d.mac.update(mac_address, ifu, forward=False)
+    assert 'Discard option not supported' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.mac.update(missing_mac_address, ifu)
+    assert 'MAC address {0} does not exist'.format(dotted_missing_mac_address) in excinfo.value
     d.mac.update(mac_address, ifu)
     assert dotted_mac in d.mac.keys()
     assert d.mac[mac_address]['interface'] == ifu
@@ -121,16 +126,20 @@ Aging time is 300 sec
 
     with pytest.raises(KeyError) as excinfo:
         d.mac.delete(missing_mac_address)
-    with pytest.raises(KeyError) as excinfo:
-        d.mac.delete(dyn_mac_addr)
+    assert 'MAC address {0} does not exist'.format(dotted_missing_mac_address) in excinfo.value
+    if dut.mode == 'emulated':
+        with pytest.raises(KeyError) as excinfo:
+            d.mac.delete(dyn_mac_addr)
+        assert 'cannot remove a dynamic entry' in excinfo.value
     d.mac.delete(mac_address)
     assert dotted_mac not in d.mac.keys()
     with pytest.raises(KeyError) as excinfo:
-        d.mac.delete('0000.cd1d.7eb0')
+        d.mac.delete('0ff0.cd1d.7eb0')
+    assert 'MAC address 0ff0.cd1d.7eb0 does not exist' in excinfo.value
     d.close()
 
 
-def test_colon_mac_crud(dut, log_level):
+def test_colon_mac_crud(dut, log_level, use_mock):
     output_0 = ["""
 Aging time is 300 sec
 
@@ -167,18 +176,18 @@ Aging time is 300 sec
     update_cmd = 'bridge address ' + dotted_mac + ' ethernet ' + ifu + ' permanent'
     delete_cmd = 'no bridge address ' + dotted_mac
 
-    dut.add_cmd({'cmd': 'show bridge address-table', 'state':0, 'action':'PRINT'    ,'args': output_0})
-    dut.add_cmd({'cmd': 'interface vlan 1'         , 'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': create_cmd                 , 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'show bridge address-table', 'state':1, 'action':'PRINT'    ,'args': output_1})
-    dut.add_cmd({'cmd': 'interface vlan 1'         , 'state':1, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': update_cmd                 , 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'show bridge address-table', 'state':2, 'action':'PRINT'    ,'args': output_2})
-    dut.add_cmd({'cmd': 'interface vlan 1'         , 'state':2, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': delete_cmd                 , 'state':2, 'action':'SET_STATE','args':[3]})
-    dut.add_cmd({'cmd': 'show bridge address-table', 'state':3, 'action':'PRINT'    ,'args': output_0})
+    dut.add_cmd({'cmd': 'show bridge address-table', 'state': 0, 'action': 'PRINT', 'args': output_0})
+    dut.add_cmd({'cmd': 'interface vlan 1', 'state': 0, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
+    dut.add_cmd({'cmd': create_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'show bridge address-table', 'state': 1, 'action': 'PRINT', 'args': output_1})
+    dut.add_cmd({'cmd': 'interface vlan 1', 'state': 1, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
+    dut.add_cmd({'cmd': update_cmd, 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd': 'show bridge address-table', 'state': 2, 'action': 'PRINT', 'args': output_2})
+    dut.add_cmd({'cmd': 'interface vlan 1', 'state': 2, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
+    dut.add_cmd({'cmd': delete_cmd, 'state': 2, 'action': 'SET_STATE', 'args': [3]})
+    dut.add_cmd({'cmd': 'show bridge address-table', 'state': 3, 'action': 'PRINT', 'args': output_0})
 
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert dotted_mac not in d.mac.keys()
     d.mac.create(mac_address, ifc)
@@ -190,7 +199,7 @@ Aging time is 300 sec
     d.close()
 
 
-def test_dashed_mac_crud(dut, log_level):
+def test_dashed_mac_crud(dut, log_level, use_mock):
     output_0 = ["""
 Aging time is 300 sec
 
@@ -227,18 +236,18 @@ Aging time is 300 sec
     update_cmd = 'bridge address ' + dotted_mac + ' ethernet ' + ifu + ' permanent'
     delete_cmd = 'no bridge address ' + dotted_mac
 
-    dut.add_cmd({'cmd': 'show bridge address-table', 'state':0, 'action':'PRINT'    ,'args': output_0})
-    dut.add_cmd({'cmd': 'interface vlan 1'         , 'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': create_cmd                 , 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'show bridge address-table', 'state':1, 'action':'PRINT'    ,'args': output_1})
-    dut.add_cmd({'cmd': 'interface vlan 1'         , 'state':1, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': update_cmd                 , 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'show bridge address-table', 'state':2, 'action':'PRINT'    ,'args': output_2})
-    dut.add_cmd({'cmd': 'interface vlan 1'         , 'state':2, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': delete_cmd                 , 'state':2, 'action':'SET_STATE','args':[3]})
-    dut.add_cmd({'cmd': 'show bridge address-table', 'state':3, 'action':'PRINT'    ,'args': output_0})
+    dut.add_cmd({'cmd': 'show bridge address-table', 'state': 0, 'action': 'PRINT', 'args': output_0})
+    dut.add_cmd({'cmd': 'interface vlan 1', 'state': 0, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
+    dut.add_cmd({'cmd': create_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'show bridge address-table', 'state': 1, 'action': 'PRINT', 'args': output_1})
+    dut.add_cmd({'cmd': 'interface vlan 1', 'state': 1, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
+    dut.add_cmd({'cmd': update_cmd, 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd': 'show bridge address-table', 'state': 2, 'action': 'PRINT', 'args': output_2})
+    dut.add_cmd({'cmd': 'interface vlan 1', 'state': 2, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
+    dut.add_cmd({'cmd': delete_cmd, 'state': 2, 'action': 'SET_STATE', 'args': [3]})
+    dut.add_cmd({'cmd': 'show bridge address-table', 'state': 3, 'action': 'PRINT', 'args': output_0})
 
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert dotted_mac not in d.mac.keys()
     d.mac.create(mac_address, ifc)
@@ -250,7 +259,7 @@ Aging time is 300 sec
     d.close()
 
 
-def test_dotted_mac_crud(dut, log_level):
+def test_dotted_mac_crud(dut, log_level, use_mock):
     output_0 = ["""
 Aging time is 300 sec
 
@@ -287,18 +296,18 @@ Aging time is 300 sec
     update_cmd = 'bridge address ' + dotted_mac + ' ethernet ' + ifu + ' permanent'
     delete_cmd = 'no bridge address ' + dotted_mac
 
-    dut.add_cmd({'cmd': 'show bridge address-table', 'state':0, 'action':'PRINT'    ,'args': output_0})
-    dut.add_cmd({'cmd': create_cmd                 , 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'interface vlan 1'         , 'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': 'show bridge address-table', 'state':1, 'action':'PRINT'    ,'args': output_1})
-    dut.add_cmd({'cmd': 'interface vlan 1'         , 'state':1, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': update_cmd                 , 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'show bridge address-table', 'state':2, 'action':'PRINT'    ,'args': output_2})
-    dut.add_cmd({'cmd': 'interface vlan 1'         , 'state':2, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': delete_cmd                 , 'state':2, 'action':'SET_STATE','args':[3]})
-    dut.add_cmd({'cmd': 'show bridge address-table', 'state':3, 'action':'PRINT'    ,'args': output_0})
+    dut.add_cmd({'cmd': 'show bridge address-table', 'state': 0, 'action': 'PRINT', 'args': output_0})
+    dut.add_cmd({'cmd': create_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'interface vlan 1', 'state': 0, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
+    dut.add_cmd({'cmd': 'show bridge address-table', 'state': 1, 'action': 'PRINT', 'args': output_1})
+    dut.add_cmd({'cmd': 'interface vlan 1', 'state': 1, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
+    dut.add_cmd({'cmd': update_cmd, 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd': 'show bridge address-table', 'state': 2, 'action': 'PRINT', 'args': output_2})
+    dut.add_cmd({'cmd': 'interface vlan 1', 'state': 2, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
+    dut.add_cmd({'cmd': delete_cmd, 'state': 2, 'action': 'SET_STATE', 'args': [3]})
+    dut.add_cmd({'cmd': 'show bridge address-table', 'state': 3, 'action': 'PRINT', 'args': output_0})
 
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert dotted_mac not in d.mac.keys()
     d.mac.create(mac_address, ifc)
@@ -310,7 +319,7 @@ Aging time is 300 sec
     d.close()
 
 
-def test_delete_all(dut, log_level):
+def test_delete_all(dut, log_level, use_mock):
     output_0 = ["""
 Aging time is 300 sec
 
@@ -337,18 +346,18 @@ Aging time is 300 sec
     create_cmd = 'bridge address ' + dotted_mac + ' ethernet ' + ifc + ' permanent'
     delete_cmd = 'no bridge address ' + dotted_mac
 
-    dut.add_cmd({'cmd': 'show bridge address-table', 'state':0, 'action':'PRINT'     ,'args': output_0})
-    dut.add_cmd({'cmd': 'interface vlan 1'         , 'state':0, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': create_cmd                 , 'state':0, 'action':'SET_STATE' ,'args':[1]})
-    dut.add_cmd({'cmd': 'show bridge address-table', 'state':1, 'action':'PRINT'     ,'args': output_1})
-    dut.add_cmd({'cmd': 'interface vlan 1'         , 'state':1, 'action':'SET_PROMPT','args':['(config-if)#']})
-    dut.add_cmd({'cmd': delete_cmd                 , 'state':1, 'action':'SET_STATE' ,'args':[2]})
-    dut.add_cmd({'cmd': 'show bridge address-table', 'state':2, 'action':'PRINT'     ,'args': output_0})
+    dut.add_cmd({'cmd': 'show bridge address-table', 'state': 0, 'action': 'PRINT', 'args': output_0})
+    dut.add_cmd({'cmd': 'interface vlan 1', 'state': 0, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
+    dut.add_cmd({'cmd': create_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'show bridge address-table', 'state': 1, 'action': 'PRINT', 'args': output_1})
+    dut.add_cmd({'cmd': 'interface vlan 1', 'state': 1, 'action': 'SET_PROMPT', 'args': ['(config-if)#']})
+    dut.add_cmd({'cmd': delete_cmd, 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd': 'show bridge address-table', 'state': 2, 'action': 'PRINT', 'args': output_0})
 
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     d.mac.create(mac_address, ifc)
-    assert d.mac._check_static_entry_presence() == True
+    assert d.mac._check_static_entry_presence() is True
     d.mac.delete()
-    assert d.mac._check_static_entry_presence() == False
+    assert d.mac._check_static_entry_presence() is False
     d.close()

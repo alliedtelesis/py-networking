@@ -5,15 +5,13 @@ import tftpy
 import threading
 import getpass
 
-from pynetworking import Device
-from time import sleep
-from paramiko.rsakey import RSAKey
+from pynetworking.Device import Device
 
 
 def tftp_make_dir(tftp_client_dir, tftp_server_dir):
-    if (os.path.exists(tftp_client_dir) == False):
+    if (os.path.exists(tftp_client_dir) is False):
         os.mkdir(tftp_client_dir)
-    if (os.path.exists(tftp_server_dir) == False):
+    if (os.path.exists(tftp_server_dir) is False):
         os.mkdir(tftp_server_dir)
 
 
@@ -26,14 +24,14 @@ def tftp_server_for_ever(port, tftp_server_dir):
 def setup_dut(dut):
     dut.reset()
     dut.prompt = '#'
-    dut.add_cmd({'cmd':'show version', 'state':-1, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd': 'show version', 'state': -1, 'action': 'PRINT', 'args': ["""
 
         Unit             SW version         Boot version         HW version
 ------------------- ------------------- ------------------- -------------------
          1               3.0.0.44            1.0.1.07            00.01.00
 
     """]})
-    dut.add_cmd({'cmd':'show system', 'state':-1, 'action':'PRINT','args':["""
+    dut.add_cmd({'cmd': 'show system', 'state': -1, 'action': 'PRINT', 'args': ["""
 
 Unit        Type
 ---- -------------------
@@ -62,7 +60,7 @@ Serial number:
         dut.tftp_server_thread.start()
 
 
-def test_create_file_with_failures(dut, log_level):
+def test_create_file_with_failures(dut, log_level, use_mock):
     dir_0 = ["""
 Directory of flash:
 
@@ -101,26 +99,29 @@ hostname nac_dev
 ip ssh server
 """
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'dir'   , 'state':0, 'action':'PRINT','args': dir_0})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    dut.add_cmd({'cmd': 'dir', 'state': 0, 'action': 'PRINT', 'args': dir_0})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert 'startup-config' in d.file.keys()
     with pytest.raises(KeyError) as excinfo:
         d.file.create(name='startup-config', protocol='tftp', text=host_text)
+    assert 'file startup-config is already existing' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file.create(name='test_file.cfg', protocol='tftp', text=host_text, filename='startup-config')
+    assert 'cannot have both source device file name and host string not empty' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file.create(name='test_file.cfg', protocol='tftp', server='10.17.90.1')
-    with pytest.raises(KeyError) as excinfo:
-        d.file.create(name='test_file.cfg', protocol='tftp', server='10.17.90.1')
+    assert 'remote file name missing' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file.create(name='test_file.cfg', protocol='http', text=host_text, server=socket.gethostbyname(socket.getfqdn()))
+    assert 'protocol http not supported' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file['video-3.cfg']
+    assert 'file video-3.cfg does not exist' in excinfo.value
     d.close()
 
 
-def test_update_file_with_failures(dut, log_level):
+def test_update_file_with_failures(dut, log_level, use_mock):
     dir_0 = ["""
 Directory of flash:
 
@@ -157,28 +158,35 @@ hostname nac_dev
 ip ssh server
 """
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'dir'   , 'state':0, 'action':'PRINT','args': dir_0})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    dut.add_cmd({'cmd': 'dir', 'state': 0, 'action': 'PRINT', 'args': dir_0})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert 'startup-config' in d.file.keys()
     with pytest.raises(KeyError) as excinfo:
         d.file.update(name='test_file_3.cfg', protocol='tftp', text=host_text)
+    assert 'file test_file_3.cfg does not exist' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file.update(name='test_file_1.cfg', protocol='tftp', text=host_text, new_name='startup-config')
+    assert 'file startup-config cannot be overwritten' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file.update(name='test_file_1.cfg', protocol='tftp')
+    assert 'cannot have both host file name and host string empty' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file.update(name='test_file_1.cfg', protocol='tftp', filename='host_temp.cfg', text=host_text)
+    assert 'cannot have both host file name and host string not empty' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file.update(name='test_file_1.cfg', protocol='tftp', text=host_text, server='10.17.90.1')
+    assert 'remote file name missing' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file.update(name='test_file_1.cfg', protocol='tftp', server='10.17.90.1')
+    assert 'cannot have both host file name and host string empty' in excinfo.value
     with pytest.raises(KeyError) as excinfo:
         d.file.update(name='test_file_1.cfg', protocol='http', server=socket.gethostbyname(socket.getfqdn()))
+    assert 'protocol http not supported' in excinfo.value
     d.close()
 
 
-def test_delete_file_with_failures(dut, log_level):
+def test_delete_file_with_failures(dut, log_level, use_mock):
     dir_0 = ["""
 Directory of flash:
 
@@ -201,16 +209,17 @@ Free size of flash: 3276800 bytes
 
 """]
     setup_dut(dut)
-    dut.add_cmd({'cmd': 'dir'   , 'state':0, 'action':'PRINT','args': dir_0})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    dut.add_cmd({'cmd': 'dir', 'state': 0, 'action': 'PRINT', 'args': dir_0})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert 'test_file_x.cfg' not in d.file.keys()
     with pytest.raises(KeyError) as excinfo:
         d.file.delete("test_file_x.cfg")
+    assert 'file test_file_x.cfg does not exist' in excinfo.value
     d.close()
 
 
-def test_create_update_file_through_file(dut, log_level):
+def test_create_update_file_through_file(dut, log_level, use_mock):
     dir_0 = ["""
 Directory of flash:
 
@@ -320,20 +329,20 @@ ip ssh server
     create_cmd = 'copy tftp://{0}/temp_1.cfg test_file_1.cfg'.format(local_tftp_server)
     update_cmd = 'copy tftp://{0}/temp_2.cfg test_file_1.cfg'.format(local_tftp_server)
     delete_cmd = 'delete test_file_1.cfg'
-    dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
-    dut.add_cmd({'cmd': create_cmd, 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'dir'     , 'state':1, 'action':'PRINT','args': dir_1})
-    dut.add_cmd({'cmd': update_cmd, 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'dir'     , 'state':2, 'action':'PRINT','args': dir_2})
-    dut.add_cmd({'cmd': delete_cmd, 'state':2, 'action':'SET_STATE','args':[3]})
-    dut.add_cmd({'cmd': 'dir'     , 'state':3, 'action':'PRINT','args': dir_0})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    dut.add_cmd({'cmd': 'dir', 'state': 0, 'action': 'PRINT', 'args': dir_0})
+    dut.add_cmd({'cmd': create_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'dir', 'state': 1, 'action': 'PRINT', 'args': dir_1})
+    dut.add_cmd({'cmd': update_cmd, 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd': 'dir', 'state': 2, 'action': 'PRINT', 'args': dir_2})
+    dut.add_cmd({'cmd': delete_cmd, 'state': 2, 'action': 'SET_STATE', 'args': [3]})
+    dut.add_cmd({'cmd': 'dir', 'state': 3, 'action': 'PRINT', 'args': dir_0})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert 'test_file_1.cfg' not in d.file.keys()
-    d.file.create(name='test_file_1.cfg', protocol='tftp', port=dut.tftp_port, filename='temp_1.cfg',server=local_tftp_server)
+    d.file.create(name='test_file_1.cfg', protocol='tftp', port=dut.tftp_port, filename='temp_1.cfg', server=local_tftp_server)
     assert 'test_file_1.cfg' in d.file.keys()
     assert d.file['test_file_1.cfg']['content'] == host_text_1
-    d.file.update(name='test_file_1.cfg', protocol='tftp', port=dut.tftp_port, filename='temp_2.cfg',server=local_tftp_server)
+    d.file.update(name='test_file_1.cfg', protocol='tftp', port=dut.tftp_port, filename='temp_2.cfg', server=local_tftp_server)
     assert 'test_file_1.cfg' in d.file.keys()
     assert d.file['test_file_1.cfg']['content'] == host_text_2
     d.file.delete('test_file_1.cfg')
@@ -344,7 +353,7 @@ ip ssh server
     os.remove('temp_2.cfg')
 
 
-def test_create_update_file_through_text(dut, log_level):
+def test_create_update_file_through_text(dut, log_level, use_mock):
     dir_0 = ["""
 Directory of flash:
 
@@ -449,14 +458,14 @@ ip ssh server
     create_cmd = 'copy tftp://{0}/test_file_2.cfg test_file_2.cfg'.format(local_tftp_server)
     update_cmd = 'copy tftp://{0}/test_file_2.cfg test_file_2.cfg'.format(local_tftp_server)
     delete_cmd = 'delete test_file_2.cfg'
-    dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
-    dut.add_cmd({'cmd': create_cmd, 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'dir'     , 'state':1, 'action':'PRINT','args': dir_1})
-    dut.add_cmd({'cmd': update_cmd, 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'dir'     , 'state':2, 'action':'PRINT','args': dir_2})
-    dut.add_cmd({'cmd': delete_cmd, 'state':2, 'action':'SET_STATE','args':[3]})
-    dut.add_cmd({'cmd': 'dir'     , 'state':3, 'action':'PRINT','args': dir_0})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    dut.add_cmd({'cmd': 'dir', 'state': 0, 'action': 'PRINT', 'args': dir_0})
+    dut.add_cmd({'cmd': create_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'dir', 'state': 1, 'action': 'PRINT', 'args': dir_1})
+    dut.add_cmd({'cmd': update_cmd, 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd': 'dir', 'state': 2, 'action': 'PRINT', 'args': dir_2})
+    dut.add_cmd({'cmd': delete_cmd, 'state': 2, 'action': 'SET_STATE', 'args': [3]})
+    dut.add_cmd({'cmd': 'dir', 'state': 3, 'action': 'PRINT', 'args': dir_0})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert 'test_file_2.cfg' not in d.file.keys()
     d.file.create(name='test_file_2.cfg', protocol='tftp', port=dut.tftp_port, text=host_text_1)
@@ -470,7 +479,7 @@ ip ssh server
     d.close()
 
 
-def test_create_empty_file_and_rename(dut, log_level):
+def test_create_empty_file_and_rename(dut, log_level, use_mock):
     dir_0 = ["""
 Directory of flash:
 
@@ -558,14 +567,14 @@ ip ssh server
     create_cmd = 'copy tftp://{0}/test_file_3.cfg test_file_3.cfg'.format(local_tftp_server)
     update_cmd = 'copy tftp://{0}/test_file_4.cfg test_file_4.cfg'.format(local_tftp_server)
     delete_cmd = 'delete test_file_4.cfg'
-    dut.add_cmd({'cmd': 'dir'     , 'state':0, 'action':'PRINT','args': dir_0})
-    dut.add_cmd({'cmd': create_cmd, 'state':0, 'action':'SET_STATE','args':[1]})
-    dut.add_cmd({'cmd': 'dir'     , 'state':1, 'action':'PRINT','args': dir_1})
-    dut.add_cmd({'cmd': update_cmd, 'state':1, 'action':'SET_STATE','args':[2]})
-    dut.add_cmd({'cmd': 'dir'     , 'state':2, 'action':'PRINT','args': dir_2})
-    dut.add_cmd({'cmd': delete_cmd, 'state':2, 'action':'SET_STATE','args':[3]})
-    dut.add_cmd({'cmd': 'dir'     , 'state':3, 'action':'PRINT','args': dir_0})
-    d=Device(host=dut.host,port=dut.port,protocol=dut.protocol, log_level=log_level)
+    dut.add_cmd({'cmd': 'dir', 'state': 0, 'action': 'PRINT', 'args': dir_0})
+    dut.add_cmd({'cmd': create_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
+    dut.add_cmd({'cmd': 'dir', 'state': 1, 'action': 'PRINT', 'args': dir_1})
+    dut.add_cmd({'cmd': update_cmd, 'state': 1, 'action': 'SET_STATE', 'args': [2]})
+    dut.add_cmd({'cmd': 'dir', 'state': 2, 'action': 'PRINT', 'args': dir_2})
+    dut.add_cmd({'cmd': delete_cmd, 'state': 2, 'action': 'SET_STATE', 'args': [3]})
+    dut.add_cmd({'cmd': 'dir', 'state': 3, 'action': 'PRINT', 'args': dir_0})
+    d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
     assert 'test_file_3.cfg' not in d.file.keys()
     d.file.create(name='test_file_3.cfg', protocol='tftp', port=dut.tftp_port)
@@ -582,7 +591,7 @@ ip ssh server
     d.close()
 
 
-def test_clean(dut, log_level):
+def test_clean(dut, log_level, use_mock):
     if dut.mode != 'emulated':
         pytest.skip("only on emulated")
 

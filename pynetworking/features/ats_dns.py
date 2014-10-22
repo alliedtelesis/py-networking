@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from pynetworking import Feature
+from pynetworking.Feature import Feature
 from pprint import pformat
 import re
 import json
@@ -107,7 +107,7 @@ class ats_dns(Feature):
     def __getitem__(self, address):
         self._update_dns()
         if address not in self._dns.keys():
-            raise KeyError('Entry {0} does not exist'.format(address))
+            raise KeyError('entry {0} does not exist'.format(address))
         return self._dns[address]
 
     def _update_dns(self):

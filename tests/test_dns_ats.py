@@ -153,14 +153,14 @@ round-trip (ms) min/avg/max = 20/25/40
     assert d.dns['name_servers'] == name_server_primary
     with pytest.raises(KeyError) as excinfo:
         d.dns.create(name_servers=name_server_primary)
-    assert 'default domain {0} already added'.format(name_server_primary) in excinfo.value
+    assert 'DNS server {0} already added'.format(name_server_primary) in excinfo.value
 
     assert d.dns['default_domain'] == ''
     d.dns.create(default_domain=domain_name)
     assert d.dns['default_domain'] == domain_name
     with pytest.raises(KeyError) as excinfo:
         d.dns.create(default_domain=domain_name)
-    assert 'default domain {0} already added'.format(name_server_primary) in excinfo.value
+    assert 'default domain {0} already added'.format(domain_name) in excinfo.value
 
     assert 'default_domain' in d.dns.keys()
     assert ('default_domain', domain_name) in d.dns.items()

@@ -8,6 +8,7 @@ Contents
     device
     facts
     clock
+    dns
     file
     interface
     license

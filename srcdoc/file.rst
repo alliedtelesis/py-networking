@@ -9,7 +9,7 @@ Operations
 """"""""""""
 **Mandatory**
 
-**Description**: Return a dictionary of the file parameters using its name as index.
+**Description**: Return a dictionary of the file parameters.
 
 **(String)**
 """"""""""""

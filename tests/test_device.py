@@ -72,6 +72,7 @@ def test_open_close1(dut, log_level, use_mock):
     setup_dut(dut)
     d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
+    assert d.log_level == d._log_level
     d.close()
 
 

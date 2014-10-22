@@ -29,11 +29,11 @@ class awp_dns(Feature):
         self._d.log_info("add address {0} and domain {0}".format(name_servers, default_domain))
         self._update_dns()
 
-        if name_servers == '' and domain == '':
+        if name_servers == '' and default_domain == '':
             raise KeyError('at least one parameter is mandatory')
-        if name_servers != '' and name_servers in self._dns.keys():
+        if name_servers != '' and name_servers in self._dns['name_servers']:
             raise KeyError('DNS server {0} already added'.format(name_servers))
-        if default_domain != '' and default_domain in self._dns.keys():
+        if default_domain != '' and default_domain in self._dns['default_domain']:
             raise KeyError('default domain {0} already added'.format(default_domain))
 
         cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
@@ -57,9 +57,9 @@ class awp_dns(Feature):
 
         if name_servers == '' and default_domain == '':
             raise KeyError('at least one parameter is mandatory')
-        if name_servers != '' and name_servers not in self._dns.keys():
+        if name_servers != '' and name_servers not in self._dns['name_servers']:
             raise KeyError('DNS server {0} not configured'.format(name_servers))
-        if default_domain != '' and default_domain not in self._dns.keys():
+        if default_domain != '' and default_domain not in self._dns['default_domain']:
             raise KeyError('default domain {0} not configured'.format(default_domain))
 
         cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
@@ -87,16 +87,17 @@ class awp_dns(Feature):
         return self._dns.keys()
 
 
-    def __getitem__(self, domain):
+    def __getitem__(self, id):
         self._update_dns()
-        if domain not in self._dns.keys():
-            raise KeyError('Entry {0} does not exist'.format(domain))
-        return self._dns[domain]
+        if id not in self._dns.keys():
+            raise KeyError('Entry {0} does not exist'.format(id))
+        return self._dns[id]
 
 
     def _update_dns(self):
         self._d.log_info("_update_dns")
-        self._dns = {}
+        def_dom = ''
+        nam_srv = ''
 
         # Default domain is .org
         # Domain list: .net .it
@@ -110,18 +111,20 @@ class awp_dns(Feature):
             self._d.log_debug("line is {0}".format(line))
             m = ifreList.match(line)
             if m:
-                ll = m.group('domains')
-                if self._dns[default_domain] == '':
-                    self._dns[default_domain] = ll
-                for token in ll.split(' '):
-                    self._dns[default_domain] = self._dns[default_domain] + ',' + token
+                for ll in m.group('domains').split(' '):
+                    if def_dom == '':
+                        def_dom = ll
+                    # else:
+                    #     def_dom = def_dom + ',' + ll
             m = ifreServ.match(line)
             if m:
                 line = line.replace('\n', '')
                 line = line.replace('\r', '')
-                if self._dns[name_servers] == '':
-                    self._dns[name_servers] = line.split(' ')[0]
-                for token in line.split(' '):
-                    self._dns[name_servers] = self._dns[name_servers] + ',' + token
+                if nam_srv == '':
+                    nam_srv = line
+                else:
+                    nam_srv = nam_srv + ',' + line
+
+        self._dns = {'name_servers': nam_srv, 'default_domain': def_dom}
 
         self._d.log_debug("dns {0}".format(pformat(json.dumps(self._dns))))

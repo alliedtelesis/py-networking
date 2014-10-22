@@ -92,32 +92,7 @@ class ats_dns(Feature):
 
     def _update_dns(self):
         self._d.log_info("_update_dns")
-        self._dns = OrderedDict()
-
-        # System Name:  nac_dev
-        # Default domain:  net
-        #
-        #
-        # Name/address lookup is enable
-        #
-        #
-        # Name servers (Preference order): 10.17.39.11 10.16.48.11
-        #.................
-        #
-        ifreDomain = re.compile('Default\s+domain:\s+(?P<dom>\w+)')
-        ifreList = re.compile('Name\s+servers\s+\(Preference\s+order\):(?P<servers>(\s\d+\.+\d+\.+\d+\.+\d+){1,8})')
-        for line in self._device.cmd("show hosts").split('\n'):
-            self._d.log_debug("line is {0}".format(line))
-            m = ifreDomain.match(line)
-            if m:
-                self._dns[m.group('dom')] = {'static': False}
-            m = ifreList.match(line)
-            if m:
-                ll = m.group('servers')
-                self._d.log_debug("servers are {0}".format(ll))
-                for name in ll.split(' '):
-                    if name != '':
-                        self._dns[name] = {'static': False}
+        self._dns = {}
 
         #ip domain-name com
         #ip name-server 10.17.39.11 10.16.48.11
@@ -127,19 +102,12 @@ class ats_dns(Feature):
             self._d.log_debug("line is {0}".format(line))
             m = ifreDomain.match(line)
             if m:
-                cfg_dom = m.group('dom')
-                for i in self._dns.keys():
-                    if i == cfg_dom:
-                        self._dns[i]['static'] = True
-                        break
+                self._dns['default_domain'] = m.group('dom')
             m = ifreList.match(line)
             if m:
                 cfg_srv = m.group('servers')
                 for name in cfg_srv.split(' '):
                     if name != '':
-                        for i in self._dns.keys():
-                            if i == name:
-                                self._dns[i]['static'] = True
-                                break
+                        self._dns['name_servers'] = self._dns['name_servers'] + ',' + m.group('dom')
 
         self._d.log_debug("dns {0}".format(pformat(json.dumps(self._dns))))

@@ -3,10 +3,6 @@ from pynetworking import Feature
 from pprint import pformat
 import re
 import json
-try:
-    from collections import OrderedDict
-except ImportError: #pragma: no cover
-    from ordereddict import OrderedDict
 
 
 class ats_dns(Feature):
@@ -19,11 +15,9 @@ class ats_dns(Feature):
         self._d = device
         self._d.log_debug("loading feature")
 
-
     def load_config(self, config):
         self._d.log_info("loading config")
         self._d.log_info(self._dns)
-
 
     def create(self, name_servers='', default_domain=''):
         self._d.log_info("add address {0} and domain {1}".format(name_servers, default_domain))
@@ -46,15 +40,14 @@ class ats_dns(Feature):
         cmds = {'cmds': [{'cmd': 'conf', 'prompt': '\(config\)\#'}]}
         for i in range(len(name_list)):
             set_cmd = 'ip name-server {0}'.format(name_list[i])
-            cmds['cmds'].append({'cmd': set_cmd ,'prompt':'\(config\)\#'})
+            cmds['cmds'].append({'cmd': set_cmd, 'prompt': '\(config\)\#'})
         if default_domain != '':
             set_cmd = 'ip domain-name {0}'.format(default_domain)
-            cmds['cmds'].append({'cmd': set_cmd ,'prompt':'\(config\)\#'})
-        cmds['cmds'].append({'cmd': chr(26) , 'prompt': '\#'})
+            cmds['cmds'].append({'cmd': set_cmd, 'prompt': '\(config\)\#'})
+        cmds['cmds'].append({'cmd': chr(26), 'prompt': '\#'})
 
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._update_dns()
-
 
     def read(self, hostname, wait_time=20000):
         if hostname == '':
@@ -72,7 +65,6 @@ class ats_dns(Feature):
             if m:
                 ret = m.group('ip')
                 return ret
-
 
     def delete(self, name_servers='', default_domain=''):
         self._d.log_info("remove address {0} and domain {1}".format(name_servers, default_domain))
@@ -95,25 +87,22 @@ class ats_dns(Feature):
         cmds = {'cmds': [{'cmd': 'conf', 'prompt': '\(config\)\#'}]}
         for i in range(len(name_list)):
             set_cmd = 'no ip name-server {0}'.format(name_list[i])
-            cmds['cmds'].append({'cmd': set_cmd ,'prompt':'\(config\)\#'})
+            cmds['cmds'].append({'cmd': set_cmd, 'prompt': '\(config\)\#'})
         if default_domain != '':
             set_cmd = 'no ip domain-name'
-            cmds['cmds'].append({'cmd': set_cmd ,'prompt':'\(config\)\#'})
-        cmds['cmds'].append({'cmd': chr(26) , 'prompt': '\#'})
+            cmds['cmds'].append({'cmd': set_cmd, 'prompt': '\(config\)\#'})
+        cmds['cmds'].append({'cmd': chr(26), 'prompt': '\#'})
 
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._update_dns()
-
 
     def items(self):
         self._update_dns()
         return self._dns.items()
 
-
     def keys(self):
         self._update_dns()
         return self._dns.keys()
-
 
     def __getitem__(self, address):
         self._update_dns()
@@ -121,15 +110,14 @@ class ats_dns(Feature):
             raise KeyError('Entry {0} does not exist'.format(address))
         return self._dns[address]
 
-
     def _update_dns(self):
         self._d.log_info("_update_dns")
         self._dns = {}
         def_dom = ''
         nam_srv = ''
 
-        #ip domain-name com
-        #ip name-server  10.17.39.11 10.16.48.11
+        # ip domain-name com
+        # ip name-server  10.17.39.11 10.16.48.11
         ifreDomain = re.compile('ip\s+domain-name\s+(?P<dom>\w+)')
         ifreList = re.compile('ip\s+name-server\s(?P<servers>(\s\d+\.+\d+\.+\d+\.+\d+){1,8})')
         for line in self._device.cmd("show running-config").split('\n'):

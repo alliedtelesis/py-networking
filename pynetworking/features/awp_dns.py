@@ -3,10 +3,6 @@ from pynetworking import Feature
 from pprint import pformat
 import re
 import json
-try:
-    from collections import OrderedDict
-except ImportError: #pragma: no cover
-    from ordereddict import OrderedDict
 
 
 class awp_dns(Feature):
@@ -19,11 +15,9 @@ class awp_dns(Feature):
         self._d = device
         self._d.log_debug("loading feature")
 
-
     def load_config(self, config):
         self._d.log_info("loading config")
         self._d.log_info(self._dns)
-
 
     def create(self, name_servers='', default_domain=''):
         self._d.log_info("add address {0} and domain {1}".format(name_servers, default_domain))
@@ -45,18 +39,17 @@ class awp_dns(Feature):
 
         cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
                          {'cmd': 'conf t', 'prompt': '\(config\)\#'}
-                        ]}
+                         ]}
         for i in range(len(name_list)):
             set_cmd = 'ip name-server {0}'.format(name_list[i])
-            cmds['cmds'].append({'cmd': set_cmd ,'prompt':'\(config\)\#'})
+            cmds['cmds'].append({'cmd': set_cmd, 'prompt': '\(config\)\#'})
         if default_domain != '':
             set_cmd = 'ip domain-list {0}'.format(default_domain)
-            cmds['cmds'].append({'cmd': set_cmd ,'prompt':'\(config\)\#'})
-        cmds['cmds'].append({'cmd': chr(26) , 'prompt': '\#'})
+            cmds['cmds'].append({'cmd': set_cmd, 'prompt': '\(config\)\#'})
+        cmds['cmds'].append({'cmd': chr(26), 'prompt': '\#'})
 
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._update_dns()
-
 
     def read(self, hostname, wait_time=20000):
         if hostname == '':
@@ -68,7 +61,7 @@ class awp_dns(Feature):
         ifre = re.compile(regex)
         cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
                          {'cmd': ping_cmd, 'prompt': '\#', 'timeout': wait_time}
-                        ]}
+                         ]}
         output = self._device.cmd(cmds, cache=False, flush_cache=True)
         for line in output.split('\n'):
             self._d.log_debug("line is {0}".format(line))
@@ -76,7 +69,6 @@ class awp_dns(Feature):
             if m:
                 ret = m.group('ip')
                 return ret
-
 
     def delete(self, name_servers='', default_domain=''):
         self._d.log_info("remove address {0} and domain {1}".format(name_servers, default_domain))
@@ -98,35 +90,31 @@ class awp_dns(Feature):
 
         cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
                          {'cmd': 'conf t', 'prompt': '\(config\)\#'}
-                        ]}
+                         ]}
         for i in range(len(name_list)):
             set_cmd = 'no ip name-server {0}'.format(name_list[i])
-            cmds['cmds'].append({'cmd': set_cmd ,'prompt':'\(config\)\#'})
+            cmds['cmds'].append({'cmd': set_cmd, 'prompt': '\(config\)\#'})
         if default_domain != '':
             set_cmd = 'no ip domain-list {0}'.format(default_domain)
-            cmds['cmds'].append({'cmd': set_cmd ,'prompt':'\(config\)\#'})
-        cmds['cmds'].append({'cmd': chr(26) , 'prompt': '\#'})
+            cmds['cmds'].append({'cmd': set_cmd, 'prompt': '\(config\)\#'})
+        cmds['cmds'].append({'cmd': chr(26), 'prompt': '\#'})
 
         self._device.cmd(cmds, cache=False, flush_cache=True)
         self._update_dns()
-
 
     def items(self):
         self._update_dns()
         return self._dns.items()
 
-
     def keys(self):
         self._update_dns()
         return self._dns.keys()
 
-
     def __getitem__(self, id):
         self._update_dns()
         if id not in self._dns.keys():
-            raise KeyError('Entry {0} does not exist'.format(id))
+            raise KeyError('entry {0} does not exist'.format(id))
         return self._dns[id]
-
 
     def _update_dns(self):
         self._d.log_info("_update_dns")

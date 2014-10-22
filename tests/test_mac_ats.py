@@ -134,8 +134,8 @@ Aging time is 300 sec
     d.mac.delete(mac_address)
     assert dotted_mac not in d.mac.keys()
     with pytest.raises(KeyError) as excinfo:
-        d.mac.delete('0000.cd1d.7eb0')
-    assert 'MAC address 0000.cd1d.7eb0 does not exist' in excinfo.value
+        d.mac.delete('0ff0.cd1d.7eb0')
+    assert 'MAC address 0ff0.cd1d.7eb0 does not exist' in excinfo.value
     d.close()
 
 

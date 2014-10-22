@@ -1012,7 +1012,16 @@ VLAN ID  Name            Type    State   Member ports
 def test_add_and_delete_interface_4(dut, log_level, use_mock):
     output_rc_0 = ["""
 !
-interface port1.0.1-1.0.50
+interface port1.0.1-1.0.16
+ switchport
+ switchport mode access
+!
+interface port1.0.17
+ switchport
+ switchport mode trunk
+ switchport trunk allowed vlan add 7
+!
+interface port1.0.18-1.0.50
  switchport
  switchport mode access
 !
@@ -1020,11 +1029,8 @@ interface vlan 1
  ip address 10.17.39.253 255.255.255.0
 !
 vlan database
- vlan 10 name "marketing vlan"
- vlan 10 state enable
- vlan 7 name admin state enable
- vlan 8-100 mtu 1200
- vlan 6,7 mtu 1000
+ vlan 7 name vlan_vid
+ vlan 10 name vlan_data
 !
 end
 """]
@@ -1038,7 +1044,7 @@ VLAN ID  Name            Type    State   Member ports
                                          port1.0.10(u) port1.0.11(u)
                                          port1.0.12(t) port1.0.13(u)
                                          port1.0.14(u) port1.0.15(u)
-                                         port1.0.16(u) port1.0.17(u)
+                                         port1.0.16(u)
                                          port1.0.18(u) port1.0.19(u)
                                          port1.0.20(t) port1.0.21(u)
                                          port1.0.22(u) port1.0.23(u)
@@ -1055,10 +1061,8 @@ VLAN ID  Name            Type    State   Member ports
                                          port1.0.46(u) port1.0.47(u)
                                          port1.0.48(u) port1.0.49(u)
                                          port1.0.50(u)
-7       VLAN0007         STATIC  ACTIVE  port1.0.28(t) port1.0.29(u)
-20      "this is a long vlan name"
-                         STATIC  ACTIVE  port1.0.42(u) port1.0.43(t)
-10      VLAN0010         STATIC  ACTIVE  port1.0.28(t)
+7       vlan_vid         STATIC  ACTIVE  port1.0.17(t) port1.0.28(t)
+10      vlan_data        STATIC  ACTIVE  port1.0.28(t)
 """]
 
     output_rc_1 = ["""
@@ -1080,9 +1084,8 @@ interface vlan 1
  ip address 10.17.39.253 255.255.255.0
 !
 vlan database
- vlan 10 name "marketing vlan"
- vlan 10 state enable
- vlan 7 name admin state enable
+ vlan 7 name vlan_vid
+ vlan 10 name vlan_data
 !
 end
 """]
@@ -1096,7 +1099,7 @@ VLAN ID  Name            Type    State   Member ports
                                          port1.0.10(u) port1.0.11(u)
                                          port1.0.12(t) port1.0.13(u)
                                          port1.0.14(u) port1.0.15(u)
-                                         port1.0.16(u) port1.0.17(u)
+                                         port1.0.16(u)
                                          port1.0.18(u) port1.0.19(u)
                                          port1.0.20(t) port1.0.21(u)
                                          port1.0.22(u) port1.0.23(u)
@@ -1113,10 +1116,8 @@ VLAN ID  Name            Type    State   Member ports
                                          port1.0.46(u) port1.0.47(u)
                                          port1.0.48(u) port1.0.49(u)
                                          port1.0.50(u)
-7       VLAN0007         STATIC  ACTIVE  port1.0.28(t) port1.0.29(u)
-20      "this is a long vlan name"
-                         STATIC  ACTIVE  port1.0.42(t) port1.0.43(t)
-10      VLAN0010         STATIC  ACTIVE  port1.0.28(t) port1.0.17(t)
+7       vlan_vid         STATIC  ACTIVE  port1.0.28(t)
+10      vlan_data        STATIC  ACTIVE  port1.0.17(t) port1.0.28(t)
 """]
 
     setup_dut(dut)
@@ -1136,13 +1137,13 @@ VLAN ID  Name            Type    State   Member ports
 
     d = Device(host=dut.host, port=dut.port, protocol=dut.protocol, log_level=log_level, mock=use_mock)
     d.open()
-    assert '1.0.17' in d.vlan[1]['untagged']
+    assert '1.0.17' in d.vlan[7]['tagged']
     assert '1.0.17' not in d.vlan[10]['tagged']
     d.vlan.add_interface(10, '1.0.17', tagged=True)
-    assert '1.0.17' in d.vlan[1]['untagged']
+    assert '1.0.17' not in d.vlan[7]['tagged']
     assert '1.0.17' in d.vlan[10]['tagged']
     d.vlan.delete_interface(10, '1.0.17')
-    assert '1.0.17' in d.vlan[1]['untagged']
+    assert '1.0.17' in d.vlan[7]['tagged']
     assert '1.0.17' not in d.vlan[10]['tagged']
     d.close()
 
@@ -1188,7 +1189,7 @@ VLAN ID  Name            Type    State   Member ports
                                          port1.0.46(u) port1.0.47(u)
                                          port1.0.48(u) port1.0.49(u)
                                          port1.0.50(u)
-7       VLAN0007         STATIC  ACTIVE  port1.0.28(t) port1.0.29(u)
+7       admin            STATIC  ACTIVE  port1.0.28(t) port1.0.29(u)
 20      "this is a long vlan name"
                          STATIC  ACTIVE  port1.0.42(u) port1.0.43(t)
 10      VLAN0010         STATIC  ACTIVE  port1.0.28(t)
@@ -1210,7 +1211,6 @@ interface port1.0.19-1.0.50
  switchport mode access
 !
 vlan database
- vlan 10 name "marketing vlan"
  vlan 10 state enable
  vlan 7 name admin state enable
 !
@@ -1243,7 +1243,7 @@ VLAN ID  Name            Type    State   Member ports
                                          port1.0.46(u) port1.0.47(u)
                                          port1.0.48(u) port1.0.49(u)
                                          port1.0.50(u)
-7       VLAN0007         STATIC  ACTIVE  port1.0.28(t) port1.0.29(u)
+7       admin            STATIC  ACTIVE  port1.0.28(t) port1.0.29(u)
 20      "this is a long vlan name"
                          STATIC  ACTIVE  port1.0.42(t) port1.0.43(t)
 10      VLAN0010         STATIC  ACTIVE  port1.0.28(t) port1.0.18(t)

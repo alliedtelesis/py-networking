@@ -14,7 +14,7 @@ Build type : RELEASE
 
     # this sleep time is just a trick to have the NTP server set correctly
     if dut.mode != 'emulated':
-        dut.sleep_time = 5
+        dut.sleep_time = 3
     else:
         dut.sleep_time = 0
 

@@ -63,7 +63,7 @@ class Pep8Command(Command):
             os.remove("./pep8.result")
             print('The PN library is pep8 compliant')
         else:
-            print('The PN library is not pep8 compliant.\nThe inconsistencies are listed in the file pep8.result.')
+            print('The PN library is not pep8 compliant.\nThe inconsistencies are listed in the file \'pep8.result.\'')
 
 
 class DocCommand(Command):

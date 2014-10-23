@@ -36,7 +36,7 @@ class awp_ntp(Feature):
                                   }
         self._device.log_info(self._ntp)
 
-    def create(self, address, sleep_time=1):
+    def create(self, address, sleep_time=3):
         self._device.log_info("add NTP server {0}".format(address))
         self._update_ntp()
 
@@ -53,7 +53,7 @@ class awp_ntp(Feature):
         sleep(sleep_time)
         self._update_ntp()
 
-    def delete(self, address='', sleep_time=1):
+    def delete(self, address='', sleep_time=3):
         self._device.log_info("remove NTP server {0}".format(address))
         self._update_ntp()
 

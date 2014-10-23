@@ -134,7 +134,7 @@ class awp_file(Feature):
             update_cmd = 'copy {0}://{1}:{2}/{3} {4}'.format(protocol, host_ip_address, port, file_2_copy_from, name)
             delete_cmd = 'delete {0}'.format(name)
             cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
-                             {'cmd': delete_cmd, 'prompt': ''},
+                             {'cmd': delete_cmd, 'prompt': '', 'timeout': 10000},
                              {'cmd': 'y', 'prompt': '\#'},
                              {'cmd': update_cmd, 'prompt': '\#'}
                              ]}
@@ -143,7 +143,7 @@ class awp_file(Feature):
             delete_cmd = 'delete {0}'.format(name)
             cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
                              {'cmd': update_cmd, 'prompt': '\#'},
-                             {'cmd': delete_cmd, 'prompt': ''},
+                             {'cmd': delete_cmd, 'prompt': '', 'timeout': 10000},
                              {'cmd': 'y', 'prompt': '\#'}
                              ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
@@ -163,7 +163,7 @@ class awp_file(Feature):
 
         delete_cmd = 'delete {0}'.format(file_name)
         cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
-                         {'cmd': delete_cmd, 'prompt': ''},
+                         {'cmd': delete_cmd, 'prompt': '', 'timeout': 10000},
                          {'cmd': 'y', 'prompt': '\#', 'timeout': 10000}
                          ]}
 

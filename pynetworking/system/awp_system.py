@@ -11,50 +11,50 @@ class awp_system(object):
     System for AWP
     """
     def __init__(self, device):
-        self._d = device
+        self._device = device
 
     def get_config(self):
-        self._d.log_info('getting device configuration')
+        self._device.log_info('getting device configuration')
         config = ''
         cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
                          {'cmd': 'show running-config', 'prompt': '\#'},
                          ]}
-        for line in self._d.cmd(cmds).replace('\r', '').split('\n'):
+        for line in self._device.cmd(cmds).replace('\r', '').split('\n'):
             config += line + '\n'
             if line.startswith("end"):
                 break
-        self._d.log_debug('got device configuration \n{0}'.format(config))
+        self._device.log_debug('got device configuration \n{0}'.format(config))
         return config
 
     def get_startup_config(self):
-        self._d.log_info('getting device startup configuration')
+        self._device.log_info('getting device startup configuration')
         config = ''
         cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
                          {'cmd': 'show startup-config', 'prompt': '\#'},
                          ]}
-        for line in self._d.cmd(cmds).replace('\r', '').split('\n'):
+        for line in self._device.cmd(cmds).replace('\r', '').split('\n'):
             config += line + '\n'
             if line.startswith("end"):
                 break
-        self._d.log_debug('got device startup configuration \n{0}'.format(config))
+        self._device.log_debug('got device startup configuration \n{0}'.format(config))
         return config
 
     def save_config(self):
-        self._d.log_info('save running configuration')
+        self._device.log_info('save running configuration')
         cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
                          {'cmd': 'write', 'prompt': '\#'},
                          {'cmd': chr(26), 'prompt': '\#'}
                          ]}
-        self._d.cmd(cmds, cache=False, flush_cache=True)
-        self._d.load_system()
+        self._device.cmd(cmds, cache=False, flush_cache=True)
+        self._device.load_system()
 
     def update_firmware(self, filename, protocol='http', dontwait=True):
-        self._d.log_info("firmware upgrade with {0}".format(filename))
+        self._device.log_info("firmware upgrade with {0}".format(filename))
 
         devfilename = filename.split('/')[-1]
         devfileext = devfilename.split('.')[-1]
         if (devfileext != 'rel'):
-            self._d.log_warn("firmware name {0} should have .rel extension".format(filename))
+            self._device.log_warn("firmware name {0} should have .rel extension".format(filename))
             devfilename = devfilename + '.rel'
 
         if (protocol != 'http'):
@@ -63,13 +63,13 @@ class awp_system(object):
             raise KeyError('cannot overwrite running firmware ({0})'.format(devfilename))
         if (os.path.exists(filename) is False):
             raise KeyError('firmware {0} not available'.format(filename))
-        if ('licensed' in self._d.facts.keys()):
-            if (self._d.facts['licensed'] is False):
+        if ('licensed' in self._device.facts.keys()):
+            if (self._device.facts['licensed'] is False):
                 raise KeyError('unlicensed software running')
             else:
-                self._d.log_info('licensed software running')
+                self._device.log_info('licensed software running')
 
-        self._d.file.create(name=devfilename, filename=filename)
+        self._device.file.create(name=devfilename, filename=filename)
         boot_cmd = 'boot system {0}'.format(devfilename)
         cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
                          {'cmd': 'conf t', 'prompt': '\(config\)\#'},
@@ -78,19 +78,19 @@ class awp_system(object):
                          {'cmd': 'reboot', 'prompt': ''},
                          {'cmd': 'y', 'prompt': '', 'dontwait': dontwait}
                          ]}
-        self._d.cmd(cmds, cache=False, flush_cache=True)
+        self._device.cmd(cmds, cache=False, flush_cache=True)
 
     def shell_init(self):
-        self._d.log_info('shell_init')
+        self._device.log_info('shell_init')
         return [{'cmd': 'terminal length 0', 'prompt': '[\>\#]'}, ]
 
     def shell_prompt(self):
-        self._d.log_info('shell_prompt')
+        self._device.log_info('shell_prompt')
         return r'[\>\#]'
 
     def ping(self):
-        self._d.log_info('ping')
-        self._d.cmd('show version', use_cache=False)
+        self._device.log_info('ping')
+        self._device.cmd('show version', use_cache=False)
 
     def _check_running_software(self, release):
         is_running_software = False
@@ -104,8 +104,8 @@ class awp_system(object):
         # Default boot config: flash:/default.cfg
         # Current boot config: flash:/my.cfg (file exists)
         # Backup  boot config: flash:/backup.cfg (file not found)
-        for line in self._d.cmd("show boot").split('\n'):
-            self._d.log_debug("read {0}".format(line))
+        for line in self._device.cmd("show boot").split('\n'):
+            self._device.log_debug("read {0}".format(line))
             if (line.find(string_to_be_found) == 0):
                 is_running_software = True
                 break
@@ -124,8 +124,8 @@ class awp_system(object):
         # Default boot config: flash:/default.cfg
         # Current boot config: flash:/my.cfg (file exists)
         # Backup  boot config: flash:/backup.cfg (file not found)
-        for line in self._d.cmd("show boot").split('\n'):
-            self._d.log_debug("read {0}".format(line))
+        for line in self._device.cmd("show boot").split('\n'):
+            self._device.log_debug("read {0}".format(line))
             if (line.find(string_to_be_found) == 0):
                 boot_image = line[len(string_to_be_found):-1]
                 break

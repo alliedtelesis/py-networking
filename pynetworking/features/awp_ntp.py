@@ -17,28 +17,27 @@ class awp_ntp(Feature):
     def __init__(self, device, **kvargs):
         Feature.__init__(self, device, **kvargs)
         self._ntp = {}
-        self._d = device
-        self._d.log_debug("loading feature")
+        self._device.log_debug("loading feature")
 
     def load_config(self, config):
-        self._d.log_info("loading config")
+        self._device.log_info("loading config")
         self._ntp = OrderedDict()
 
         # ntp peer ntp.inrim.it
         ifre = re.compile('ntp\s+peer\s+(?P<address>[^\s]+)')
 
         for line in config.split('\n'):
-            self._d.log_debug("line is {0}".format(line))
+            self._device.log_debug("line is {0}".format(line))
             m = ifre.match(line)
             if m:
                 key = m.group('address')
                 self._ntp[key] = {'polltime': 64,
                                   'status': False
                                   }
-        self._d.log_info(self._ntp)
+        self._device.log_info(self._ntp)
 
     def create(self, address, sleep_time=1):
-        self._d.log_info("add NTP server {0}".format(address))
+        self._device.log_info("add NTP server {0}".format(address))
         self._update_ntp()
 
         if address in self._ntp.keys():
@@ -55,7 +54,7 @@ class awp_ntp(Feature):
         self._update_ntp()
 
     def delete(self, address='', sleep_time=1):
-        self._d.log_info("remove NTP server {0}".format(address))
+        self._device.log_info("remove NTP server {0}".format(address))
         self._update_ntp()
 
         if address != '' and address not in self._ntp.keys():
@@ -94,7 +93,7 @@ class awp_ntp(Feature):
         return self._ntp[address]
 
     def _update_ntp(self):
-        self._d.log_info("_update_ntp")
+        self._device.log_info("_update_ntp")
         self._ntp = OrderedDict()
 
         # awplus#show ntp status
@@ -116,7 +115,7 @@ class awp_ntp(Feature):
                           '\s+(?P<when>[^\s]+)\s+'
                           '\s+(?P<polltime>\d+)')
         for line in self._device.cmd("show ntp associations").split('\n'):
-            self._d.log_debug("line is {0}".format(line))
+            self._device.log_debug("line is {0}".format(line))
             m = ifre.match(line)
             if m:
                 status = False
@@ -126,4 +125,4 @@ class awp_ntp(Feature):
                 self._ntp[key] = {'polltime': m.group('polltime'),
                                   'status': status
                                   }
-        self._d.log_debug("ntp {0}".format(pformat(json.dumps(self._ntp))))
+        self._device.log_debug("ntp {0}".format(pformat(json.dumps(self._ntp))))

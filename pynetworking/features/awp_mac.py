@@ -19,11 +19,10 @@ class awp_mac(Feature):
     def __init__(self, device, **kvargs):
         Feature.__init__(self, device, **kvargs)
         self._mac = {}
-        self._d = device
-        self._d.log_debug("loading feature")
+        self._device.log_debug("loading feature")
 
     def load_config(self, config):
-        self._d.log_info("loading config")
+        self._device.log_info("loading config")
         self._mac = OrderedDict()
 
         # mac address-table static xxxx.xxxx.xxxx forward interface port1.0.1 vlan 1
@@ -33,7 +32,7 @@ class awp_mac(Feature):
                           'vlan\s+(?P<vlan>\d+)')
 
         for line in config.split('\n'):
-            self._d.log_debug("line is {0}".format(line))
+            self._device.log_debug("line is {0}".format(line))
             m = ifre.match(line)
             if m:
                 key = m.group('mac')
@@ -42,10 +41,10 @@ class awp_mac(Feature):
                                   'action': m.group('action'),
                                   'type': 'static'
                                   }
-        self._d.log_info(self._mac)
+        self._device.log_info(self._mac)
 
     def create(self, mac, interface, forward=True, vlan=1, sleep_time=5):
-        self._d.log_info("create MAC address {0} entry".format(mac))
+        self._device.log_info("create MAC address {0} entry".format(mac))
         self._update_mac()
 
         mac = self._get_dotted_mac(mac)
@@ -66,7 +65,7 @@ class awp_mac(Feature):
         self._update_mac()
 
     def update(self, mac, interface, forward=True, vlan=1, sleep_time=5):
-        self._d.log_info("update MAC address {0} entry".format(mac))
+        self._device.log_info("update MAC address {0} entry".format(mac))
         self._update_mac()
 
         mac = self._get_dotted_mac(mac)
@@ -90,7 +89,7 @@ class awp_mac(Feature):
         self._update_mac()
 
         if (mac == ''):
-            self._d.log_info("remove all the entries")
+            self._device.log_info("remove all the entries")
             del_cmd_1 = 'clear mac address-table dynamic'
             del_cmd_2 = 'clear mac address-table static'
             cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
@@ -100,7 +99,7 @@ class awp_mac(Feature):
                              ]}
             self._device.cmd(cmds, cache=False, flush_cache=True)
         else:
-            self._d.log_info("remove {0}".format(mac))
+            self._device.log_info("remove {0}".format(mac))
             mac = self._get_dotted_mac(mac)
             if mac not in self._mac.keys():
                 raise KeyError('MAC address {0} does not exist'.format(mac))
@@ -150,7 +149,7 @@ class awp_mac(Feature):
         return mac
 
     def _update_mac(self):
-        self._d.log_info("_update_mac")
+        self._device.log_info("_update_mac")
         self._mac = OrderedDict()
 
         # 1    port1.0.1    0000.cd1d.7eb0   forward   dynamic
@@ -161,7 +160,7 @@ class awp_mac(Feature):
                           '(?P<type>[^\s]+)')
         self._device.cmd("terminal length 0")
         for line in self._device.cmd("show mac address-table").split('\n'):
-            self._d.log_debug("line is {0}".format(line))
+            self._device.log_debug("line is {0}".format(line))
             m = ifre.match(line)
             if m:
                 key = m.group('mac')
@@ -170,10 +169,10 @@ class awp_mac(Feature):
                                   'action': m.group('action'),
                                   'type': m.group('type')
                                   }
-        self._d.log_debug("mac {0}".format(pformat(json.dumps(self._mac))))
+        self._device.log_debug("mac {0}".format(pformat(json.dumps(self._mac))))
 
     def _check_static_entry_presence(self):
-        self._d.log_info("_check_static_entry_presence")
+        self._device.log_info("_check_static_entry_presence")
         self._update_mac()
 
         keys = self._mac.keys()

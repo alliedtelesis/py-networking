@@ -19,15 +19,14 @@ class awp_clock(Feature):
     """
     def __init__(self, device, **kvargs):
         Feature.__init__(self, device, **kvargs)
-        self._d = device
-        self._d._clock = {}
-        self._d.log_debug("loading feature")
+        self._device._clock = {}
+        self._device.log_debug("loading feature")
 
     def load_config(self, config):
-        self._d.log_info("loading config")
+        self._device.log_info("loading config")
 
     def update(self, datetime=None, timezone=None):
-        self._d.log_info("update")
+        self._device.log_info("update")
 
         if (datetime is None and timezone is None):
             raise KeyError('either datetime or timezone argument must be given')
@@ -147,7 +146,7 @@ class awp_clock(Feature):
         return datetime.now()
 
     def _update_clock(self):
-        self._d.log_info("_update_clock")
+        self._device.log_info("_update_clock")
         self._clock = OrderedDict()
 
         # Local Time: Thu, 18 Sep 2014 10:21:17 -0400
@@ -204,7 +203,7 @@ class awp_clock(Feature):
                                'summertime_end': '',
                                'summertime_offset': ''
                                }
-        self._d.log_debug("File {0}".format(pformat(json.dumps(self._clock))))
+        self._device.log_debug("File {0}".format(pformat(json.dumps(self._clock))))
 
     def _get_begin_dst(self, tz, dt):
         tt = tz._utc_transition_times
@@ -219,7 +218,7 @@ class awp_clock(Feature):
                 temp_dt = utc_dt.astimezone(tz)
                 if temp_dt.dst() == timedelta(0) or tt[index + 2].day > tt[index].day or tt[index - 2].day > tt[index].day:
                     continue
-                self._d.log_debug("DST start is {0} (index {1})".format(tt[index], index))
+                self._device.log_debug("DST start is {0} (index {1})".format(tt[index], index))
                 a_tt = datetime(tt[index].year, tt[index].month, tt[index].day, tt[index].hour, tt[index].minute, tzinfo=utc)
                 ret_tt = a_tt.astimezone(tz)
                 ret = ret_tt
@@ -240,7 +239,7 @@ class awp_clock(Feature):
                 temp_dt = utc_dt.astimezone(tz)
                 if temp_dt.dst() != timedelta(0) or tt[index + 2].day > tt[index].day or tt[index - 2].day > tt[index].day:
                     continue
-                self._d.log_debug("DST end is {0} (index {1})".format(tt[index], index))
+                self._device.log_debug("DST end is {0} (index {1})".format(tt[index], index))
 
                 # adjustment due to DST time
                 a_tt = datetime(tt[index].year, tt[index].month, tt[index].day, tt[index].hour + 1, tt[index].minute, tzinfo=utc)

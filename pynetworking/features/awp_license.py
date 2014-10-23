@@ -18,15 +18,14 @@ class awp_license(Feature):
     """
     def __init__(self, device, **kvargs):
         Feature.__init__(self, device, **kvargs)
-        self._d = device
         self._license = {}
 
     def set_license(self, label='', key='', certificate=''):
-        self._d.log_info("set license")
+        self._device.log_info("set license")
         self._update_license()
 
         if not ((label == '' and key == '' and certificate != '') or (label != '' and key != '' and certificate == '')):
-            self._d.log_error("cannot set license")
+            self._device.log_error("cannot set license")
             raise KeyError('either label and key or certificate must be given')
 
         if (certificate == ''):
@@ -43,7 +42,7 @@ class awp_license(Feature):
                 if (protocol != 'tftp'):
                     raise KeyError('protocol {0} not supported'.format(protocol))
                 else:
-                    self._d.log_debug("Certificate file url given")
+                    self._device.log_debug("Certificate file url given")
                     set_cmd = 'license certificate {0}'.format(certificate)
 
                     cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
@@ -55,7 +54,7 @@ class awp_license(Feature):
                 if (os.path.exists(certificate) is False):
                     raise KeyError('certificate file {0} does not exist'.format(certificate))
                 filename = certificate.split('/')[-1]
-                self._d.file.create(name=filename, filename=certificate)
+                self._device.file.create(name=filename, filename=certificate)
                 set_cmd = 'license certificate {0}'.format(filename)
                 cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
                                  {'cmd': set_cmd, 'prompt': ''},
@@ -66,10 +65,10 @@ class awp_license(Feature):
         self._update_license()
 
     def delete(self, label):
-        self._d.log_info("remove license {0}".format(label))
+        self._device.log_info("remove license {0}".format(label))
         self._update_license()
 
-        if label not in self._d.license.keys():
+        if label not in self._device.license.keys():
             raise KeyError('label {0} does not exist'.format(label))
 
         delete_cmd = 'no license {0}'.format(label)
@@ -96,7 +95,7 @@ class awp_license(Feature):
         raise KeyError('license {0} does not exist'.format(label))
 
     def _update_license(self):
-        self._d.log_info("_update_license")
+        self._device.log_info("_update_license")
         self._license = OrderedDict()
 
         # OEM Territory : ATI USA
@@ -140,7 +139,7 @@ class awp_license(Feature):
                            '\s+Release\s+:\s+(?P<version>[^\n\r]+)\s+'
                            )
         for line in self._device.cmd("show license").split('Index                         :'):
-            self._d.log_debug("\nLine {0}".format(line))
+            self._device.log_debug("\nLine {0}".format(line))
             m = ifre1.match(line)
             if m:
                 key = m.group('name')
@@ -169,4 +168,4 @@ class awp_license(Feature):
                                       'features': '',
                                       'releases': m.group('version')
                                       }
-        self._d.log_debug("License {0}".format(pformat(json.dumps(self._license))))
+        self._device.log_debug("License {0}".format(pformat(json.dumps(self._license))))

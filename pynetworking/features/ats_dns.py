@@ -12,15 +12,14 @@ class ats_dns(Feature):
     def __init__(self, device, **kvargs):
         Feature.__init__(self, device, **kvargs)
         self._dns = {}
-        self._d = device
-        self._d.log_debug("loading feature")
+        self._device.log_debug("loading feature")
 
     def load_config(self, config):
-        self._d.log_info("loading config")
-        self._d.log_info(self._dns)
+        self._device.log_info("loading config")
+        self._device.log_info(self._dns)
 
     def create(self, name_servers='', default_domain=''):
-        self._d.log_info("add address {0} and domain {1}".format(name_servers, default_domain))
+        self._device.log_info("add address {0} and domain {1}".format(name_servers, default_domain))
         self._update_dns()
         name_list = []
 
@@ -60,14 +59,14 @@ class ats_dns(Feature):
         cmds = {'cmds': [{'cmd': ping_cmd, 'prompt': '\#', 'timeout': wait_time}]}
         output = self._device.cmd(cmds, cache=False, flush_cache=True)
         for line in output.split('\n'):
-            self._d.log_debug("line is {0}".format(line))
+            self._device.log_debug("line is {0}".format(line))
             m = ifre.match(line)
             if m:
                 ret = m.group('ip')
                 return ret
 
     def delete(self, name_servers='', default_domain=''):
-        self._d.log_info("remove address {0} and domain {1}".format(name_servers, default_domain))
+        self._device.log_info("remove address {0} and domain {1}".format(name_servers, default_domain))
         self._update_dns()
         name_list = []
 
@@ -111,7 +110,7 @@ class ats_dns(Feature):
         return self._dns[address]
 
     def _update_dns(self):
-        self._d.log_info("_update_dns")
+        self._device.log_info("_update_dns")
         self._dns = {}
         def_dom = ''
         nam_srv = ''
@@ -121,7 +120,7 @@ class ats_dns(Feature):
         ifreDomain = re.compile('ip\s+domain-name\s+(?P<dom>\w+)')
         ifreList = re.compile('ip\s+name-server\s(?P<servers>(\s\d+\.+\d+\.+\d+\.+\d+){1,8})')
         for line in self._device.cmd("show running-config").split('\n'):
-            self._d.log_debug("line is {0}".format(line))
+            self._device.log_debug("line is {0}".format(line))
             m = ifreDomain.match(line)
             if m:
                 def_dom = m.group('dom')
@@ -136,4 +135,4 @@ class ats_dns(Feature):
 
         self._dns = {'name_servers': nam_srv, 'default_domain': def_dom}
 
-        self._d.log_debug("dns {0}".format(pformat(json.dumps(self._dns))))
+        self._device.log_debug("dns {0}".format(pformat(json.dumps(self._dns))))

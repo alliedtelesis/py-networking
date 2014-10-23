@@ -60,10 +60,11 @@ class Pep8Command(Command):
         assert os.getcwd() == self.cwd, 'Must be in package root: %s' % self.cwd
         os.system('flake8 --max-line-length=160 --exclude=all.py --exclude=build > pep8.result')
         if os.path.getsize("./pep8.result") == 0:
-            os.remove("./pep8.result")
             print('The PN library is pep8 compliant')
         else:
-            print('The PN library is not pep8 compliant.\nThe inconsistencies are listed in the file \'pep8.result.\'')
+            print('The PN library is not pep8 compliant.\nThe inconsistencies are:\n')
+            os.system('flake8 --max-line-length=160 --exclude=all.py --exclude=build')
+        os.remove("./pep8.result")
 
 
 class DocCommand(Command):

@@ -40,9 +40,6 @@ class awp_ntp(Feature):
         self._device.log_info("add NTP server {0}".format(address))
         self._update_ntp()
 
-        if address == '':
-            raise KeyError('NTP server address is mandatory')
-        address = self._get_ip_address(address)
         if address in self._ntp.keys():
             raise KeyError('NTP server {0} already added'.format(address))
 
@@ -60,8 +57,6 @@ class awp_ntp(Feature):
         self._device.log_info("remove NTP server {0}".format(address))
         self._update_ntp()
 
-        if address != '':
-            address = self._get_ip_address(address)
         if address != '' and address not in self._ntp.keys():
             raise KeyError('NTP server {0} is not present'.format(address))
 
@@ -96,9 +91,6 @@ class awp_ntp(Feature):
         if address not in self._ntp.keys():
             raise KeyError('NTP server {0} is not present'.format(address))
         return self._ntp[address]
-
-    def _get_ip_address(self, address):
-        return address
 
     def _update_ntp(self):
         self._device.log_info("_update_ntp")

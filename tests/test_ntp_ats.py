@@ -294,14 +294,13 @@ No trusted keys.
     adddns_cmd = 'ip name-server {0}'.format(name_server_primary)
     deldns_cmd = 'no ip name-server {0}'.format(name_server_primary)
     ping_cmd = 'ping {0}'.format(ntp_host_name)
-    create_cmd = 'sntp server {0}'.format(ntp_host_name)
-    # delete_cmd = 'no sntp server {0}'.format(ntp_host_name)
+    create_cmd = 'sntp server 193.204.114.105'
     delete_cmd = 'no sntp server 193.204.114.105'
 
+    dut.add_cmd({'cmd': ping_cmd, 'state': -1, 'action': 'PRINT', 'args': output_ping})
     dut.add_cmd({'cmd': 'show running-config', 'state': 0, 'action': 'PRINT', 'args': output_rc_0})
     dut.add_cmd({'cmd': adddns_cmd, 'state': 0, 'action': 'SET_STATE', 'args': [1]})
     dut.add_cmd({'cmd': 'show running-config', 'state': 1, 'action': 'PRINT', 'args': output_rc_1})
-    dut.add_cmd({'cmd': ping_cmd, 'state': 1, 'action': 'PRINT', 'args': output_ping})
     dut.add_cmd({'cmd': 'show sntp config', 'state': 1, 'action': 'PRINT', 'args': output_cfg})
     dut.add_cmd({'cmd': 'show sntp status', 'state': 1, 'action': 'PRINT', 'args': output_0})
     dut.add_cmd({'cmd': create_cmd, 'state': 1, 'action': 'SET_STATE', 'args': [2]})
@@ -322,10 +321,8 @@ No trusted keys.
     assert '193.204.114.105' == ntp_ip_address
 
     assert ntp_ip_address not in d.ntp.keys()
-    d.ntp.create(ntp_host_name)
+    d.ntp.create(ntp_ip_address)
     assert ntp_ip_address in d.ntp.keys()
-
-    # d.ntp.delete(ntp_host_name)
     d.ntp.delete(ntp_ip_address)
     assert ntp_ip_address not in d.ntp.keys()
 

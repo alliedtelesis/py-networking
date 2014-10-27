@@ -309,6 +309,8 @@ class Device(object):
             return {'system': os + '_system', 'features': {'file': os + '_file', 'vlan': os + '_vlan'}}            # pragma: no cover
         if feat == 'license':                                                                                      # pragma: no cover
             return {'system': os + '_system', 'features': {'license': os + '_license', 'file': os + '_file'}}      # pragma: no cover
+        if feat == 'ntp':                                                                                          # pragma: no cover
+            return {'system': os + '_system', 'features': {'dns': os + '_dns', 'ntp': os + '_ntp'}}                # pragma: no cover
         if feat == 'vlan' and os == 'ats':                                                                         # pragma: no cover
             return {'system': os + '_system', 'features': {'interface': os + '_interface', 'vlan': os + '_vlan'}}  # pragma: no cover
         return {'system': os + '_system', 'features': {feat: os + '_' + feat}}                                     # pragma: no cover

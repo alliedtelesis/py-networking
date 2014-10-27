@@ -160,7 +160,9 @@ setup(name='py-networking',
                         'pyzmq>=14.0.0',
                         'ordereddict',
                         'TFTPy',
-                        'pytz'
+                        'pytz',
+                        'pycrypto',
+                        'ecdsa'
                         ],
       setup_requires=['sphinx',
                       'sphinx_rtd_theme'

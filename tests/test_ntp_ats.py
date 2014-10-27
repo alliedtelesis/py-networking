@@ -235,6 +235,7 @@ Unicast servers:
     assert ntp_address_1 not in d.ntp.keys()
     d.close()
 
+
 def test_ntp_host_name(dut, log_level, use_mock):
     # Add the routes manually to have the NTP servers reachable.
     #

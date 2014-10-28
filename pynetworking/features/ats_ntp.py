@@ -16,11 +16,10 @@ class ats_ntp(Feature):
     def __init__(self, device, **kvargs):
         Feature.__init__(self, device, **kvargs)
         self._sntp = {}
-        self._d = device
-        self._d.log_debug("loading feature")
+        self._device.log_debug("loading feature")
 
     def load_config(self, config):
-        self._d.log_info("loading config")
+        self._device.log_info("loading config")
         self._sntp = OrderedDict()
 
         # clock source sntp
@@ -29,17 +28,17 @@ class ats_ntp(Feature):
         ifre = re.compile('sntp\s+server\s+(?P<address>[^\n]+)')
 
         for line in config.split('\n'):
-            self._d.log_debug("line is {0}".format(line))
+            self._device.log_debug("line is {0}".format(line))
             m = ifre.match(line)
             if m:
                 key = m.group('address')
                 self._sntp[key] = {'polltime': 60,
                                    'status': 'Unknown'
                                    }
-        self._d.log_info(self._sntp)
+        self._device.log_info(self._sntp)
 
     def create(self, address, poll=60):
-        self._d.log_info("add SNTP server {0}".format(address))
+        self._device.log_info("add SNTP server {0}".format(address))
         self._update_sntp()
 
         if address in self._sntp.keys():
@@ -60,7 +59,7 @@ class ats_ntp(Feature):
         self._update_sntp()
 
     def update(self, address, poll=60):
-        self._d.log_info("add SNTP server {0}".format(address))
+        self._device.log_info("add SNTP server {0}".format(address))
         self._update_sntp()
 
         if address not in self._sntp.keys():
@@ -75,7 +74,7 @@ class ats_ntp(Feature):
         self._update_sntp()
 
     def delete(self, address=''):
-        self._d.log_info("remove SNTP server {0}".format(address))
+        self._device.log_info("remove SNTP server {0}".format(address))
         self._update_sntp()
 
         if address != '' and address not in self._sntp.keys():
@@ -118,7 +117,7 @@ class ats_ntp(Feature):
         return self._sntp[address]
 
     def _update_sntp(self):
-        self._d.log_info("_update_sntp")
+        self._device.log_info("_update_sntp")
         self._sntp = OrderedDict()
 
         # Polling interval: 60 seconds.
@@ -139,7 +138,7 @@ class ats_ntp(Feature):
         polltime = 60
         ifre1 = re.compile('(\r|'')Polling\s+interval:\s+(?P<polltime>\d+)\s+seconds.')
         for line in self._device.cmd("show sntp config").split('\n'):
-            self._d.log_debug("line is {0}".format(line))
+            self._device.log_debug("line is {0}".format(line))
             m = ifre1.match(line)
             if m:
                 polltime = m.group('polltime')
@@ -160,7 +159,7 @@ class ats_ntp(Feature):
         # ........
         ifre2 = re.compile('(\s+|'')(?P<address>[^\s]+)\s+(?P<status>[^\s]+)\s+')
         for line in self._device.cmd("show sntp status").split('\n'):
-            self._d.log_debug("line is {0}".format(line))
+            self._device.log_debug("line is {0}".format(line))
             m = ifre2.match(line)
             if m and '.' in m.group('address'):
                 key = m.group('address')
@@ -168,4 +167,4 @@ class ats_ntp(Feature):
                                    'status': m.group('status')
                                    }
 
-        self._d.log_debug("ntp {0}".format(pformat(json.dumps(self._sntp))))
+        self._device.log_debug("ntp {0}".format(pformat(json.dumps(self._sntp))))

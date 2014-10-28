@@ -48,17 +48,16 @@ class awp_file(Feature):
     def __init__(self, device, **kvargs):
         Feature.__init__(self, device, **kvargs)
         self._file = {}
-        self._d = device
-        self._d.log_debug("loading feature")
+        self._device.log_debug("loading feature")
 
     def load_config(self, config):
-        self._d.log_info("loading config")
+        self._device.log_info("loading config")
 
     def create(self, name, protocol='http', text='', filename=''):
-        self._d.log_info("create file {0}".format(name))
+        self._device.log_info("create file {0}".format(name))
         self._update_file()
 
-        if name in self._d.file.keys():
+        if name in self._device.file.keys():
             raise KeyError('file {0} is already existing'.format(name))
         if (protocol != 'http'):
             raise KeyError('protocol {0} not supported'.format(protocol))
@@ -72,13 +71,13 @@ class awp_file(Feature):
             myfile.close()
 
         # host HTTP server thread
-        server = Server(("", 0), HTTPHandler, self._d, filename)
+        server = Server(("", 0), HTTPHandler, self._device, filename)
         ip, port = server.server_address
 
         server_thread = threading.Thread(target=server.serve_forever)
         server_thread.daemon = True
         server_thread.start()
-        self._d.log_info("server running on {0}:{1}".format(ip, port))
+        self._device.log_info("server running on {0}:{1}".format(ip, port))
 
         # device commands (timeout of 10 seconds for each MB)
         host_ip_address = socket.gethostbyname(socket.getfqdn())
@@ -95,14 +94,14 @@ class awp_file(Feature):
             os.remove(filename)
 
     def update(self, name, protocol='http', filename='', text='', new_name=''):
-        self._d.log_info("copying {0} from host to device".format(name))
+        self._device.log_info("copying {0} from host to device".format(name))
         self._update_file()
 
-        if name not in self._d.file.keys():
+        if name not in self._device.file.keys():
             raise KeyError('file {0} does not exist'.format(name))
         if (protocol != 'http'):
             raise KeyError('protocol {0} not supported'.format(protocol))
-        if new_name in self._d.file.keys():
+        if new_name in self._device.file.keys():
             raise KeyError('file {0} cannot be overwritten'.format(new_name))
         if (filename != '' and text != ''):
             raise KeyError('cannot have both host file name and host string not empty')
@@ -120,13 +119,13 @@ class awp_file(Feature):
             myfile.close()
 
         # host HTTP server thread
-        server = Server(("", 0), HTTPHandler, self._d, file_2_copy_from)
+        server = Server(("", 0), HTTPHandler, self._device, file_2_copy_from)
         ip, port = server.server_address
 
         server_thread = threading.Thread(target=server.serve_forever)
         server_thread.daemon = True
         server_thread.start()
-        self._d.log_info("server running on {0}:{1}".format(ip, port))
+        self._device.log_info("server running on {0}:{1}".format(ip, port))
 
         # device commands
         host_ip_address = socket.gethostbyname(socket.getfqdn())
@@ -135,7 +134,7 @@ class awp_file(Feature):
             update_cmd = 'copy {0}://{1}:{2}/{3} {4}'.format(protocol, host_ip_address, port, file_2_copy_from, name)
             delete_cmd = 'delete {0}'.format(name)
             cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
-                             {'cmd': delete_cmd, 'prompt': ''},
+                             {'cmd': delete_cmd, 'prompt': '', 'timeout': 10000},
                              {'cmd': 'y', 'prompt': '\#'},
                              {'cmd': update_cmd, 'prompt': '\#'}
                              ]}
@@ -144,7 +143,7 @@ class awp_file(Feature):
             delete_cmd = 'delete {0}'.format(name)
             cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
                              {'cmd': update_cmd, 'prompt': '\#'},
-                             {'cmd': delete_cmd, 'prompt': ''},
+                             {'cmd': delete_cmd, 'prompt': '', 'timeout': 10000},
                              {'cmd': 'y', 'prompt': '\#'}
                              ]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
@@ -156,15 +155,15 @@ class awp_file(Feature):
             os.remove(file_2_copy_from)
 
     def delete(self, file_name):
-        self._d.log_info("remove {0}".format(file_name))
+        self._device.log_info("remove {0}".format(file_name))
         self._update_file()
 
-        if file_name not in self._d.file.keys():
+        if file_name not in self._device.file.keys():
             raise KeyError('file {0} does not exist'.format(file_name))
 
         delete_cmd = 'delete {0}'.format(file_name)
         cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
-                         {'cmd': delete_cmd, 'prompt': ''},
+                         {'cmd': delete_cmd, 'prompt': '', 'timeout': 10000},
                          {'cmd': 'y', 'prompt': '\#', 'timeout': 10000}
                          ]}
 
@@ -187,7 +186,7 @@ class awp_file(Feature):
         raise KeyError('file {0} does not exist'.format(filename))
 
     def _update_file_content(self, filename):
-        self._d.log_info("Read file {0} content".format(filename))
+        self._device.log_info("Read file {0} content".format(filename))
         read_cmd = 'show file {0}'.format(filename)
         read_output = self._device.cmd(read_cmd)
         read_output = read_output.replace('\r', '')
@@ -195,7 +194,7 @@ class awp_file(Feature):
         return read_output
 
     def _update_file(self):
-        self._d.log_info("_update_file")
+        self._device.log_info("_update_file")
         self._file = OrderedDict()
 
         # 588 -rw- Jun 10 2014 12:38:10  michele.cfg
@@ -215,4 +214,4 @@ class awp_file(Feature):
                                    'mdate': m.group('day') + '-' + m.group('month') + '-' + m.group('year'),
                                    'mtime': m.group('hhmmss')
                                    }
-        self._d.log_debug("File {0}".format(pformat(json.dumps(self._file))))
+        self._device.log_debug("File {0}".format(pformat(json.dumps(self._file))))

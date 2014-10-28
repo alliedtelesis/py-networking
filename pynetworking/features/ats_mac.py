@@ -16,11 +16,10 @@ class ats_mac(Feature):
     def __init__(self, device, **kvargs):
         Feature.__init__(self, device, **kvargs)
         self._mac = {}
-        self._d = device
-        self._d.log_debug("loading feature")
+        self._device.log_debug("loading feature")
 
     def load_config(self, config):
-        self._d.log_info("loading config")
+        self._device.log_info("loading config")
         self._mac = OrderedDict()
 
         # interface vlan 1
@@ -31,7 +30,7 @@ class ats_mac(Feature):
                            'ethernet\s+(?P<interface>[^\s]+)')
 
         for line in config.split('\n'):
-            self._d.log_debug("line is {0}".format(line))
+            self._device.log_debug("line is {0}".format(line))
             m = ifre1.match(line)
             if m:
                 vlan = m.group('vlan')
@@ -43,10 +42,10 @@ class ats_mac(Feature):
                                   'action': 'forward',
                                   'type': 'static'
                                   }
-        self._d.log_info(self._mac)
+        self._device.log_info(self._mac)
 
     def create(self, mac, interface, forward=True, vlan=1):
-        self._d.log_info("create MAC address {0} entry".format(mac))
+        self._device.log_info("create MAC address {0} entry".format(mac))
         self._update_mac()
 
         mac = self._get_dotted_mac(mac)
@@ -66,7 +65,7 @@ class ats_mac(Feature):
         self._update_mac()
 
     def update(self, mac, interface, forward=True, vlan=1):
-        self._d.log_info("update MAC address {0} entry".format(mac))
+        self._device.log_info("update MAC address {0} entry".format(mac))
         self._update_mac()
 
         mac = self._get_dotted_mac(mac)
@@ -91,13 +90,13 @@ class ats_mac(Feature):
         if (mac == ''):
             # In spite the dynamic entries are removed, the device will learn them again.
             # Indeed the MAC address table is left empty for a very short time.
-            self._d.log_info("remove all the dynamic entries")
+            self._device.log_info("remove all the dynamic entries")
             del_cmd = 'clear bridge'
             cmds = {'cmds': [{'cmd': del_cmd, 'prompt': '\#'}]}
             self._device.cmd(cmds, cache=False, flush_cache=True)
 
             # The static entries have to be removed one by one, given that there is no global command.
-            self._d.log_info("remove all the static entries")
+            self._device.log_info("remove all the static entries")
             cmds = {'cmds': [{'cmd': 'conf', 'prompt': '\(config\)\#'}]}
             keys = self._mac.keys()
             for key in keys:
@@ -110,7 +109,7 @@ class ats_mac(Feature):
             cmds['cmds'].append({'cmd': chr(26), 'prompt': '\#'})
             self._device.cmd(cmds, cache=False, flush_cache=True)
         else:
-            self._d.log_info("remove {0}".format(mac))
+            self._device.log_info("remove {0}".format(mac))
             mac = self._get_dotted_mac(mac)
             if mac not in self._mac.keys():
                 raise KeyError('MAC address {0} does not exist'.format(mac))
@@ -156,7 +155,7 @@ class ats_mac(Feature):
         return mac
 
     def _update_mac(self):
-        self._d.log_info("_update_mac")
+        self._device.log_info("_update_mac")
         self._mac = OrderedDict()
 
         #   1       00:00:cd:24:04:8b    1/e1   dynamic
@@ -165,7 +164,7 @@ class ats_mac(Feature):
                           '(?P<interface>[^\s]+)\s+'
                           '(?P<type>[^\s]+)')
         for line in self._device.cmd("show bridge address-table").split('\n'):
-            self._d.log_debug("line is {0}".format(line))
+            self._device.log_debug("line is {0}".format(line))
             m = ifre.match(line)
             if m:
                 key = self._get_dotted_mac(m.group('mac'))
@@ -174,10 +173,10 @@ class ats_mac(Feature):
                                   'action': 'forward',
                                   'type': m.group('type')
                                   }
-        self._d.log_debug("mac {0}".format(pformat(json.dumps(self._mac))))
+        self._device.log_debug("mac {0}".format(pformat(json.dumps(self._mac))))
 
     def _check_static_entry_presence(self):
-        self._d.log_info("_check_static_entry_presence")
+        self._device.log_info("_check_static_entry_presence")
         self._update_mac()
 
         keys = self._mac.keys()

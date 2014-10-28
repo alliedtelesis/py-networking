@@ -24,20 +24,19 @@ class ats_file(Feature):
         Feature.__init__(self, device, **kvargs)
         self._file = {}
         self._tftp_port = 69
-        self._d = device
-        self._d.log_debug("loading feature")
+        self._device.log_debug("loading feature")
 
     def load_config(self, config):
-        self._d.log_info("loading config")
+        self._device.log_info("loading config")
 
     def create(self, name, protocol='http', text='', filename='', server='', port=69):
-        self._d.log_debug("User: {0}".format(getpass.getuser()))
-        self._d.log_debug("Local IP address: {0}".format(socket.gethostbyname(socket.getfqdn())))
-        self._d.log_debug("TFTP server: {0} (local IP address if missing)".format(server))
-        self._d.log_info("create file {0}".format(name))
+        self._device.log_debug("User: {0}".format(getpass.getuser()))
+        self._device.log_debug("Local IP address: {0}".format(socket.gethostbyname(socket.getfqdn())))
+        self._device.log_debug("TFTP server: {0} (local IP address if missing)".format(server))
+        self._device.log_info("create file {0}".format(name))
         self._update_file()
 
-        if name in self._d.file.keys():
+        if name in self._device.file.keys():
             raise KeyError('file {0} is already existing'.format(name))
         if (protocol != 'tftp'):
             raise KeyError('protocol {0} not supported'.format(protocol))
@@ -72,14 +71,14 @@ class ats_file(Feature):
         self._update_file()
 
     def update(self, name, protocol='http', filename='', text='', new_name='', server='', port=69):
-        self._d.log_info("copying {0} from host to device".format(name))
+        self._device.log_info("copying {0} from host to device".format(name))
         self._update_file()
 
-        if name not in self._d.file.keys():
+        if name not in self._device.file.keys():
             raise KeyError('file {0} does not exist'.format(name))
         if (protocol != 'tftp'):
             raise KeyError('protocol {0} not supported'.format(protocol))
-        if new_name in self._d.file.keys():
+        if new_name in self._device.file.keys():
             raise KeyError('file {0} cannot be overwritten'.format(new_name))
         if (filename != '' and text != ''):
             raise KeyError('cannot have both host file name and host string not empty')
@@ -126,10 +125,10 @@ class ats_file(Feature):
             os.remove(file_2_copy_from)
 
     def delete(self, file_name):
-        self._d.log_info("remove {0}".format(file_name))
+        self._device.log_info("remove {0}".format(file_name))
         self._update_file()
 
-        if file_name not in self._d.file.keys():
+        if file_name not in self._device.file.keys():
             raise KeyError('file {0} does not exist'.format(file_name))
 
         delete_cmd = 'delete {0}'.format(file_name)
@@ -156,7 +155,7 @@ class ats_file(Feature):
         raise KeyError('file {0} does not exist'.format(filename))
 
     def _update_file_content(self, filename):
-        self._d.log_info("Read file {0} content".format(filename))
+        self._device.log_info("Read file {0} content".format(filename))
         read_cmd = 'copy {0} tftp://{1}/{0}'.format(filename, socket.gethostbyname(socket.getfqdn()))
         cmds = {'cmds': [{'cmd': read_cmd, 'prompt': '\#'}]}
         self._device.cmd(cmds, cache=False, flush_cache=True)
@@ -173,7 +172,7 @@ class ats_file(Feature):
         return read_output
 
     def _update_file(self):
-        self._d.log_info("_update_file")
+        self._device.log_info("_update_file")
         self._file = OrderedDict()
 
         # starts                  rw       524288      982     01-Oct-2006 01:12:44
@@ -185,7 +184,7 @@ class ats_file(Feature):
                           '(?P<time>[^\s]+)\s+')
         for line in self._device.cmd("dir").split('\n'):
             m = ifre.match(line)
-            self._d.log_info("read {0}".format(line))
+            self._device.log_info("read {0}".format(line))
             if m:
                 key = m.group('file_name')
                 self._file[key] = {'size': m.group('data_size'),
@@ -193,4 +192,4 @@ class ats_file(Feature):
                                    'mdate': m.group('date'),
                                    'mtime': m.group('time')
                                    }
-        self._d.log_debug("File {0}".format(pformat(json.dumps(self._file))))
+        self._device.log_debug("File {0}".format(pformat(json.dumps(self._file))))

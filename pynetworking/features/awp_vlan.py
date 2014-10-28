@@ -16,18 +16,17 @@ class awp_vlan(Feature):
         Feature.__init__(self, device, **kvargs)
         self._vlan_config = {}
         self._vlan = {}
-        self._d = device
-        self._d.log_debug("loading feature")
+        self._device.log_debug("loading feature")
 
     def load_config(self, config):
-        self._d.log_info("loading config")
+        self._device.log_info("loading config")
         l = VlanConfigLexer()
         self._vlan_config = l.run(config)
         l = VlanInterfaceConfigLexer()
         self._interface_config = l.run(config)
 
     def create(self, vlan_id, **kwargs):
-        self._d.log_info("create {0} {1}".format(vlan_id, pformat(kwargs)))
+        self._device.log_info("create {0} {1}".format(vlan_id, pformat(kwargs)))
         self._update_vlan()
         cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
                          {'cmd': 'conf t', 'prompt': '\(config\)\#'},
@@ -55,7 +54,7 @@ class awp_vlan(Feature):
         self._device.load_system()
 
     def delete(self, vlan_id):
-        self._d.log_info("delete {0}".format(vlan_id))
+        self._device.log_info("delete {0}".format(vlan_id))
         self._update_vlan()
         self._get_vlan_ids(vlan_id)
         cmds = {'cmds': [{'cmd': 'enable', 'prompt': '\#'},
@@ -68,7 +67,7 @@ class awp_vlan(Feature):
         self._device.load_system()
 
     def update(self, vlan_id, **kwargs):
-        self._d.log_info("update {0} {1}".format(vlan_id, pformat(kwargs)))
+        self._device.log_info("update {0} {1}".format(vlan_id, pformat(kwargs)))
         self._update_vlan()
         vlan_ids = self._get_vlan_ids(vlan_id)
         existing_vlan_ids = []
@@ -83,7 +82,7 @@ class awp_vlan(Feature):
             raise KeyError('{0} vlans do not exist'.format(non_existing_ids))
 
     def add_interface(self, vid, ifn, tagged=False):
-        self._d.log_info("add_interface {0} ifn={1} tagged={2}".format(vid, ifn, tagged))
+        self._device.log_info("add_interface {0} ifn={1} tagged={2}".format(vid, ifn, tagged))
         self._update_vlan()
         vid = str(vid)
         if vid not in self._vlan:
@@ -119,7 +118,7 @@ class awp_vlan(Feature):
         self._device.load_system()
 
     def delete_interface(self, vid, ifn):
-        self._d.log_info("delete_interface {0} ifn={1}".format(vid, ifn))
+        self._device.log_info("delete_interface {0} ifn={1}".format(vid, ifn))
         self._update_vlan()
         vid = str(vid)
         if vid not in self._vlan:
@@ -193,7 +192,7 @@ class awp_vlan(Feature):
         raise ValueError('{0} is not a valid vlan id, range or list'.format(vlan_id))
 
     def _update_vlan(self):
-        self._d.log_info("_update_vlan")
+        self._device.log_info("_update_vlan")
         l = VlanStatusLexer()
         vlan_cfg = self._device.cmd("show vlan all")
         vlan = l.run(vlan_cfg)
@@ -202,7 +201,7 @@ class awp_vlan(Feature):
                 if int(vln) in self._get_vlan_ids(vlr):
                     vlan[vln] = dict(vlan[vln].items() + vlc.items())
         self._vlan = vlan
-        self._d.log_debug(pformat(json.dumps(self._vlan)))
+        self._device.log_debug(pformat(json.dumps(self._vlan)))
 
     def _get_interface_config(self, ifn):
         ret = {}

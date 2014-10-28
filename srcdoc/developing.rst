@@ -12,7 +12,7 @@ to verify that your environment is correctly setup and all the requirements are 
 execute the tests that comes with PN::
 
     cd py-networking
-    ./setup.py tests
+    python setup.py test
 
 Create a branch for your changes
 --------------------------------

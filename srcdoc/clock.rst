@@ -9,7 +9,7 @@ Operations
 """"""""""""
 **Mandatory**
 
-**Description**: Return a dictionary of the clock parameters using its name as index.
+**Description**: Return a dictionary of the clock parameters.
 
 **(String)**
 """"""""""""

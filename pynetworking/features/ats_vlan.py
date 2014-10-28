@@ -15,23 +15,22 @@ class ats_vlan(Feature):
         Feature.__init__(self, device, **kvargs)
         self._vlan_config = {}
         self._vlan = {}
-        self._d = device
-        self._d.log_debug("loading feature")
+        self._device.log_debug("loading feature")
 
     def load_config(self, config):
-        self._d.log_info("loading config")
+        self._device.log_info("loading config")
         l = VlanConfigLexer()
         self._vlan_config = l.run(config)
-        self._d.log_debug("vlan configuration {0}".format(self._vlan_config))
+        self._device.log_debug("vlan configuration {0}".format(self._vlan_config))
         l = VlanInterfaceConfigLexer()
         self._interface_config = {}
         for ifr, ifc in l.run(config).items():
             for ifn in self._expand_interface_list(ifr):
                 self._interface_config[ifn] = ifc
-        self._d.log_info("vlan interface configuration {0}".format(self._interface_config))
+        self._device.log_info("vlan interface configuration {0}".format(self._interface_config))
 
     def create(self, vlan_id, **kwargs):
-        self._d.log_info("create {0} {1}".format(vlan_id, pformat(kwargs)))
+        self._device.log_info("create {0} {1}".format(vlan_id, pformat(kwargs)))
         self._update_vlan()
         cmds = {'cmds': [{'cmd': 'conf', 'prompt': '\(config\)\#'},
                          {'cmd': 'vlan database', 'prompt': '\(config-vlan\)\#'},
@@ -48,7 +47,7 @@ class ats_vlan(Feature):
                 self.update(vlan_id, **kwargs)
 
     def delete(self, vlan_id):
-        self._d.log_info("delete {0}".format(vlan_id))
+        self._device.log_info("delete {0}".format(vlan_id))
         self._update_vlan()
         self._get_vlan_ids(vlan_id)
         cmds = {'cmds': [{'cmd': 'conf', 'prompt': '\(config\)\#'},
@@ -60,7 +59,7 @@ class ats_vlan(Feature):
         self._device.load_system()
 
     def update(self, vlan_id, **kwargs):
-        self._d.log_info("update {0} {1}".format(vlan_id, pformat(kwargs)))
+        self._device.log_info("update {0} {1}".format(vlan_id, pformat(kwargs)))
         self._update_vlan()
         vlan_ids = self._get_vlan_ids(vlan_id)
         existing_vlan_ids = []
@@ -86,7 +85,7 @@ class ats_vlan(Feature):
             raise KeyError('{0} vlans do not exist'.format(non_existing_ids))
 
     def add_interface(self, vid, ifn, tagged=False):
-        self._d.log_info("add_interface {0} ifn={1} tagged={2}".format(vid, ifn, tagged))
+        self._device.log_info("add_interface {0} ifn={1} tagged={2}".format(vid, ifn, tagged))
         self._update_vlan()
         vid = str(vid)
         if vid not in self._vlan:
@@ -98,7 +97,7 @@ class ats_vlan(Feature):
             mode = 'access'
 
         cmds = {'cmds': [{'cmd': 'conf', 'prompt': '\(config\)\#'},
-                         {'cmd': 'interface ethernet {0}'.format(self._d.interface._to_ifn_native(ifn)), 'prompt': '\(config-if\)\#'},
+                         {'cmd': 'interface ethernet {0}'.format(self._device.interface._to_ifn_native(ifn)), 'prompt': '\(config-if\)\#'},
                          ]}
 
         if mode == 'access' and tagged is False:
@@ -117,7 +116,7 @@ class ats_vlan(Feature):
         self._device.load_system()
 
     def delete_interface(self, vid, ifn):
-        self._d.log_info("delete_interface {0} ifn={1}".format(vid, ifn))
+        self._device.log_info("delete_interface {0} ifn={1}".format(vid, ifn))
         self._update_vlan()
         vid = str(vid)
         if vid not in self._vlan:
@@ -136,7 +135,7 @@ class ats_vlan(Feature):
             mode = 'access'
 
         cmds = {'cmds': [{'cmd': 'conf', 'prompt': '\(config\)\#'},
-                         {'cmd': 'interface ethernet {0}'.format(self._d.interface._to_ifn_native(ifn)), 'prompt': '\(config-if\)\#'},
+                         {'cmd': 'interface ethernet {0}'.format(self._device.interface._to_ifn_native(ifn)), 'prompt': '\(config-if\)\#'},
                          ]}
 
         if mode == 'access' and vid != '1':
@@ -198,7 +197,7 @@ class ats_vlan(Feature):
         return vlan_ids
 
     def _update_vlan(self):
-        self._d.log_info("_update_vlan")
+        self._device.log_info("_update_vlan")
 
         cvid = ''
         vlan = {}
@@ -209,7 +208,7 @@ class ats_vlan(Feature):
                 if vlan[m.group('vid')]['ports'].endswith(','):
                     cvid = m.group('vid')
             elif cvid != '':
-                self._d.log_debug(vlan)
+                self._device.log_debug(vlan)
                 vlan[cvid]['ports'] += line[23:51].strip()
                 if not vlan[cvid]['ports'].endswith(','):
                     cvid = ''
@@ -236,47 +235,47 @@ class ats_vlan(Feature):
             for vlr, vlc in self._vlan_config.items():
                 vlan[vln] = dict(vlan[vln].items() + self._vlan_config[vln].items())
         self._vlan = vlan
-        self._d.log_debug(pformat(json.dumps(self._vlan)))
+        self._device.log_debug(pformat(json.dumps(self._vlan)))
 
     def _expand_interface_list(self, ifranges):
         ret = []
-        self._d.log_info("_expand_interface_list {0}".format(ifranges))
+        self._device.log_info("_expand_interface_list {0}".format(ifranges))
         if ifranges == '':
             return ret
 
-        m = re.search('{0}/e(?P<single>\d+)'.format(self._d.facts['unit_number']), ifranges)
+        m = re.search('{0}/e(?P<single>\d+)'.format(self._device.facts['unit_number']), ifranges)
         if m:
-            ret.append('{0}.0.{1}'.format(self._d.facts['unit_number'], m.group('single')))
+            ret.append('{0}.0.{1}'.format(self._device.facts['unit_number'], m.group('single')))
         else:
-            m = re.search('{0}/e\((?P<ranges>[^\)]+)'.format(self._d.facts['unit_number']), ifranges)
+            m = re.search('{0}/e\((?P<ranges>[^\)]+)'.format(self._device.facts['unit_number']), ifranges)
             if m:
                 for r in m.group('ranges').split(','):
                     m = re.match('(?P<start_no>\d+)\-(?P<end_no>\d+)', r)
                     if m:
                         end_no = int(m.group('end_no'))
                         start_no = int(m.group('start_no'))
-                        if self._d.facts['model'] == 'AT-8000S/24' and start_no > 24:
+                        if self._device.facts['model'] == 'AT-8000S/24' and start_no > 24:
                             continue
-                        if self._d.facts['model'] == 'AT-8000S/24' and end_no > 24:
+                        if self._device.facts['model'] == 'AT-8000S/24' and end_no > 24:
                             end_no = 24
-                        ret += ['{0}.0.{1}'.format(self._d.facts['unit_number'], n) for n in range(start_no, 1 + end_no)]
+                        ret += ['{0}.0.{1}'.format(self._device.facts['unit_number'], n) for n in range(start_no, 1 + end_no)]
                     else:
                         r = int(r)
-                        if self._d.facts['model'] == 'AT-8000S/24' and r > 24:
+                        if self._device.facts['model'] == 'AT-8000S/24' and r > 24:
                             continue
-                        ret.append('{0}.0.{1}'.format(self._d.facts['unit_number'], r))
+                        ret.append('{0}.0.{1}'.format(self._device.facts['unit_number'], r))
 
-        m = re.search('{0}/g(?P<single>\d+)'.format(self._d.facts['unit_number']), ifranges)
+        m = re.search('{0}/g(?P<single>\d+)'.format(self._device.facts['unit_number']), ifranges)
         if m:
             r = int(m.group('single'))
             if r <= 2:
-                if self._d.facts['model'] == 'AT-8000S/24':
+                if self._device.facts['model'] == 'AT-8000S/24':
                     r += 24
                 else:
                     r += 48
-                ret.append('{0}.0.{1}'.format(self._d.facts['unit_number'], r))
+                ret.append('{0}.0.{1}'.format(self._device.facts['unit_number'], r))
         else:
-            m = re.search('{0}/g\((?P<ranges>[^\)]+)'.format(self._d.facts['unit_number']), ifranges)
+            m = re.search('{0}/g\((?P<ranges>[^\)]+)'.format(self._device.facts['unit_number']), ifranges)
             if m:
                 for r in m.group('ranges').split(','):
                     m = re.match('(?P<start_no>\d+)\-(?P<end_no>\d+)', r)
@@ -285,25 +284,25 @@ class ats_vlan(Feature):
                         end_no = int(m.group('end_no'))
                         if start_no > 2:
                             continue
-                        if self._d.facts['model'] == 'AT-8000S/24' and end_no > 2:
+                        if self._device.facts['model'] == 'AT-8000S/24' and end_no > 2:
                             end_no = 2
 
-                        if self._d.facts['model'] == 'AT-8000S/24':
+                        if self._device.facts['model'] == 'AT-8000S/24':
                             start_no += 24
                             end_no += 24
                         else:
                             start_no += 48
                             end_no += 48
-                        ret += ['{0}.0.{1}'.format(self._d.facts['unit_number'], n) for n in range(start_no, 1 + end_no)]
+                        ret += ['{0}.0.{1}'.format(self._device.facts['unit_number'], n) for n in range(start_no, 1 + end_no)]
                     else:
                         r = int(r)
                         if r > 2:
                             continue
-                        if self._d.facts['model'] == 'AT-8000S/24':
+                        if self._device.facts['model'] == 'AT-8000S/24':
                             r += 24
                         else:
                             r += 48
-                        ret.append('{0}.0.{1}'.format(self._d.facts['unit_number'], r))
+                        ret.append('{0}.0.{1}'.format(self._device.facts['unit_number'], r))
 
-        self._d.log_debug("_expand_interface_list return {0}".format(ret))
+        self._device.log_debug("_expand_interface_list return {0}".format(ret))
         return ret

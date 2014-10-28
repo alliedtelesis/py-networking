@@ -241,7 +241,7 @@ def test_ping1(dut, log_level, use_mock):
     d.close()
 
 
-def test_firmware_upgrade(dut, log_level, use_mock):
+def test_normal_firmware_upgrade(dut, log_level, use_mock):
     output_0 = ["""
 Unit  Image  Filename   Version    Date                    Status
 ----  -----  ---------  ---------  ---------------------   -----------

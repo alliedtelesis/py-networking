@@ -12,6 +12,14 @@ versioneer.tag_prefix = 'v'  # tags are like v1.2.0
 versioneer.parentdir_prefix = 'py-networking-'
 
 
+# The file 'setup.py' can be used as follows:
+#
+# - create documentation in .pdf format:  python setup.py doc
+# - execute the tests that come with PN:  python setup.py test
+# - start with a clean work environment:  python setup.py clean
+# - verify the pep8 standard compliance:  python setup.py pep8
+
+
 class ToxCommand(TestCommand):
     def finalize_options(self):
         TestCommand.finalize_options(self)
@@ -37,6 +45,26 @@ class CleanCommand(Command):
     def run(self):
         assert os.getcwd() == self.cwd, 'Must be in package root: %s' % self.cwd
         os.system('rm -rf ./.coverage ./coverage.* ./coverage-* ./MANIFEST ./.tox ./build ./dist ./*.pyc ./*.tgz ./*.egg ./*.egg-info ./py-networking-* ./doc')
+
+
+class Pep8Command(Command):
+    user_options = []
+
+    def initialize_options(self):
+        self.cwd = None
+
+    def finalize_options(self):
+        self.cwd = os.getcwd()
+
+    def run(self):
+        assert os.getcwd() == self.cwd, 'Must be in package root: %s' % self.cwd
+        os.system('flake8 --max-line-length=160 --exclude=all.py --exclude=build > pep8.result')
+        if os.path.getsize("./pep8.result") == 0:
+            print('The PN library is pep8 compliant')
+        else:
+            print('The PN library is not pep8 compliant.\nThe inconsistencies are:\n')
+            os.system('flake8 --max-line-length=160 --exclude=all.py --exclude=build')
+        os.remove("./pep8.result")
 
 
 class DocCommand(Command):
@@ -107,7 +135,8 @@ setup(name='py-networking',
       cmdclass=dict(versioneer.get_cmdclass().items() +
                     {'test': ToxCommand,
                      'clean': CleanCommand,
-                     'doc': DocCommand
+                     'doc': DocCommand,
+                     'pep8': Pep8Command,
                      }.items()
                     ),
       description='Library for network programming and automation',
@@ -132,7 +161,8 @@ setup(name='py-networking',
                         'ordereddict',
                         'TFTPy',
                         'pytz',
-                        'mock'
+                        'pycrypto',
+                        'ecdsa'
                         ],
       setup_requires=['sphinx',
                       'sphinx_rtd_theme'

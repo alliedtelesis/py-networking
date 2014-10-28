@@ -15,16 +15,15 @@ class awp_interface(Feature):
         Feature.__init__(self, device, **kvargs)
         self._interface_config = {}
         self._interface = {}
-        self._d = device
 
     def load_config(self, config):
-        self._d.log_info("load_config")
-        self._d.log_debug("Loading config for awp_interface {0}".format(config))
+        self._device.log_info("load_config")
+        self._device.log_debug("Loading config for awp_interface {0}".format(config))
         l = InterfaceConfigLexer()
         self._interface_config = l.run(config)
 
     def update(self, ifn, **kwargs):
-        self._d.log_info("update {0} {1}".format(ifn, pformat(kwargs)))
+        self._device.log_info("update {0} {1}".format(ifn, pformat(kwargs)))
         self._update_interface()
         if ifn not in self._interface.keys():
             raise ValueError('interface {0} does not exist'.format(ifn))
@@ -90,12 +89,12 @@ class awp_interface(Feature):
             return [ifn]
 
     def _update_interface(self):
-        self._d.log_info("_update_interface")
+        self._device.log_info("_update_interface")
         l = InterfaceStatusLexer()
         self._interface = l.run(self._device.cmd("show interface"))
         for ifn, ifi in self._interface.items():
             for ifr, ifc in self._interface_config.items():
                 if ifn in self._get_interface_ns(ifr):
-                    self._d.log_debug("Updating {0} with {1}".format(ifn, ifc))
+                    self._device.log_debug("Updating {0} with {1}".format(ifn, ifc))
                     self._interface[ifn] = dict(self._interface[ifn].items() + ifc.items())
-        self._d.log_debug("Loaded awp_interface {0}".format(pformat(json.dumps(self._interface))))
+        self._device.log_debug("Loaded awp_interface {0}".format(pformat(json.dumps(self._interface))))

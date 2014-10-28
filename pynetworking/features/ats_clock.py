@@ -19,15 +19,14 @@ class ats_clock(Feature):
     """
     def __init__(self, device, **kvargs):
         Feature.__init__(self, device, **kvargs)
-        self._d = device
-        self._d._clock = {}
-        self._d.log_debug("loading feature")
+        self._device._clock = {}
+        self._device.log_debug("loading feature")
 
     def load_config(self, config):
-        self._d.log_info("loading config")
+        self._device.log_info("loading config")
 
     def update(self, datetime=None, timezone=None):
-        self._d.log_info("update")
+        self._device.log_info("update")
         self._update_clock()
 
         if (datetime is None and timezone is None):
@@ -144,7 +143,7 @@ class ats_clock(Feature):
         return datetime.now()
 
     def _update_clock(self):
-        self._d.log_info("_update_clock")
+        self._device.log_info("_update_clock")
         self._clock = OrderedDict()
 
         local_time = ''
@@ -189,7 +188,7 @@ class ats_clock(Feature):
         ifre6 = re.compile('Offset\s+is\s+(?P<summertime_offset>\d+)\s+minutes.')
 
         for line in self._device.cmd("show clock detail").split('\n'):
-            self._d.log_debug("line parsed is: {0}".format(line))
+            self._device.log_debug("line parsed is: {0}".format(line))
             m = ifre1.match(line)
             if m:
                 local_time = m.group('local_day') + '-' + m.group('local_month') + '-' + m.group('local_year') + ' ' + m.group('local_time')
@@ -240,7 +239,7 @@ class ats_clock(Feature):
                        'summertime_end': summertime_end,
                        'summertime_offset': summertime_offset
                        }
-        self._d.log_debug("File {0}".format(pformat(json.dumps(self._clock))))
+        self._device.log_debug("File {0}".format(pformat(json.dumps(self._clock))))
 
     def _get_begin_dst(self, tz, dt):
         tt = tz._utc_transition_times
@@ -255,7 +254,7 @@ class ats_clock(Feature):
                 temp_dt = utc_dt.astimezone(tz)
                 if temp_dt.dst() == timedelta(0) or tt[index + 2].day > tt[index].day or tt[index - 2].day > tt[index].day:
                     continue
-                self._d.log_debug("DST start is {0} (index {1})".format(tt[index], index))
+                self._device.log_debug("DST start is {0} (index {1})".format(tt[index], index))
                 a_tt = datetime(tt[index].year, tt[index].month, tt[index].day, tt[index].hour, tt[index].minute, tzinfo=utc)
                 ret_tt = a_tt.astimezone(tz)
                 ret = ret_tt
@@ -276,7 +275,7 @@ class ats_clock(Feature):
                 temp_dt = utc_dt.astimezone(tz)
                 if temp_dt.dst() != timedelta(0) or tt[index + 2].day > tt[index].day or tt[index - 2].day > tt[index].day:
                     continue
-                self._d.log_debug("DST end is {0} (index {1})".format(tt[index], index))
+                self._device.log_debug("DST end is {0} (index {1})".format(tt[index], index))
 
                 # adjustment due to DST time
                 a_tt = datetime(tt[index].year, tt[index].month, tt[index].day, tt[index].hour + 1, tt[index].minute, tzinfo=utc)

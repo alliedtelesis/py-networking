@@ -30,11 +30,54 @@ Assuming you have python and git command installed::
     cd py-networking
     python setup.py install
 
-For further information on how to develop and contribute to py-networking refer to Developing Py-Networking chapter.
+For further information on how to develop and contribute to py-networking, refer to Developing Py-Networking chapter.
+
+Installation guide
+------------------
+PN has been successfully installed and used on some operating systems.
+Anyway, some packages or modules may be missing.
+Check the following notes to be sure that your OS has the correct requirements and then refer to the Install paragraph again.
 
 .. note::
 
-    On Mac OS X follow the following steps before invoking pip
+    On CentOS 6.5, follow this before invoking pip::
+
+        sudo yum install python-devel -y
+        sudo yum install gcc -y
+        sudo yum install gcc-c++ -y
+        sudo wget https://bootstrap.pypa.io/get-pip.py --no-check-certificate
+        sudo python get-pip.py
+
+.. note::
+
+    On Debian Wheezy 7.5, follow this before invoking pip::
+
+        sudo apt-get update
+        sudo apt-get install python-pip -y
+        sudo apt-get install python-dev -y
+        sudo pip install markupsafe
+
+.. note::
+
+    On Fedora 20, follow this before invoking pip::
+
+        sudo yum install python-devel -y
+        sudo yum install gcc -y
+        sudo yum install gcc-c++ -y
+        sudo wget https://bootstrap.pypa.io/get-pip.py
+        sudo python get-pip.py
+
+.. note::
+
+    On Ubuntu Trusty 14.04 LTS, follow this before invoking pip::
+
+        sudo apt-get update
+        sudo apt-get install python-pip -y
+        sudo apt-get install python-dev -y
+
+.. note::
+
+    On Mac OS X follow the following steps before invoking pip::
 
     **Homebrew**
 
@@ -61,7 +104,11 @@ For further information on how to develop and contribute to py-networking refer 
 
     Install `Macport <http://www.macports.org/install.php>`_ and then::
 
-         sudo port install py27-zmq py27-yaml py27-jinja2 py27-ply
+        sudo port install py27-zmq py27-yaml py27-jinja2 py27-ply
+        
+Alternatively you can refer to the following Vagrantfile:
+
+        :download:`Vagrantfile`
 
 Run
 ---
@@ -103,7 +150,7 @@ What is going wrong?
 
 The answer is: the device must be reachable through SSH protocol.
 Indeed the communication toward the device is managed by a proxy process creating an SSH protocol session.
-This permits to send CLI commands to the device and to receive CLI output if any.
+This allows to send CLI commands to the device and to receive CLI output if any.
 Unfortunately, this is not always possible; some devices, if not all, have SSH disabled as default.
 Therefore a previous step is necessary: connect manually the device through telnet, that is always enabled, and enable SSH protocol.
 Once sure that SSH connection is enabled, your script can be executed correctly.

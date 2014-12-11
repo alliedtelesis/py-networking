@@ -13,11 +13,6 @@ Py-Networking
 .. |pypi| image:: https://badge.fury.io/py/py-networking.svg
     :target: http://badge.fury.io/py/py-networking
 
-Notice
-######
-Py-Networking is at early stages of development. You are free to look around but we do not provide support at the moment
-and the library can go throughout a significant changes and backward compatibility cannot be guaranteed.
-
 About
 #####
 
